@@ -1,0 +1,7 @@
+---
+# file: roles/dns/handlers/main.yml
+# handlers for dns/named deployment
+
+# named restart handler
+- name: restart named
+  service: name=named state=restarted

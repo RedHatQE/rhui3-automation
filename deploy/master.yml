@@ -1,0 +1,6 @@
+---
+# file: master.yml
+# master playbook
+- hosts: MASTER
+  roles:
+    - common

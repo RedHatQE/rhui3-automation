@@ -1,0 +1,6 @@
+---
+# file: cds.yml
+# cds playbook
+- hosts: CDS
+  roles:
+    - common

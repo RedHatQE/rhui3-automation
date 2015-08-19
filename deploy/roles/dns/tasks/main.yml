@@ -1,0 +1,26 @@
+---
+# file: roles/dns/tasks/main.yml
+# deploy & configure named on a host
+
+- name: install named
+  yum: "pkg={{ item }} state=installed"
+  with_items: [bind, bind-utils]
+  tags: dns
+
+- name: upload named config file
+  template: src=named.conf.j2 dest=/etc/named.conf
+  notify:
+  - restart named
+  tags: dns
+
+- name: generate db.example.com file
+  template: src=db.example.com.j2 dest=/var/named/db.example.com
+  notify:
+  - restart named
+  tags: dns
+
+- name: ensure named is running and enabled
+  service: name=named state=running enabled=yes
+  tags: dns
+
+

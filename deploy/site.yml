@@ -1,0 +1,13 @@
+---
+# file: site.yml
+# top-level deployment playbook
+- hosts: all
+  # FIXME: a noop role to fetch all node facts
+  tasks:
+    - group_by: key=machine_{{ ansible_machine }}
+
+- include: dns.yml
+- include: master.yml
+- include: rhua.yml
+- include: cds.yml
+- include: cli.yml

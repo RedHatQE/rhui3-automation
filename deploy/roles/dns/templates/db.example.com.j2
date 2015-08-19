@@ -1,0 +1,62 @@
+$TTL    86400 ; 24 hours could have been written as 24h or 1d
+; $TTL used for all RRs without explicit TTL value
+$ORIGIN example.com.
+@  1D  IN  SOA ns1.example.com. hostmaster.example.com. (
+                              {{ ansible_date_time.epoch }}; serial
+                              3H ; refresh
+                              15 ; retry
+                              1w ; expire
+                              3h ; minimum
+
+                             )
+
+       IN NS      ns1
+ns1    IN A       127.0.0.1
+{% if 'MASTER' in groups %}
+{% if groups['MASTER']|length > 0 %}
+master IN A {{ hostvars[groups['MASTER'][0]]['ansible_eth0']['ipv4']['address'] }}
+{% endif %}
+{% endif %}
+
+{% if 'RHUA' in groups %}
+{% if groups['RHUA']|length > 0 %}
+rhua  IN A {{ hostvars[groups['RHUA'][0]]['ansible_eth0']['ipv4']['address'] }}
+{% endif %}
+{% endif %}
+
+{% if 'PROXY' in groups %}
+{% if groups['PROXY']|length > 0 %}
+proxy  IN A {{ hostvars[groups['PROXY'][0]]['ansible_eth0']['ipv4']['address'] }}
+{% endif %}
+{% endif %}
+
+{% if 'CDS' in groups %}
+{% for cds in groups['CDS'] %} 
+cds0{{ loop.index }}  IN A      {{ hostvars[cds]['ansible_eth0']['ipv4']['address'] }}
+{% endfor %}
+{% endif %}
+
+{% if 'LOAD_BALANCER' in groups %}
+{% for load_balancer in groups['LOAD_BALANCER'] %}
+lb0{{ loop.index }} IN A        {{ hostvars[load_balancer]['ansible_eth0']['ipv4']['address'] }}
+{% endfor %}
+{% endif %}
+
+{% if 'CLI' in groups %}
+{% for cli in groups['CLI'] %}
+cli0{{ loop.index }} IN A       {{ hostvars[cli]['ansible_eth0']['ipv4']['address'] }}
+{% endfor %}
+{% endif %}
+
+{# in case there are load balancers, use those as the cds round-robin addresses #}
+{% if 'LOAD_BALANCER' in groups or 'CDS' in groups %} 
+{% if 'LOAD_BALANCER' in groups %}
+cds    {% for load_balancer in groups['LOAD_BALANCER'] %}
+       IN A {{ hostvars[load_balancer]['ansible_eth0']['ipv4']['address'] }}
+       {% endfor %}
+{% else %}
+cds    {% for cds in groups['CDS'] %}
+       IN A  {{ hostvars[cds]['ansible_eth0']['ipv4']['address'] }}
+       {% endfor %}
+{% endif %}
+{% endif %}

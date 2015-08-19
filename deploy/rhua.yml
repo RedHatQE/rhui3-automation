@@ -1,0 +1,6 @@
+---
+# file: rhua.yml
+# rhua playbook
+- hosts: RHUA
+  roles:
+    - common

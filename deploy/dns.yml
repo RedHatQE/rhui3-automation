@@ -1,0 +1,8 @@
+---
+# file: dns.yml
+# dns playbook
+- hosts: DNS
+  roles:
+    - common
+    - dns 
+

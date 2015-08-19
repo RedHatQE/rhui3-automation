@@ -1,0 +1,6 @@
+---
+# file: cli.yml
+# client playbook
+- hosts: CLI
+  roles:
+    - common

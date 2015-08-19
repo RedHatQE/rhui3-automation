@@ -1,0 +1,8 @@
+---
+# file: roles/common/handlers/main.yml
+# handlers for common role tasks
+
+
+# ntpd restart handler
+- name: restart ntpd
+  service: name=ntpd state=restarted
