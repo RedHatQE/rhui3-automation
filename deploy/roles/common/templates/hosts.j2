@@ -1,0 +1,43 @@
+127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
+{% if 'MASTER' in groups %}
+{% if groups['MASTER']|length > 0 %}
+{{ hostvars[groups['MASTER'][0]]['ansible_eth0']['ipv4']['address'] }} master master.example.com
+{% endif %}
+{% endif %}
+
+{% if 'DNS' in groups %}
+{% for ns in groups['DNS'] %}
+{{hostvars[ns]['ansible_eth0']['ipv4']['address'] }} ns0{{ loop.index }} ns0{{ loop.index }}.example.com
+{% endfor %}
+{% endif %}
+
+{% if 'RHUA' in groups %}
+{% if groups['RHUA']|length > 0 %}
+{{ hostvars[groups['RHUA'][0]]['ansible_eth0']['ipv4']['address'] }} rhua rhua.example.com
+{% endif %}
+{% endif %}
+
+{% if 'PROXY' in groups %}
+{% if groups['PROXY']|length > 0 %}
+{{ hostvars[groups['PROXY'][0]]['ansible_eth0']['ipv4']['address'] }} proxy proxy.example.com
+{% endif %}
+{% endif %}
+
+{% if 'CDS' in groups %}
+{% for cds in groups['CDS'] %} 
+{{ hostvars[cds]['ansible_eth0']['ipv4']['address'] }} cds0{{ loop.index }} cds0{{ loop.index }}.example.com
+{% endfor %}
+{% endif %}
+
+{% if 'LOAD_BALANCER' in groups %}
+{% for load_balancer in groups['LOAD_BALANCER'] %}
+{{ hostvars[load_balancer]['ansible_eth0']['ipv4']['address'] }} lb0{{ loop.index }} lb0{{ loop.index }}.example.com
+{% endfor %}
+{% endif %}
+
+{% if 'CLI' in groups %}
+{% for cli in groups['CLI'] %}
+{{ hostvars[cli]['ansible_eth0']['ipv4']['address'] }} cli0{{ loop.index }} cli0{{ loop.index }}.example.com
+{% endfor %}
+{% endif %}
