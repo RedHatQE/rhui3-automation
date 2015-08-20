@@ -1,0 +1,10 @@
+---
+# file: roles/rhua/tasks/main.yml
+# tasks related to rhua setup
+
+- name: generate ssh keys to access cdses
+  command: ssh-keygen -N "" -f /root//id_rsa_cds creates=/root//id_rsa_cds
+  notify:
+  - restorecon root ssh
+  tags: rhua
+

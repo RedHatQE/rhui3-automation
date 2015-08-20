@@ -4,3 +4,4 @@
 - hosts: RHUA
   roles:
     - common
+    - rhua
