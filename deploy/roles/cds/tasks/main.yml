@@ -1,0 +1,8 @@
+---
+# file: roles/cds/tasks/main.yml
+# cds steps
+- name: authorize rhua to access cds through ssh
+  authorized_key: key={{ id_rsa_cds_pub }}
+                  user={{ ansible_ssh_user }}
+                  state=present
+  when: id_rsa_cds_pub is defined

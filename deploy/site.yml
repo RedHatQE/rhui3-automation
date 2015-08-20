@@ -2,9 +2,8 @@
 # file: site.yml
 # top-level deployment playbook
 - hosts: all
-  # FIXME: a noop role to fetch all node facts
-  tasks:
-    - group_by: key=machine_{{ ansible_machine }}
+  roles:
+    - common
 
 - include: dns.yml
 - include: master.yml

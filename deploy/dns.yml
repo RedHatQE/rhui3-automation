@@ -3,6 +3,5 @@
 # dns playbook
 - hosts: DNS
   roles:
-    - common
     - dns 
 

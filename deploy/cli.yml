@@ -3,4 +3,3 @@
 # client playbook
 - hosts: CLI
   roles:
-    - common

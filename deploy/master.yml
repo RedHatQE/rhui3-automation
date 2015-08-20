@@ -3,4 +3,3 @@
 # master playbook
 - hosts: MASTER
   roles:
-    - common

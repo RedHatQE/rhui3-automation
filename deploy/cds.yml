@@ -3,4 +3,4 @@
 # cds playbook
 - hosts: CDS
   roles:
-    - common
+    - cds

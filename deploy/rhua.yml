@@ -3,5 +3,4 @@
 # rhua playbook
 - hosts: RHUA
   roles:
-    - common
     - rhua
