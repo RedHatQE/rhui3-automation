@@ -1,0 +1,6 @@
+---
+# file: roles/rhua/handlers/restorecon.yml
+
+- name: restorecon root ssh
+  command: restorecon -Rv /root/.ssh
+   

@@ -3,3 +3,4 @@
 # include the common handlers
 - include: network.yml
 - include: ntp.yml
+- include: restorecon.yml
