@@ -11,7 +11,8 @@ $ORIGIN example.com.
                              )
 
        IN NS      ns1
-ns1    IN A       127.0.0.1
+; this dns address
+ns1    IN A       {{ ansible_eth0.ipv4.address }}
 {% if 'MASTER' in groups %}
 {% if groups['MASTER']|length > 0 %}
 master IN A {{ hostvars[groups['MASTER'][0]]['ansible_eth0']['ipv4']['address'] }}
