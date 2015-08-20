@@ -2,23 +2,6 @@
 # file roles/common/tasks/main.yml
 # set up & configure ntp on all the hosts
 # set up custom DNS if requested
-
-- name: install ntp
-  yum: "pkg={{ item }} state=installed"
-  with_items: [ntp, ntpdate]
-  tags: ntp
-
-- name: configure ntp
-  template: src=ntp.conf.j2 dest=/etc/ntp.conf
-  notify:
-  - restart ntpd
-  tags: ntp
-
-- name: enable and run ntpd
-  service: name=ntpd state=running enabled=yes
-  tags: ntp
-
-- name: override name resolution in case a DNS role is present
-  template: "src=ifcfg-eth0.j2 dest=/etc/sysconfig/network-scripts/ifcfg-{{ ansible_eth0.device }}"
-  when: "'DNS' in groups"
-  tags: dns
+- include: ntp.yml
+- include: hosts.yml
+- include: dns_override.yml

@@ -1,0 +1,7 @@
+---
+# file: roles/common/handlers/network.yml
+# network configuration update handlers
+
+# network restart handler
+- name: network restart
+  service: name=network state=restarted

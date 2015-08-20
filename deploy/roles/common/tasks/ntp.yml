@@ -1,0 +1,19 @@
+---
+# file: roles/common/tasks/ntp.yml
+# set-up&configure ntp
+
+- name: install ntp
+  yum: "pkg={{ item }} state=installed"
+  with_items: [ntp, ntpdate]
+  tags: ntp
+
+- name: configure ntp
+  template: src=ntp.conf.j2 dest=/etc/ntp.conf
+  notify:
+  - restart ntpd
+  tags: ntp
+
+- name: enable and run ntpd
+  service: name=ntpd state=running enabled=yes
+  tags: ntp
+
