@@ -32,7 +32,7 @@
 
 
 - name: perform repolist
-  shell: "yum repolist --disableplugin=* --disablerepo=* --enablerepo=rhui-local -v | grep 'Repo-pkgs' | cut -d: -f 2"
+  shell: "yum repolist --disableplugin=* --disablerepo=* --enablerepo=local-rhui3 -v | grep 'Repo-pkgs' | cut -d: -f 2"
   register: yum_repolist_result
   when: setup_package_repos_result|success
   tags: rhui_nodes
