@@ -21,10 +21,23 @@
   command: ./setup_package_repos "{{ rhui_iso_gpgsigs|default(False)|ternary('', '--nogpgsigs') }}"
            chdir=/tmp/iso 
            creates=/etc/yum.repos.d/rhui-local.repo
+  register: setup_package_repos_result
   when: iso_mount|success
   tags: rhui_nodes
 
 - name: umount rhui iso
   mount: name=/tmp/iso fstype=iso9660 opts=loop,ro src=/tmp/rhui.iso state=unmounted
   when: iso_mount|success
+  tags: rhui_nodes
+
+
+- name: perform repolist
+  shell: "yum repolist --disableplugin=* --disablerepo=* --enablerepo=rhui-local -v | grep 'Repo-pkgs' | cut -d: -f 2"
+  register: yum_repolist_result
+  when: setup_package_repos_result|success
+  tags: rhui_nodes
+
+- name: assert rhui repo present in yum repolist
+  assert: { that: "{{yum_repolist_result.stdout|int > 0 }}" }
+  when: yum_repolist_result|success
   tags: rhui_nodes
