@@ -2,6 +2,16 @@
 # file: roles/dns/tasks/main.yml
 # deploy & configure named on a host
 
+- name: get original nameserver
+  shell: "grep nameserver /etc/resolv.conf.rhui3 | head -1 | cut -d' ' -f2"
+  register: original_nameserver
+  tags: dns
+
+- name: workaround chicken--egg issue with dns required for yum install dns
+  lineinfile: dest="/etc/resolv.conf" regexp="^nameserver" line="nameserver {{original_nameserver.stdout|trim}}"
+  tags: dns
+
+
 - name: install named
   yum: "pkg={{ item }} state=installed"
   with_items: [bind, bind-utils]
@@ -23,4 +33,7 @@
   service: name=named state=running enabled=yes
   tags: dns
 
+- name: workaround over
+  service: name=network state=restarted
+  tags: dns
 

@@ -40,7 +40,9 @@ options {
 
 	pid-file "/run/named/named.pid";
 	session-keyfile "/run/named/session.key";
-        forwarders {8.8.8.8;}; // FIXME: use AWS default resolver here, maybe
+        forwarders {
+          {{ original_nameserver.stdout|trim }};
+        };
 };
 
 logging {

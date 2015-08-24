@@ -1,6 +1,10 @@
 ---
 # file: roles/common/tasks/dns_override.yml
 # set-up name resolution through a custom DNS if requested
+- name: save original resolv.conf
+  command: cp /etc/resolv.conf /etc/resolv.conf.rhui3 creates=/etc/resolv.conf.rhui3
+  tags: dns
+
 - name: override name resolution in case a DNS role is present
   template: "src=ifcfg-eth0.j2 dest=/etc/sysconfig/network-scripts/ifcfg-{{ ansible_eth0.device }}"
   when: "'DNS' in groups"
