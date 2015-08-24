@@ -3,3 +3,12 @@
 # tasks related to rhua setup
 - include: ssh.yml
 
+- name: install rhui-installer
+  yum: name=rhui-installer state=present
+  register: install_rhui_installer
+  tags: rhua
+
+- name: call rhui installer
+  command: rhui-installer
+  when: install_rhui_installer|changed
+  tags: rhua
