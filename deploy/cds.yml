@@ -2,5 +2,8 @@
 # file: cds.yml
 # cds playbook
 - hosts: CDS
+  handlers:
+    - include: roles/common/handlers/main.yml
   roles:
+    - rhui_nodes
     - cds

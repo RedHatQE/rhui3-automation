@@ -2,4 +2,6 @@
 # file: master.yml
 # master playbook
 - hosts: MASTER
+  handlers:
+    - include: roles/common/handlers/main.yml
   roles:

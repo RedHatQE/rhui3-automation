@@ -1,0 +1,30 @@
+---
+# file: roles/rhui_nodes/tasks/main.yml
+# tasks common to both the RHUA and CDS nodes
+# sync installation media and set up repos
+# variables:
+# - rhui_iso: path to the RHUI ISO to install from
+# - rhui_iso_gpgsigs: enable/disable RHUI ISO repo gpg signature checking (default: False; see the setup_package_repos script on the ISO
+
+- name: upload the rhui iso
+  copy: src="{{ rhui_iso|mandatory }}" dest=/tmp/rhui.iso
+  register: iso_sync
+  tags: rhui_nodes
+
+- name: mount rhui iso
+  mount: name=/tmp/iso fstype=iso9660 opts=loop,ro src=/tmp/rhui.iso state=mounted
+  register: iso_mount
+  when: iso_sync|success
+  tags: rhui_nodes
+
+- name: call setup_package_repos
+  command: ./setup_package_repos "{{ rhui_iso_gpgsigs|default(False)|ternary('', '--nogpgsigs') }}"
+           chdir=/tmp/iso 
+           creates=/etc/yum.repos.d/rhui-local.repo
+  when: iso_mount|success
+  tags: rhui_nodes
+
+- name: umount rhui iso
+  mount: name=/tmp/iso fstype=iso9660 opts=loop,ro src=/tmp/rhui.iso state=unmounted
+  when: iso_mount|success
+  tags: rhui_nodes

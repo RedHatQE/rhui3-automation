@@ -2,6 +2,8 @@
 # file: dns.yml
 # dns playbook
 - hosts: DNS
+  handlers:
+    - include: roles/common/handlers/main.yml
   roles:
     - dns 
 

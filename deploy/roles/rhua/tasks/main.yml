@@ -1,21 +1,5 @@
 ---
 # file: roles/rhua/tasks/main.yml
 # tasks related to rhua setup
+- include: ssh.yml
 
-- name: generate ssh keys
-  command: ssh-keygen -N "" -f /root/.ssh/id_rsa_cds creates=/root/.ssh/id_rsa_cds
-  notify:
-  - restorecon root ssh
-  register: generated_ssh_keys
-  tags: rhua
-
-- name: slurp the cds pub key
-  slurp: src=/root/.ssh/id_rsa_cds.pub
-  register: slurp_id_rsa_cds
-  when: generated_ssh_keys|success
-  tags: rhua
-
-- name: set the pub_key as a global fact
-  set_fact: id_rsa_cds_pub={{ slurp_id_rsa_cds.result.content|b64decode }}
-  when: slurp_id_rsa_cds|success
-  tags: rhua

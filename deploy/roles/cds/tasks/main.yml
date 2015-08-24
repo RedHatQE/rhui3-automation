@@ -2,7 +2,8 @@
 # file: roles/cds/tasks/main.yml
 # cds steps
 - name: authorize rhua to access cds through ssh
-  authorized_key: key={{ id_rsa_cds_pub }}
+  authorized_key: key="{{ hostvars[groups['RHUA'][0]]['id_rsa_cds_pub'] }}"
                   user={{ ansible_ssh_user }}
                   state=present
-  when: id_rsa_cds_pub is defined
+  when: "'RHUA' in groups and {{ groups['RHUA']|length > 0 }} and 'id_rsa_cds_pub' in hostvars[groups['RHUA'][0]]"
+  tags: cds
