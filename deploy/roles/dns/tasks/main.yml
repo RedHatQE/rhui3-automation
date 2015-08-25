@@ -2,6 +2,13 @@
 # file: roles/dns/tasks/main.yml
 # deploy & configure named on a host
 
+- name: set hostname
+  hostname: name="ns0{{ item.0 + 1 }}.example.com"
+  with_indexed_items: groups['DNS']
+  when: "'DNS' in groups and item.1 == inventory_hostname"
+  tags: dns
+
+
 - name: get original nameserver
   shell: "grep nameserver /etc/resolv.conf.rhui3 | head -1 | cut -d' ' -f2"
   register: original_nameserver

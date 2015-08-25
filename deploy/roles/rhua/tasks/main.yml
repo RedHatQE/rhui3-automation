@@ -1,6 +1,10 @@
 ---
 # file: roles/rhua/tasks/main.yml
 # tasks related to rhua setup
+- name: set hostname
+  hostname: name=rhua.example.com
+  tags: rhua
+
 - include: ssh.yml
 
 - name: install rhui-installer

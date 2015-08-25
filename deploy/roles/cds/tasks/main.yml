@@ -1,6 +1,12 @@
 ---
 # file: roles/cds/tasks/main.yml
 # cds steps
+- name: set hostname
+  hostname: name="cds0{{ item.0 + 1 }}.example.com"
+  with_indexed_items: groups['CDS']
+  when: "'CDS' in groups and item.1 == inventory_hostname"
+  tags: cds
+
 - name: authorize rhua to access cds through ssh
   authorized_key: key="{{ hostvars[groups['RHUA'][0]]['id_rsa_cds_pub'] }}"
                   user={{ ansible_ssh_user }}
