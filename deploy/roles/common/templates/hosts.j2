@@ -30,9 +30,9 @@
 {% endfor %}
 {% endif %}
 
-{% if 'LOAD_BALANCER' in groups %}
-{% for load_balancer in groups['LOAD_BALANCER'] %}
-{{ hostvars[load_balancer]['ansible_eth0']['ipv4']['address'] }} lb0{{ loop.index }} lb0{{ loop.index }}.example.com
+{% if 'HAPROXY' in groups %}
+{% for haproxy in groups['HAPROXY'] %}
+{{ hostvars[haproxy]['ansible_eth0']['ipv4']['address'] }} hap0{{ loop.index }} hap0{{ loop.index }}.example.com
 {% endfor %}
 {% endif %}
 

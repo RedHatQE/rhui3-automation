@@ -10,3 +10,4 @@
 - include: rhua.yml
 - include: cds.yml
 - include: cli.yml
+- include: haproxy.yml

@@ -37,9 +37,9 @@ cds0{{ loop.index }}  IN A      {{ hostvars[cds]['ansible_eth0']['ipv4']['addres
 {% endfor %}
 {% endif %}
 
-{% if 'LOAD_BALANCER' in groups %}
-{% for load_balancer in groups['LOAD_BALANCER'] %}
-lb0{{ loop.index }} IN A        {{ hostvars[load_balancer]['ansible_eth0']['ipv4']['address'] }}
+{% if 'HAPROXY' in groups %}
+{% for haproxy in groups['HAPROXY'] %}
+hap0{{ loop.index }} IN A        {{ hostvars[haproxy]['ansible_eth0']['ipv4']['address'] }}
 {% endfor %}
 {% endif %}
 
@@ -50,10 +50,10 @@ cli0{{ loop.index }} IN A       {{ hostvars[cli]['ansible_eth0']['ipv4']['addres
 {% endif %}
 
 {# in case there are load balancers, use those as the cds round-robin addresses #}
-{% if 'LOAD_BALANCER' in groups or 'CDS' in groups %} 
-{% if 'LOAD_BALANCER' in groups %}
-cds    {% for load_balancer in groups['LOAD_BALANCER'] %}
-       IN A {{ hostvars[load_balancer]['ansible_eth0']['ipv4']['address'] }}
+{% if 'HAPROXY' in groups or 'CDS' in groups %} 
+{% if 'HAPROXY' in groups %}
+cds    {% for haproxy in groups['HAPROXY'] %}
+       IN A {{ hostvars[haproxy]['ansible_eth0']['ipv4']['address'] }}
        {% endfor %}
 {% else %}
 cds    {% for cds in groups['CDS'] %}

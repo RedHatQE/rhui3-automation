@@ -1,0 +1,18 @@
+---
+# file: roles/haproxy/tasks/main.yml
+# deploy & configure named on a host
+
+- name: set hostname
+  hostname: name="hap0{{ item.0 + 1 }}.example.com"
+  with_indexed_items: groups['HAPROXY']
+  when: "'HAPROXY' in groups and item.1 == inventory_hostname"
+  tags: haproxy
+
+
+- name: authorize rhua to access haproxy through ssh
+  authorized_key: key="{{ hostvars[groups['RHUA'][0]]['id_rsa_cds_pub'] }}"
+                  user={{ ansible_ssh_user }}
+                  state=present
+  when: "'RHUA' in groups and {{ groups['RHUA']|length > 0 }} and 'id_rsa_cds_pub' in hostvars[groups['RHUA'][0]]"
+  tags: haproxy
+
