@@ -1,0 +1,30 @@
+---
+# file: roles/nfs/tasks/main.yml
+# deploy & configure nfs server
+
+- name: set hostname
+  hostname: name="nfs.example.com"
+  when: "'NFS' in groups"
+  tags: nfs
+
+
+- name: checking nfs-utils install
+  yum: name=nfs-utils state=present
+  tags: nfs
+
+- name: create volume
+  file: path=/export state=directory
+  tags: nfs
+
+- name: start rpcbind service
+  service: name=rpcbind state=started enabled=yes
+  tags: nfs
+
+- name: start nfs-server service
+  service: name=nfs-server state=started enabled=yes
+  tags: nfs
+
+- name: entry info in /etc/exports
+  template: src=exports.j2 dest=/etc/exports
+  notify: restart nfs-server
+  tags: nfs

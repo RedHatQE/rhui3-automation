@@ -19,6 +19,12 @@ master IN A {{ hostvars[groups['MASTER'][0]]['ansible_eth0']['ipv4']['address'] 
 {% endif %}
 {% endif %}
 
+{% if 'NFS' in groups %}
+{% if groups['NFS']|length > 0 %}
+nfs  IN A {{ hostvars[groups['NFS'][0]]['ansible_eth0']['ipv4']['address'] }}
+{% endif %}
+{% endif %}
+
 {% if 'RHUA' in groups %}
 {% if groups['RHUA']|length > 0 %}
 rhua  IN A {{ hostvars[groups['RHUA'][0]]['ansible_eth0']['ipv4']['address'] }}
