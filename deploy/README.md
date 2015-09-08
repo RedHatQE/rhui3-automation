@@ -16,7 +16,9 @@ ansible-playbook -i ~/pathto/hosts.cfg site.yml  --extra-vars "rhui_iso=~/Downlo
 Mind the mandatory extra variable `rhui_iso`
 
 This is RHUI3.x [Ansible](www.ansible.com) deployment automation.
-Managed nodes:
+Managed roles:
 - DNS
 - RHUA
 - CDSes
+- HAProxy
+- NFS server
