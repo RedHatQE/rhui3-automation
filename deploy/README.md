@@ -34,3 +34,26 @@ This allows various deployment configurations, just to outline few:
 
 Please, bare in mind that role application sets node `hostname` such as hap01.example.com, nfs.example.com overriding any hostname previously set (by other role application).
 Although all the role hostnames are properly resolvable (through /etc/hosts and optionaly the name server), the last applied hostname will stick to the node.
+
+Configuration Samples
+---------------------
+Edit `hosts.cfg` to meet your preference:
+```ini
+# RHUA+DNS+NFS, 2*(CDS+HAPROXY)
+[DNS]
+10.0.0.2
+
+[NFS]
+10.0.0.2
+
+[RHUA]
+10.0.0.2
+
+[CDS]
+10.0.0.3
+10.0.0.4
+
+[HAPROXY]
+10.0.0.3
+10.0.0.4
+```
