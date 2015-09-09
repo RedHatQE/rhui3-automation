@@ -1,7 +1,7 @@
 Requirements
 ---------------
 * Ansible version 1.9.2 and higher. (It's possible that you will get older version using standard distro repositories. Try using "pip install -U ansible" instead. You might need to install easy_install first.)
-* Have 4 machines ready - one for RHUA, one for DNS, two for CDSes.
+* Have enough machines ready - check the rest of Read Me for details on various RHUI setups.
 * Have RHUI3 ISO.
 
 Usage
@@ -10,7 +10,7 @@ Usage
 * Update/create your hosts.cfg file with adreses of your machines.
 * Be in deploy/ directory and run:
 ```
-ansible-playbook -i ~/pathto/hosts.cfg site.yml  --extra-vars "rhui_iso=~/Downloads/RHUI-3.0-RHEL-7-20150807.n.0-RHUI-x86_64-dvd1.iso"
+ansible-playbook -i ~/pathto/hosts.cfg site.yml  --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso"
 ```
 
 Mind the mandatory extra variable `rhui_iso`
