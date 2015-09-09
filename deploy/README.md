@@ -17,19 +17,19 @@ Mind the mandatory extra variable `rhui_iso`
 
 This is RHUI3.x [Ansible](www.ansible.com) deployment automation.
 Managed roles:
-- DNS
-- RHUA
-- CDSes
-- HAProxy
-- NFS server
+- Dns
+- Rhua
+- Cdses
+- HAProxy (load balancer)
+- Nfs server
 
 Supported configurations
 ------------------------
 The rule of thumb is multiple roles can be applied to a single node.
 This allows various deployment configurations, just to outline few:
-- RHUA+DNS+NFS, n\*(CDS+HAPROXY)
-- RHUA+DNS, n\*(CDS), m\*(HAPROXY+GLUSTER)
-- RHUA+DNS, n\*(CDS+HAPROXY+GLUSTER)
+- Rhua+Dns+Nfs, n\*(Cds+HAProxy)
+- Rhua+Dns, n\*(Cds), m\*(HAProxy+Gluster)
+- Rhua+Dns, n\*(Cds+HAProxy+Gluster)
 
 
 Please, bare in mind that role application sets node `hostname` such as hap01.example.com, nfs.example.com overriding any hostname previously set (by other role application).
@@ -39,7 +39,7 @@ Configuration Samples
 ---------------------
 Edit `hosts.cfg` to meet your preference:
 ```ini
-# RHUA+DNS+NFS, 2*(CDS+HAPROXY)
+# Rhua+Dns+Nfs, 2*(Cds+HAProxy)
 [DNS]
 10.0.0.2
 
@@ -57,3 +57,12 @@ Edit `hosts.cfg` to meet your preference:
 10.0.0.3
 10.0.0.4
 ```
+
+Configuration Limitations
+-------------------------
+Even though one can apply multiple roles to a single node, some combinations are restricted or make no sense:
+- singleton roles --- only one instance per site: Rhua, Nfs, Dns, Master, Proxy
+- mutually exclusive roles --- can't be applied to the same node: Rhua, Cds
+- site-wide mutually exclusive roles --- chose either Nfs or Gluster
+- optional roles --- may be absent in one's site: Dns, HAProxy, Master, Proxy, Cli
+- multi-roles --- usually multiple instances per site: CDS, Gluster, HAProxy, Cli
