@@ -22,3 +22,15 @@ Managed roles:
 - CDSes
 - HAProxy
 - NFS server
+
+Supported configurations
+------------------------
+The rule of thumb is multiple roles can be applied to a single node.
+This allows various deployment configurations, just to outline few:
+- RHUA+DNS+NFS, n\*(CDS+HAPROXY)
+- RHUA+DNS, n\*(CDS), m\*(HAPROXY+GLUSTER)
+- RHUA+DNS, n\*(CDS+HAPROXY+GLUSTER)
+
+
+Please, bare in mind that role application sets node `hostname` such as hap01.example.com, nfs.example.com overriding any hostname previously set (by other role application).
+Although all the role hostnames are properly resolvable (through /etc/hosts and optionaly the name server), the last applied hostname will stick to the node.
