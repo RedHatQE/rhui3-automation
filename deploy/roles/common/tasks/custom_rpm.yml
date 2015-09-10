@@ -1,0 +1,12 @@
+# file: roles/common/custom_rpm.yml
+# upload and install custom rpms
+- name: copy remote rpm
+  copy: src={{common_custom_rpm}} dest=/tmp
+  when: common_custom_rpm is defined
+  register: copy_remote_rpm_result
+  tags: custom_rpm
+
+- name: rpm yum install
+  yum: name='/tmp/{{common_custom_rpm|basename}}' state=present
+  when: common_custom_rpm is defined and copy_remote_rpm_result|success
+  tags: custom_rpm
