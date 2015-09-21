@@ -3,20 +3,28 @@
 # configure rhua--cds ssh access
 
 - name: generate ssh keys
-  command: ssh-keygen -N "" -f /root/.ssh/id_rsa_cds creates=/root/.ssh/id_rsa_cds
+  command: ssh-keygen -N "" -f /root/.ssh/id_rsa_rhua creates=/root/.ssh/id_rsa_rhua
   notify:
   - restorecon root ssh
   register: generated_ssh_keys
   tags: rhua
 
 - name: slurp the cds pub key
-  slurp: src=/root/.ssh/id_rsa_cds.pub
-  register: slurp_id_rsa_cds
+  slurp: src=/root/.ssh/id_rsa_rhua.pub
+  register: slurp_id_rsa_rhua
   when: generated_ssh_keys|success
   tags: rhua
 
 - name: set the pub_key as a global fact
-  set_fact: id_rsa_cds_pub="{{ slurp_id_rsa_cds.content|b64decode|trim + ' ' + 'rhua--cds.example.com' }}"
-  when: slurp_id_rsa_cds|success
+  set_fact: id_rsa_rhua_pub="{{ slurp_id_rsa_rhua.content|b64decode|trim + ' ' + 'rhua.example.com' }}"
+  when: slurp_id_rsa_rhua|success
   tags: rhua
 
+- name: set authorized keys on cdses and haproxy to allow root connection with the key
+  authorized_key: key="{{ hostvars[groups['RHUA'][0]]['id_rsa_rhua_pub'] }}"
+                  user={{ ansible_ssh_user }}
+                  state=present
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) }}"
+  when: slurp_id_rsa_rhua|success
+  tags: rhua
