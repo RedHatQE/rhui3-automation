@@ -8,7 +8,7 @@
 - include: dns.yml
 - include: master.yml
 - include: nfs.yml
+- include: haproxy.yml
 - include: rhua.yml
 - include: cds.yml
 - include: cli.yml
-- include: haproxy.yml
