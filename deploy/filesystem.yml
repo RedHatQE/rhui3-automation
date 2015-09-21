@@ -1,0 +1,9 @@
+---
+# file: filesystem.yml
+# filesystem playbook
+# TODO: include GLUSTER and implement the mutually-exclusive logic bits here
+- hosts: NFS
+  handlers:
+    - include: roles/common/handlers/main.yml
+  roles:
+    - nfs

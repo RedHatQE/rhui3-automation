@@ -3,12 +3,12 @@
 # top-level deployment playbook
 - hosts: all
   roles:
-    - common
+  - common
 
 - include: dns.yml
 - include: master.yml
-- include: nfs.yml
-- include: haproxy.yml
+- include: filesystem.yml
 - include: rhua.yml
+- include: haproxy.yml
 - include: cds.yml
 - include: cli.yml
