@@ -37,7 +37,7 @@ Configuration Samples
 ---------------------
 Edit `hosts.cfg` to meet your preference:
 ```ini
-# Rhua+Dns+Nfs, 2*(Cds+HAProxy)
+# Rhua+Dns+Nfs, 2*Cds, 2*HAProxy
 [DNS]
 10.0.0.2
 
