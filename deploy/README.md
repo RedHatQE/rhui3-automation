@@ -27,10 +27,8 @@ Supported configurations
 ------------------------
 The rule of thumb is multiple roles can be applied to a single node.
 This allows various deployment configurations, just to outline few:
-- Rhua+Dns+Nfs, n\*(Cds+HAProxy)
-- Rhua+Dns, n\*(Cds), m\*(HAProxy+Gluster)
-- Rhua+Dns, n\*(Cds+HAProxy+Gluster)
-
+- Rhua+Dns+Nfs, n\*Cds, m\*HAProxy
+- Rhua+Dns, n\*(Cds+Gluster), m\*HAProxy
 
 Please, bare in mind that role application sets node `hostname` such as hap01.example.com, nfs.example.com overriding any hostname previously set (by other role application).
 Although all the role hostnames are properly resolvable (through /etc/hosts and optionaly the name server), the last applied hostname will stick to the node.
@@ -54,15 +52,15 @@ Edit `hosts.cfg` to meet your preference:
 10.0.0.4
 
 [HAPROXY]
-10.0.0.3
-10.0.0.4
+10.0.0.5
+10.0.0.6
 ```
 
 Configuration Limitations
 -------------------------
 Even though one can apply multiple roles to a single node, some combinations are restricted or make no sense:
 - singleton roles --- only one instance per site: Rhua, Nfs, Dns, Master, Proxy
-- mutually exclusive roles --- can't be applied to the same node: Rhua, Cds
+- mutually exclusive roles --- can't be applied to the same node: Rhua, Cds, HAProxy, Proxy (all listen on port 443)
 - site-wide mutually exclusive roles --- chose either Nfs or Gluster
 - optional roles --- may be absent in one's site: Dns, HAProxy, Master, Proxy, Cli
 - multi-roles --- usually multiple instances per site: CDS, Gluster, HAProxy, Cli
