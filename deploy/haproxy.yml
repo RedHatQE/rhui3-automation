@@ -1,9 +1,8 @@
 ---
-# file: cds.yml
+# file: haproxy.yml
 # cds playbook
-- hosts: CDS
+- hosts: HAPROXY
   handlers:
     - include: roles/common/handlers/main.yml
   roles:
-    - rhui_nodes
-    - cds
+    - haproxy
