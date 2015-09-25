@@ -1,0 +1,47 @@
+---
+# file: roles/gluster/tasks/main.yml
+# deploy & configure gluster server
+
+- name: set hostname
+  hostname: name="gluster.example.com"
+  when: "'GLUSTER' in groups"
+  tags: gluster
+
+- name: checking glusterfs-server install
+  yum: name=glusterfs-server state=present
+  tags: gluster
+
+- name: checking xfsprogs install
+  yum: name=xfsprogs state=present
+  tags: gluster
+
+- name: checking glusterfs-cli install
+  yum: name=glusterfs-cli state=present
+  tags: gluster
+
+- name: format the device as xfs
+  filesystem: fstype=xfs dev={{gluster_xfs_device|default("/dev/xvdf")}} opts='-f,-i size=512'
+  tags: gluster
+
+- name: create volume
+  file: path=/export/volume state=directory
+  tags: gluster
+
+- name: mount volume
+  mount: name=/export/volume src={{gluster_xfs_device}} state=mounted fstype=xfs
+  tags: gluster
+
+- name: create volume
+  file: path=/export/volume/brick state=directory
+  tags: gluster
+
+- name: start glusterd service
+  service: name=glusterd state=started enabled=yes
+  tags: gluster
+
+#TODO
+#jinja2 doesn't support list comprehension
+#- name: create a gluster volume
+#  command: gluster peer probe "{{['cds0%s.example.com' % nr for nr in groups['CDS'][1:]]}}"
+#  run_once: true
+#  tags: gluster 

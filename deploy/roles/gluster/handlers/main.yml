@@ -1,0 +1,7 @@
+---
+# file: roles/gluster/handlers/main.yml
+# handlers for gluster deployment
+
+# gluster restart handler
+- name: restart glusterfs-server
+  service: name=glusterfs-server state=restarted

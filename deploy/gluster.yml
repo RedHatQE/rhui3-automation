@@ -1,0 +1,8 @@
+---
+# file: gluster.yml
+# gluster playbook
+- hosts: GLUSTER
+  handlers:
+    - include: roles/common/handlers/main.yml
+  roles:
+    - gluster

@@ -12,3 +12,4 @@
 - include: haproxy.yml
 - include: cds.yml
 - include: cli.yml
+- include: gluster.yml
