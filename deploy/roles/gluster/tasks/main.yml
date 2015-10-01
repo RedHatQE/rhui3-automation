@@ -3,8 +3,9 @@
 # deploy & configure gluster server
 
 - name: set hostname
-  hostname: name="gluster.example.com"
-  when: "'GLUSTER' in groups"
+  hostname: name="gluster0{{ item.0 + 1 }}.example.com"
+  with_indexed_items: groups['GLUSTER']
+  when: "'GLUSTER' in groups and item.1 == inventory_hostname"
   tags: gluster
 
 - name: checking glusterfs-server install
@@ -20,7 +21,8 @@
   tags: gluster
 
 - name: format the device as xfs
-  filesystem: fstype=xfs dev={{gluster_xfs_device|default("/dev/xvdf")}} opts='-f,-i size=512'
+  filesystem: fstype=xfs dev={{gluster_xfs_device|default("/dev/xvdf")}}
+# opts='-f,-i size=512'
   tags: gluster
 
 - name: create volume
@@ -28,7 +30,7 @@
   tags: gluster
 
 - name: mount volume
-  mount: name=/export/volume src={{gluster_xfs_device}} state=mounted fstype=xfs
+  mount: name=/export/volume src={{gluster_xfs_device|default("/dev/xvdf")}} state=mounted fstype=xfs
   tags: gluster
 
 - name: create volume
@@ -39,9 +41,26 @@
   service: name=glusterd state=started enabled=yes
   tags: gluster
 
-#TODO
-#jinja2 doesn't support list comprehension
-#- name: create a gluster volume
-#  command: gluster peer probe "{{['cds0%s.example.com' % nr for nr in groups['CDS'][1:]]}}"
-#  run_once: true
-#  tags: gluster 
+- name: gluster peer probe
+  command: gluster peer probe cds02.example.com
+  # TODO
+  # Add a variable which contains all peers: groups['GLUSTER'][1:]
+  # Using shell script maybe?
+  run_once: true
+  tags: gluster
+
+- name: create a gluster volume
+  command: gluster volume create rhui_content_0 replica 2 cds01.example.com:/export/volume/brick cds02.example.com:/export/volume/brick
+  #TODO
+  # Add a volume name variable
+  # Add a variable which counts replica
+  # Add a variable for bricks and clusters
+  run_once: true
+  tags: gluster
+
+- name: gluster volume start
+  command: gluster volume start rhui_content_0
+  #TODO
+  # A volume name variable
+  run_once: true
+  tags: gluster
