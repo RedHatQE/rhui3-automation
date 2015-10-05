@@ -9,15 +9,15 @@
   tags: gluster
 
 - name: checking glusterfs-server install
-  yum: name=glusterfs-server state=present
+  yum: name=glusterfs-server state=present disablerepo="rhui-REGION-rhel-server-rh-common" enablerepo="rhui-REGION-rh-gluster-3-for-rhel-7-server-rpms"
   tags: gluster
 
 - name: checking xfsprogs install
-  yum: name=xfsprogs state=present
+  yum: name=xfsprogs state=present disablerepo="rhui-REGION-rhel-server-rh-common" enablerepo="rhui-REGION-rh-gluster-3-for-rhel-7-server-rpms"
   tags: gluster
 
 - name: checking glusterfs-cli install
-  yum: name=glusterfs-cli state=present
+  yum: name=glusterfs-cli state=present disablerepo="rhui-REGION-rhel-server-rh-common" enablerepo="rhui-REGION-rh-gluster-3-for-rhel-7-server-rpms"
   tags: gluster
 
 - name: format the device as xfs
@@ -33,8 +33,19 @@
   mount: name=/export/volume src={{gluster_xfs_device|default("/dev/xvdf")}} state=mounted fstype=xfs
   tags: gluster
 
+- name: random name for gluster volume
+  set_fact:
+     r: "{{1000|random|string}}"
+  run_once: yes
+  tags: gluster
+
+- name: display random name for gluster volume
+  debug: msg="{{r}}"
+  tags: gluster
+  
+
 - name: create volume
-  file: path=/export/volume/brick state=directory
+  file: path="{{ '/export/volume/brick' + r }}" state=directory
   tags: gluster
 
 - name: start glusterd service
@@ -42,7 +53,11 @@
   tags: gluster
 
 - name: gluster peer probe
-  command: gluster peer probe cds02.example.com
+  command: gluster peer probe {{ item }}
+  with_items:
+     - cds02.example.com
+     - cds03.example.com
+     - cds04.example.com 
   # TODO
   # Add a variable which contains all peers: groups['GLUSTER'][1:]
   # Using shell script maybe?
@@ -50,7 +65,7 @@
   tags: gluster
 
 - name: create a gluster volume
-  command: gluster volume create rhui_content_0 replica 2 cds01.example.com:/export/volume/brick cds02.example.com:/export/volume/brick
+  command: gluster volume create "{{ 'rhui_content_' + r }}" replica 4 cds01.example.com:"{{ '/export/volume/brick' + r }}" cds02.example.com:"{{'/export/volume/brick' + r }}" cds03.example.com:"{{ '/export/volume/brick' + r }}" cds04.example.com:"{{ '/export/volume/brick' +r }}"
   #TODO
   # Add a volume name variable
   # Add a variable which counts replica
@@ -59,7 +74,7 @@
   tags: gluster
 
 - name: gluster volume start
-  command: gluster volume start rhui_content_0
+  command: gluster volume start "{{ 'rhui_content_' + r }}"
   #TODO
   # A volume name variable
   run_once: true
