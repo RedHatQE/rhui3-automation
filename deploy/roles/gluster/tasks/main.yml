@@ -42,7 +42,6 @@
 - name: display random name for gluster volume
   debug: msg="{{r}}"
   tags: gluster
-  
 
 - name: create volume
   file: path="{{ '/export/volume/brick' + r }}" state=directory
@@ -53,23 +52,12 @@
   tags: gluster
 
 - name: gluster peer probe
-  command: gluster peer probe {{ item }}
-  with_items:
-     - cds02.example.com
-     - cds03.example.com
-     - cds04.example.com 
-  # TODO
-  # Add a variable which contains all peers: groups['GLUSTER'][1:]
-  # Using shell script maybe?
+  script: gluster_peer_probe.sh {{ groups['GLUSTER'] }}
   run_once: true
   tags: gluster
 
 - name: create a gluster volume
-  command: gluster volume create "{{ 'rhui_content_' + r }}" replica 4 cds01.example.com:"{{ '/export/volume/brick' + r }}" cds02.example.com:"{{'/export/volume/brick' + r }}" cds03.example.com:"{{ '/export/volume/brick' + r }}" cds04.example.com:"{{ '/export/volume/brick' +r }}"
-  #TODO
-  # Add a volume name variable
-  # Add a variable which counts replica
-  # Add a variable for bricks and clusters
+  script: gluster_create_volume.sh "{{r}}" "{{ groups['GLUSTER'] }}"
   run_once: true
   tags: gluster
 
