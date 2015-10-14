@@ -36,6 +36,7 @@ Although all the role hostnames are properly resolvable (through /etc/hosts and 
 Configuration Samples
 ---------------------
 Edit `hosts.cfg` to meet your preference:
+* example 1:
 ```ini
 # Rhua+Dns+Nfs, 2*Cds, 2*HAProxy
 [DNS]
@@ -56,7 +57,7 @@ Edit `hosts.cfg` to meet your preference:
 10.0.0.6
 ```
 
-example 2:
+* example 2:
 ```ini
 # Rhua, Dns, 2*(Cds+Gluster), HAProxy
 [RHUA]
