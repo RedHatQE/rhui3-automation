@@ -56,6 +56,30 @@ Edit `hosts.cfg` to meet your preference:
 10.0.0.6
 ```
 
+example 2:
+```ini
+# Rhua, Dns, 2*(Cds+Gluster), HAProxy
+[RHUA]
+10.0.0.1
+
+[DNS]
+10.0.0.2
+
+[GLUSTER]
+10.0.0.3
+10.0.0.4
+
+[CDS]
+10.0.0.3
+10.0.0.4
+
+[HAPROXY]
+10.0.0.5
+```
+
+Check hosts.cfg file for more combinations.
+
+
 Configuration Limitations
 -------------------------
 Even though one can apply multiple roles to a single node, some combinations are restricted or make no sense:
