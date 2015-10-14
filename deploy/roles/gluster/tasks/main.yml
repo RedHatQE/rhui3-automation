@@ -9,15 +9,15 @@
   tags: gluster
 
 - name: checking glusterfs-server install
-  yum: name=glusterfs-server state=present disablerepo="rhui-REGION-rhel-server-rh-common" enablerepo="rhui-REGION-rh-gluster-3-for-rhel-7-server-rpms"
+  yum: name=glusterfs-server state=present # disablerepo="rhui-REGION-rhel-server-rh-common" enablerepo="rhui-REGION-rh-gluster-3-for-rhel-7-server-rpms"
   tags: gluster
 
 - name: checking xfsprogs install
-  yum: name=xfsprogs state=present disablerepo="rhui-REGION-rhel-server-rh-common" enablerepo="rhui-REGION-rh-gluster-3-for-rhel-7-server-rpms"
+  yum: name=xfsprogs state=present # disablerepo="rhui-REGION-rhel-server-rh-common" enablerepo="rhui-REGION-rh-gluster-3-for-rhel-7-server-rpms"
   tags: gluster
 
 - name: checking glusterfs-cli install
-  yum: name=glusterfs-cli state=present disablerepo="rhui-REGION-rhel-server-rh-common" enablerepo="rhui-REGION-rh-gluster-3-for-rhel-7-server-rpms"
+  yum: name=glusterfs-cli state=present # disablerepo="rhui-REGION-rhel-server-rh-common" enablerepo="rhui-REGION-rh-gluster-3-for-rhel-7-server-rpms"
   tags: gluster
 
 - name: format the device as xfs

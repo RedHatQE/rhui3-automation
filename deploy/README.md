@@ -89,3 +89,9 @@ Even though one can apply multiple roles to a single node, some combinations are
 - site-wide mutually exclusive roles --- chose either Nfs or Gluster
 - optional roles --- may be absent in one's site: Dns, HAProxy, Master, Proxy, Cli
 - multi-roles --- usually multiple instances per site: CDS, Gluster, HAProxy, Cli
+
+Important Note: GlusterFS Configuration
+---------------------------------------
+The machines that are used for Gluster need to have EC2 Volumes of minimum size of 100GB connected to them!
+- Go to EC2 Dashboard > Volumes > Create Volume
+- Select volume, right click and do Attach 
