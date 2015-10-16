@@ -2,6 +2,7 @@
 # file roles/common/tasks/main.yml
 # set up & configure ntp on all the hosts
 # set up custom DNS if requested
+- include: system_info.yml
 - include: upgrade_all_pkg.yml
 - include: custom_rpm.yml
 - include: ntp.yml

@@ -1,0 +1,6 @@
+# file: roles/common/system_info.yml
+# define OS major version
+
+- name: define RH major version
+  debug: msg="Distribution major version is {{ ansible_distribution_major_version }}"
+  tags: os_version
