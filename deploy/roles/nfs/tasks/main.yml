@@ -7,7 +7,6 @@
   when: "'NFS' in groups"
   tags: nfs
 
-
 - name: checking nfs-utils install
   yum: name=nfs-utils state=present
   tags: nfs

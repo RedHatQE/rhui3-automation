@@ -30,7 +30,6 @@
   when: iso_mount|success
   tags: rhui_nodes
 
-
 - name: perform repolist
   shell: "yum repolist --disableplugin=* --disablerepo=* --enablerepo=local-rhui3 -v | grep 'Repo-pkgs' | cut -d: -f 2"
   register: yum_repolist_result
