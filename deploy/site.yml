@@ -13,3 +13,4 @@
 - include: cds.yml
 - include: cli.yml
 - include: gluster.yml
+- include: tests.yml

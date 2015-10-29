@@ -1,0 +1,8 @@
+---
+# file: gluster.yml
+# gluster playbook
+- hosts: RHUA
+  handlers:
+    - include: roles/common/handlers/main.yml
+  roles:
+    - tests
