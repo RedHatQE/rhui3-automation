@@ -5,4 +5,4 @@
   handlers:
     - include: roles/common/handlers/main.yml
   roles:
-    - tests
+    - { role: tests, when:  tests_install is defined and tests_install | bool }
