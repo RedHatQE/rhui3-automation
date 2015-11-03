@@ -7,7 +7,7 @@ Requirements
 Usage
 --------
 
-* Update/create your hosts.cfg file with adreses of your machines.
+* Update/create your hosts.cfg file with addresses of your machines.
 * Be in deploy/ directory and run:
 ```
 ansible-playbook -i ~/pathto/hosts.cfg site.yml  --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso"
