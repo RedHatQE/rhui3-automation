@@ -27,6 +27,7 @@ Managed roles:
 - Cdses
 - HAProxy (load balancer)
 - Nfs server
+- [Tests](https://github.com/RedHatQE/rhui3-automation/blob/master/tests/README.md) (optional)
 
 Supported configurations
 ------------------------
@@ -60,6 +61,9 @@ Edit `hosts.cfg` to meet your preference:
 [HAPROXY]
 10.0.0.5
 10.0.0.6
+
+#[TESTS]
+#10.0.0.2
 ```
 
 * example 2:
