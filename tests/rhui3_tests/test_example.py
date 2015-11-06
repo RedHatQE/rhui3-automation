@@ -2,10 +2,10 @@
 
 import nose
 
-from rhuilib.rhui_testcase import *
-from rhui3-tests-lib.rhuimanager import *
+from rhui3_tests_lib.rhui_testcase import *
+from rhui3_tests_lib.rhuimanager import *
 
-ass test_example(RHUITestcase):
+class test_example(RHUITestcase):
   def _setup(self):
     pass
 
