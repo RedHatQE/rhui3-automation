@@ -5,11 +5,11 @@ import glob
 import os
 
 datafiles = []
-for topdir in ['rhui3-tests']:
+for topdir in ['rhui3_tests']:
     for dirname, dirnames, filenames in os.walk(topdir):
-        datafiles.append(('share/rhui3-tests-lib/' + dirname, map(lambda x: dirname + "/" + x, filenames)))
+        datafiles.append(('share/rhui3_tests_lib/' + dirname, map(lambda x: dirname + "/" + x, filenames)))
 
-setup(name='rhui3-tests-lib',
+setup(name='rhui3_tests_lib',
     version='1.0',
     description='RHUI3 Testing Library',
     author='Martin Minar',
@@ -17,7 +17,7 @@ setup(name='rhui3-tests-lib',
     url='https://github.com/RedHatQE/rhui3-automation',
     license="GPLv3+",
     packages=[
-        'rhui3-tests-lib'
+        'rhui3_tests_lib'
         ],
     data_files=datafiles,
     classifiers=[
