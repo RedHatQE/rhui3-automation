@@ -8,9 +8,9 @@
 - include: dns.yml
 - include: master.yml
 - include: filesystem.yml
+- include: gluster.yml
 - include: rhua.yml
 - include: haproxy.yml
 - include: cds.yml
 - include: cli.yml
-- include: gluster.yml
 - include: tests.yml

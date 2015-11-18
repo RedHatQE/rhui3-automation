@@ -12,7 +12,12 @@
   register: install_rhui_installer
   tags: rhua
 
-- name: call rhui installer
+- name: call rhui installer if nfs
   command: rhui-installer --remote-fs-server=nfs.example.com:/export
   when: "{{install_rhui_installer|changed and 'NFS' in groups and groups['NFS']|length > 0 }}"
+  tags: rhua
+
+- name: call rhui installer if gluster
+  command: rhui-installer --remote-fs-server="{{ 'cds01.example.com:rhui_content_' + hostvars[groups['GLUSTER'][0]]['r'] }}" --remote-fs-type=glusterfs
+  when: "{{install_rhui_installer|success and 'GLUSTER' in groups and groups['GLUSTER']|length > 0 }}"
   tags: rhua
