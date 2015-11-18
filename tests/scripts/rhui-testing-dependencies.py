@@ -5,7 +5,7 @@
 import sys
 import subprocess
 
-from rhuilib.s3 import download_from_s3
+from rhui3_tests_lib.s3 import download_from_s3
 
 for rpm in ["python-stitches-", "python-pinocchio-"]:
     rpmfile = download_from_s3(rpm)
