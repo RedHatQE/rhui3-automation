@@ -32,6 +32,14 @@
   shell: cd /tmp/rhui3-tests && git pull origin test_igulina 
   tags: tests
 
+- name: yum install the 'Development tools' package group
+  yum: name="@Development tools" state=present
+  tags: tests
+
+- name: yum install python-devel
+  yum: name=python-devel state=present
+  tags: tests
+
 - name: install tests
   shell: cd /tmp/rhui3-tests/tests && python setup.py install
   tags: tests
