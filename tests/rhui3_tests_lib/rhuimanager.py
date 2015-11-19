@@ -2,7 +2,7 @@ import re
 import logging
 
 from stitches.expect import Expect, ExpectFailed
-from rhuilib.util import Util
+from rhui3_tests_lib.util import Util
 
 SELECT_PATTERN = re.compile('^  (x|-)  (\d+) :')
 PROCEED_PATTERN = re.compile('.*Proceed\? \(y/n\).*', re.DOTALL)
