@@ -21,7 +21,7 @@ setup(name='rhui3_tests_lib',
         ],
     data_files=datafiles,
     install_requires=['nose>=1.3.0', 'stitches'],
-    zip_safe=True,
+    zip_safe=False,
     classifiers=[
             'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
             'Programming Language :: Python',
