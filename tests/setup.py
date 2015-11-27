@@ -19,6 +19,9 @@ setup(name='rhui3_tests_lib',
     packages=[
         'rhui3_tests_lib'
         ],
+    install_requires=[
+        'stitches'
+    ],
     data_files=datafiles,
     classifiers=[
             'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
