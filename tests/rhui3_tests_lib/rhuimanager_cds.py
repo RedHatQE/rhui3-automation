@@ -3,8 +3,8 @@
 import re
 
 from stitches.expect import Expect, ExpectFailed, CTRL_C
-from rhuilib.rhuimanager import RHUIManager, PROCEED_PATTERN
-from rhuilib.cds import Cds
+from rhui3_tests_lib.rhuimanager import RHUIManager, PROCEED_PATTERN
+from rhui3_tests_lib.cds import Cds
 
 class CdsAlreadyExistsError(ExpectFailed):
     """
