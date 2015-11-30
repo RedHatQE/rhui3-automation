@@ -62,11 +62,6 @@
   when: slurp_id_rsa_master|success
   tags: tests
 
-#- name: print ssh key
-#  debug: is_rsa_master_pub
-#  tags: tests
-
-
 - name: set authorized keys on all roles except Master itself to allow root connection with the key
   authorized_key: key="{{ hostvars[groups['TESTS'][0]]['id_rsa_master_pub'] }}"
                   user='root'
