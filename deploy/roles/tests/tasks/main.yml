@@ -43,3 +43,35 @@
 - name: install tests
   shell: cd /tmp/rhui3-tests/tests && python setup.py install
   tags: tests
+
+- name: generate ssh keys
+  command: ssh-keygen -N "" -f /root/.ssh/id_rsa_master creates=/root/.ssh/id_rsa_master
+  notify:
+  - restorecon root ssh
+  register: generated_ssh_master_keys
+  tags: tests
+
+- name: slurp the master pub key
+  slurp: src=/root/.ssh/id_rsa_master.pub
+  register: slurp_id_rsa_master
+  when: generated_ssh_master_keys|success
+  tags: tests
+
+- name: set the pub_key as a global fact
+  set_fact: id_rsa_master_pub="{{ slurp_id_rsa_master.content|b64decode|trim + ' ' + 'master.example.com' }}"
+  when: slurp_id_rsa_master|success
+  tags: tests
+
+#- name: print ssh key
+#  debug: is_rsa_master_pub
+#  tags: tests
+
+
+- name: set authorized keys on all roles except Master itself to allow root connection with the key
+  authorized_key: key="{{ hostvars[groups['TESTS'][0]]['id_rsa_master_pub'] }}"
+                  user='root'
+                  state=present
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) }}"
+  when: slurp_id_rsa_master|success
+  tags: tests
