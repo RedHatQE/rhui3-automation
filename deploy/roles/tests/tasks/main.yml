@@ -70,3 +70,7 @@
   with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) }}"
   when: slurp_id_rsa_master|success
   tags: tests
+
+- name: run tests suite
+  shell: nosetests -w /tmp/rhui3-tests/tests
+  tags: run_tests
