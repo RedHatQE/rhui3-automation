@@ -1,4 +1,5 @@
 """ RHUI testcase """
+""" Not working in RHUI3 """
 
 import os
 import nose
@@ -10,7 +11,6 @@ from stitches.expect import Expect, ExpectFailed
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_sync import RHUIManagerSync
 from rhui3_tests_lib.util import Util
-
 
 class RHUITestcase(object):
     """ RHUI testcase """
