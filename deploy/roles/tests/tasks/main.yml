@@ -72,5 +72,6 @@
   tags: tests
 
 - name: run tests suite
-  shell: nosetests -w /tmp/rhui3-tests/tests
+  shell: nosetests -vsw /tmp/rhui3-tests/tests &>>/tmp/rhui3test.log
   tags: run_tests
+
