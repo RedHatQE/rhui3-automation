@@ -19,9 +19,6 @@ setup(name='rhui3_tests_lib',
     packages=[
         'rhui3_tests_lib'
         ],
-    install_requires=[
-        'stitches'
-    ],
     data_files=datafiles,
     install_requires=['nose>=1.3.0', 'stitches>=0.10'],
     zip_safe=False,
