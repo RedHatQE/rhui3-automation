@@ -12,10 +12,14 @@ Usage
   To include testing stage in RHUI3 deployment see [RHUI deployment Readme](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md).
   
   Tests can be run any time after RHUI3 deployment. 
-  * Update/create your hosts.cfg file with addresse of RHUA machine in [TESTS] section.
-  * Be in deploy/ directory and run:
+  * Update/create your hosts.cfg file with addresse of MASTER machine in [TESTS] section.
+  * To install tests framework be in deploy/ directory and run:
   
   `ansible-playbook -i ~/pathto/hosts.cfg site.yml --tags tests`
+
+It will be installed in /tmp/rhui3-tests directory on MASTER machine.
   
+  * To run tests be in deploy/ directory and run:
   
+  `ansible-playbook -i ~/pathto/hosts.cfg site.yml --tags run_tests`
 
