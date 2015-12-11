@@ -23,21 +23,23 @@ class RHUITestcase(object):
             loglevel = logging.DEBUG
         else:
             loglevel = logging.INFO
-        logging.basicConfig(level=loglevel, format='%(asctime)s %(levelname)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+        logging.basicConfig(filename='/tmp/rhui3_testcase.log',level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+        logging.debug('visual delimiter ##################################')
+            
         cls.rs = structure.Structure()
-        cls.rs.setup_from_yamlfile(yamlfile="/etc/rhui-testing.yaml", output_shell=True)
-        typelist = [cls]
-        for class_name in typelist:
-            logging.debug("Exploring class " + str(class_name))
-            logging.debug("Adding base classes: " + str(list(class_name.__bases__)) + " to typelist")
-            for new_cls in list(class_name.__bases__):
-                if not new_cls in typelist:
-                    logging.debug("Appending " + str(new_cls) + " to classlist")
-                    typelist.append(new_cls)
-            logging.debug("Checking for 'check' method of " + str(class_name))
-            if hasattr(class_name, "check"):
-                logging.debug("Calling 'check' for " + str(class_name))
-                class_name.check(cls.rs)
+#         cls.rs.setup_from_yamlfile(yamlfile="/etc/rhui-testing.yaml", output_shell=True)
+#         typelist = [cls]
+#         for class_name in typelist:
+#             logging.debug("Exploring class " + str(class_name))
+#             logging.debug("Adding base classes: " + str(list(class_name.__bases__)) + " to typelist")
+#             for new_cls in list(class_name.__bases__):
+#                 if not new_cls in typelist:
+#                     logging.debug("Appending " + str(new_cls) + " to classlist")
+#                     typelist.append(new_cls)
+#             logging.debug("Checking for 'check' method of " + str(class_name))
+#             if hasattr(class_name, "check"):
+#                 logging.debug("Calling 'check' for " + str(class_name))
+#                 class_name.check(cls.rs)
 
     @classmethod
     def teardownAll(cls):
@@ -56,6 +58,7 @@ class RHUITestcase(object):
     def test_02_test(self):
         """ Test """
         if hasattr(self, "_test"):
+            logging.info('starting the _test phase')
             self._test()
 
     def test_03_cleanup(self):
