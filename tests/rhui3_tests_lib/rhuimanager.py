@@ -181,7 +181,6 @@ class RHUIManager(object):
         Expect.enter(connection, password)
         Expect.expect(connection, "Re-enter Password:")
         Expect.enter(connection, password)
-        RHUIManager.logout(connection, "Password successfully updated")
 
     @staticmethod
     def remove_rh_certs(connection):

@@ -30,6 +30,7 @@ def test_02_change_password():
         change a user's password and logout
     '''
     RHUIManager.change_user_password(connection, password = new_rhui_pass)
+    RHUIManager.logout(connection, "Password successfully updated")
 
 def test_03_login_with_new_pass():
     '''
@@ -42,6 +43,7 @@ def test_04():
         change a user's password back to the one from rhui_manager.cfg
     '''
     RHUIManager.change_user_password(connection)
+    RHUIManager.logout(connection, "Password successfully updated")
 
 @unittest.skipIf(rhui_iso_date == '20151013', 'TODO: Check the presence of Exeption')
 def test_05_login_with_wrong_password():
