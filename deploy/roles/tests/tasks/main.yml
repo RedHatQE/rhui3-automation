@@ -70,6 +70,11 @@
   when: slurp_id_rsa_master|success
   tags: tests
 
+#TODO
+#- name: copy answers.yaml file
+#  src=/etc/rhui-installer/answers.yaml dest=/tmp/rhui3-tests/tests/rhui3_tests/
+#  tags: tests
+
 - name: run tests suite
   shell: nosetests -vsw /tmp/rhui3-tests/tests &>>/tmp/rhui3test.log
   tags: run_tests
