@@ -123,8 +123,6 @@ class RHUIManager(object):
         '''
         Open specified rhui-manager screen
         '''
-        Expect.enter(connection, "rhui-manager")
-        Expect.expect(connection, "rhui \(home\) =>")
         if screen_name in ["repo", "cds", "sync", "identity", "users"]:
             key = screen_name[:1]
         elif screen_name == "client":
@@ -172,8 +170,6 @@ class RHUIManager(object):
         '''
         Change the password of rhui-manager user
         '''
-        Expect.enter(connection, "u")
-        Expect.expect(connection, "rhui \(users\) =>")
         Expect.enter(connection, "p")
         Expect.expect(connection, "Username:")
         Expect.enter(connection, 'admin')

@@ -29,6 +29,7 @@ def test_02_change_password():
     '''
         change a user's password and logout
     '''
+    RHUIManager.screen(connection, "users")
     RHUIManager.change_user_password(connection, password = new_rhui_pass)
     RHUIManager.logout(connection, "Password successfully updated")
 
@@ -42,6 +43,7 @@ def test_04():
     '''
         change a user's password back to the one from rhui_manager.cfg
     '''
+    RHUIManager.screen(connection, "users")
     RHUIManager.change_user_password(connection)
     RHUIManager.logout(connection, "Password successfully updated")
 
