@@ -41,7 +41,7 @@ def test_03_login_with_new_pass():
 
 def test_04():
     '''
-        change a user's password back to the one from rhui_manager.cfg and logout
+        change a user's password back to the one from rhui_manager.yaml and logout
     '''
     RHUIManager.screen(connection, "users")
     RHUIManager.change_user_password(connection)
