@@ -19,7 +19,9 @@ Usage
 
 It will be installed in /tmp/rhui3-tests directory on MASTER machine.
   
-  * To run tests be in deploy/ directory and run:
+  * To run tests
+    * update file `/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml` on MASTER machine with a relevant rhui password (default is 'admin') and iso version. 
+    * be in deploy/ directory and run:
   
-  `ansible-playbook -i ~/pathto/hosts.cfg site.yml --tags run_tests`
+      `ansible-playbook -i ~/pathto/hosts.cfg site.yml --tags run_tests`
 
