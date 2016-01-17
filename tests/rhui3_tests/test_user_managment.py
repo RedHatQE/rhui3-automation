@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_master")
 
-with open('/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.cfg', 'r') as file:
+with open('/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml', 'r') as file:
     doc = yaml.load(file)
 
 rhui_login = doc['rhui_login']
