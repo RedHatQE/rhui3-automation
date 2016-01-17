@@ -41,23 +41,32 @@ def test_03_login_with_new_pass():
 
 def test_04():
     '''
-        change a user's password back to the one from rhui_manager.cfg
+        change a user's password back to the one from rhui_manager.cfg and logout
     '''
     RHUIManager.screen(connection, "users")
     RHUIManager.change_user_password(connection)
     RHUIManager.logout(connection, "Password successfully updated")
 
-@unittest.skipIf(rhui_iso_date == '20151013', 'TODO: Check the presence of Exeption')
+@unittest.skipIf(rhui_iso_date == '20151013', 'skip for RHUI iso <= 20151013')
 def test_05_login_with_wrong_password():
     '''
         BZ 1282522. Doing initial run with wrong password.
-        Expected to fail, to be changed after BZ fix.
+        Expected to fail with a traceback, to be changed after BZ fix.
     '''
     RHUIManager.initial_run(connection, password = 'wrong_pass')
 
-@unittest.skip('TODO: Testcase for BZ 1297538')
+@unittest.skipIf(rhui_iso_date == '20151013', 'skip for RHUI iso <= 20151013')
 def test_06_change_password_several_times():
     '''
-        BZ 1297538. Expected to fail, to be changed after BZ fix.
+        BZ 1297538. After a rhui-manager was closed with 'logout' command, open it and
+        change a user's password several times.
+        Expected to fail with Pulp 401, to be updated after BZ fix.
     '''
-    pass
+    RHUIManager.initial_run(connection, username  = rhui_login, password = rhui_pass)
+    Expect.enter(connection, "logout")
+    RHUIManager.initial_run(connection, username  = rhui_login, password = rhui_pass)
+    RHUIManager.screen(connection, "users")
+    RHUIManager.change_user_password(connection, password = new_rhui_pass)
+    Expect.expect(connection, "Password successfully updated" + ".*rhui \(users\) =>")
+    RHUIManager.change_user_password(connection, password = rhui_pass + new_rhui_pass)
+    Expect.expect(connection, "Password successfully updated" + ".*rhui \(users\) =>")
