@@ -78,6 +78,16 @@ class RHUIManager(object):
         Expect.enter(connection, "q")
 
     @staticmethod
+    def logout(connection, prefix=""):
+        '''
+        Logout from rhui-manager
+
+        Use @param prefix to specify something to expect before exiting
+        '''
+        Expect.expect(connection, prefix + ".*rhui \(.*\) =>")
+        Expect.enter(connection, "logout")
+
+    @staticmethod
     def proceed_without_check(connection):
         '''
         Proceed without check (avoid this function when possible!)
@@ -113,8 +123,6 @@ class RHUIManager(object):
         '''
         Open specified rhui-manager screen
         '''
-        Expect.enter(connection, "rhui-manager")
-        Expect.expect(connection, "rhui \(home\) =>")
         if screen_name in ["repo", "cds", "sync", "identity", "users"]:
             key = screen_name[:1]
         elif screen_name == "client":
@@ -156,7 +164,19 @@ class RHUIManager(object):
         else:
             # initial step was already performed by someone
             pass
-        Expect.enter(connection, "q")
+
+    @staticmethod
+    def change_user_password(connection, password='admin'):
+        '''
+        Change the password of rhui-manager user
+        '''
+        Expect.enter(connection, "p")
+        Expect.expect(connection, "Username:")
+        Expect.enter(connection, 'admin')
+        Expect.expect(connection, "New Password:")
+        Expect.enter(connection, password)
+        Expect.expect(connection, "Re-enter Password:")
+        Expect.enter(connection, password)
 
     @staticmethod
     def remove_rh_certs(connection):
