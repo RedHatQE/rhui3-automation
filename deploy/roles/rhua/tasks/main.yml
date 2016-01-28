@@ -22,5 +22,4 @@
   when: "{{install_rhui_installer|success and 'GLUSTER' in groups and groups['GLUSTER']|length > 0 }}"
   tags: rhua
 
-- include: extra_files.yml
-  when: extra_files is defined
+  
