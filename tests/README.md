@@ -18,6 +18,10 @@ Usage
   `ansible-playbook -i ~/pathto/hosts.cfg site.yml --tags tests`
 
 It will be installed in /tmp/rhui3-tests directory on MASTER machine.
+
+Optional variables:
+
+`extra_files`=~/Path/To/Your/file.zip - This will upload auxiliary files that might be required by some tests (custom RPMs, certificates, etc.) to the RHUA machine.
   
   * To run tests
     * update file `/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml` on MASTER machine with a relevant rhui password (default is 'admin') and iso version. 
