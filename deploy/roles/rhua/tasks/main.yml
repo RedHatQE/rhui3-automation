@@ -21,3 +21,5 @@
   command: rhui-installer --remote-fs-server="{{ 'cds01.example.com:rhui_content_' + hostvars[groups['GLUSTER'][0]]['r'] }}" --remote-fs-type=glusterfs
   when: "{{install_rhui_installer|success and 'GLUSTER' in groups and groups['GLUSTER']|length > 0 }}"
   tags: rhua
+
+  

@@ -69,6 +69,21 @@
   with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) }}"
   when: slurp_id_rsa_master|success
   tags: tests
+  
+- name: upload files containing auxiliary files that might be needed for some tests (e.g. entitlement certificate, RPMs for custom repos) 
+  copy: src="{{ extra_files }}" dest=/tmp/extra_files/
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['RHUA']|default([]) }}"
+  register: upload_extra_files
+  when: extra_files is defined
+  tags: tests
+  
+- name: unzip zip files, if there are some to be found among the uploaded files
+  shell: 'cd /tmp/extra_files/ && find . -type f -iname "*\.zip" -exec unzip -o {} \;'
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['RHUA']|default([]) }}"
+  when: (extra_files is defined) and (upload_extra_files|success)
+  tags: tests
 
 #TODO
 #- name: copy answers.yaml file
