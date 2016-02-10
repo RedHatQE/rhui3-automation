@@ -19,13 +19,20 @@ rhui_pass = doc['rhui_pass']
 new_rhui_pass = 'new_pass'
 rhui_iso_date = doc['rhui_iso_date']
 
-
 def test_01_repo_setup():
     '''Do initial rhui-manager run'''
     RHUIManager.initial_run(connection, username = rhui_login, password = rhui_pass)
 
-def test_02_create_repo():
+def test_02_check_empty_repo_list():
+    '''Check the repolist is empty'''
+    nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
+
+def test_03_create_repo():
     '''Create custom repos '''
     RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
     RHUIManagerRepo.add_custom_repo(connection, "custom-x86_64-x86_64", "", "custom/x86_64/x86_64", "1", "y")
     RHUIManagerRepo.add_custom_repo(connection, "custom-i386-i386", "", "custom/i386/i386", "1", "y")
+
+def test_04_check_custom_repo_list():
+    '''Check the repolist contains 3 custom repos'''
+    nose.tools.assert_equal(RHUIManagerRepo.list(connection), ['custom-i386-i386', 'custom-i386-x86_64', 'custom-x86_64-x86_64'])

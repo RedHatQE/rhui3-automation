@@ -77,3 +77,29 @@ class RHUIManagerRepo(object):
         RHUIManager.proceed_with_check(connection, "The following repository will be created:", checklist)
         Expect.expect(connection, "Successfully created repository *")
         Expect.enter(connection, "home")
+
+    @staticmethod
+    def list(connection):
+        '''
+        list repositories
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "l")
+        # eating prompt!!
+        pattern = re.compile('l\r\n(.*)\r\n-+\r\nrhui\s* \(repo\)\s* =>',
+                re.DOTALL)
+        ret = Expect.match(connection, pattern, grouplist=[1])[0]
+        reslist = map(lambda x: x.strip(), ret.split("\r\n"))
+        repolist = []
+        for line in reslist:
+            # Readling lines and searching for repos
+            if line == '':
+                continue
+            if "Custom Repositories" in line:
+                continue
+            if "Red Hat Repositories" in line:
+                continue
+            if "No repositories are currently managed by the RHUI" in line:
+                continue
+            repolist.append(line)
+        return repolist

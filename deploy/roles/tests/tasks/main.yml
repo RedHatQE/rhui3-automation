@@ -28,7 +28,7 @@
   tags: tests
 
 - name: git pull
-  shell: cd /tmp/rhui3-tests && git pull origin master
+  shell: cd /tmp/rhui3-tests && git pull origin test_igulina
   tags: tests
 
 - name: install the 'Development tools' package group
