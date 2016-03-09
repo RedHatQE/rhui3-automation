@@ -105,11 +105,16 @@ The machines that are used for Gluster need to have EC2 Volumes of minimum size 
 - Go to EC2 Dashboard > Volumes > Create Volume
 - Select volume, right click and do Attach 
  
-Firewall Rules
+Network Ports:
 ---------------------------------------
-The following ports should be opened: 
-- 20 (SSH)
-- 53 DNS(TCP)
-- 53 DNS(UDP)
-- 80 HTTP
-- 443 HTTPS
+
+* RHUA to cdn.redhat.com 443/TCP
+* RHUA to CDSes 22/TCP for initial SSH configuration
+* RHUA to HAProxies 22/TCP for initial SSH configuration
+* CDS to RHUA 8140/TCP for puppet
+* HAProxy to RHUA 8140/TCP for puppet
+* clients to CDS or HAProxy 443/TCP
+* clients to CDS or HAProxy 5000/TCP for docker
+* HAProxy to CDS 443/TCP
+* HAProxy to CDS 5000/TCP for docker
+* glusterfs ports 24007/TCP, 49152-4/TCP
