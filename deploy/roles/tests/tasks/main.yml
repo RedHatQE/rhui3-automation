@@ -39,6 +39,10 @@
   yum: name=python-devel state=present
   tags: tests
 
+- name: yum install python-setuptools
+  yum: name=python-setuptools state=present
+  tags: tests
+
 - name: install tests
   shell: cd /tmp/rhui3-tests/tests && python setup.py install
   tags: tests
