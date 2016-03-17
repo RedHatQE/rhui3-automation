@@ -4,7 +4,7 @@ Setup of RHUI3 test framework
 
 Requirements
 ---------------
-* Ansible version 1.9.2 and higher. (It's possible that you will get older version using standard distro repositories. Try using "pip install -U ansible" instead. You might need to install easy_install first.)
+* [Ansible](http://docs.ansible.com/ansible/intro_installation.html#latest-release-via-yum) version 2.1 and higher. (It's possible that you will get older version using standard distro repositories. Try using "pip install -U ansible" instead. You might need to install easy_install first.)
 * RHUI3 set up.
 
 Usage
