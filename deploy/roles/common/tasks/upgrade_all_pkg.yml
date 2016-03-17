@@ -1,7 +1,7 @@
 # file: roles/common/upgrade_all_pkg.yml
-# yum update prior to rhui installation
+# update all paclages prior to rhui installation
 
 - name: upgrade all packages
-  yum: name=* state=latest update_cache=yes
+  package: name=* state=latest update_cache=yes
   when:  upgrade_all_pkg is defined and upgrade_all_pkg | bool
   tags: upgrade_all_pkg

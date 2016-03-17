@@ -14,13 +14,13 @@
   register: original_nameserver
   tags: dns
 
-- name: workaround chicken--egg issue with dns required for yum install dns
+- name: workaround chicken--egg issue with dns required to install dns
   lineinfile: dest="/etc/resolv.conf" regexp="^nameserver" line="nameserver {{original_nameserver.stdout|trim}}"
   tags: dns
 
 
 - name: install named
-  yum: "pkg={{ item }} state=installed"
+  package: "pkg={{ item }} state=installed"
   with_items: [bind, bind-utils]
   tags: dns
 

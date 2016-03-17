@@ -2,7 +2,7 @@
 # deploy & run tests
 
 - name: checking git install
-  yum: name=git state=present
+  package: name=git state=present
   tags: tests
 
 - name: create git repo to clone tests
@@ -31,16 +31,16 @@
   shell: cd /tmp/rhui3-tests && git pull origin master
   tags: tests
 
-- name: yum install the 'Development tools' package group
-  yum: name="@Development tools" state=present
+- name: install the 'Development tools' package group
+  package: name="@Development tools" state=present
   tags: tests
 
-- name: yum install python-devel
-  yum: name=python-devel state=present
+- name: install python-devel
+  package: name=python-devel state=present
   tags: tests
 
-- name: yum install python-setuptools
-  yum: name=python-setuptools state=present
+- name: install python-setuptools
+  package: name=python-setuptools state=present
   tags: tests
 
 - name: install tests

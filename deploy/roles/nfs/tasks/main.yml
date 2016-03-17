@@ -9,7 +9,7 @@
 
 
 - name: checking nfs-utils install
-  yum: name=nfs-utils state=present
+  package: name=nfs-utils state=present
   tags: nfs
 
 - name: create volume
