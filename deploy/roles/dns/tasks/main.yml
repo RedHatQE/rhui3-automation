@@ -4,7 +4,7 @@
 
 - name: set hostname
   hostname: name="ns0{{ item.0 + 1 }}.example.com"
-  with_indexed_items: groups['DNS']
+  with_indexed_items: "{{ groups['DNS'] }}"
   when: "'DNS' in groups and item.1 == inventory_hostname"
   tags: dns
 

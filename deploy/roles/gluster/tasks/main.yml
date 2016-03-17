@@ -4,7 +4,7 @@
 
 - name: set hostname
   hostname: name="gluster0{{ item.0 + 1 }}.example.com"
-  with_indexed_items: groups['GLUSTER']
+  with_indexed_items: "{{ groups['GLUSTER'] }}"
   when: "'GLUSTER' in groups and item.1 == inventory_hostname"
   tags: gluster
 
