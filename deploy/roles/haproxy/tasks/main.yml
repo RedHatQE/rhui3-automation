@@ -4,7 +4,7 @@
 
 - name: set hostname
   hostname: name="hap0{{ item.0 + 1 }}.example.com"
-  with_indexed_items: groups['HAPROXY']
+  with_indexed_items: "{{ groups['HAPROXY'] }}"
   when: "'HAPROXY' in groups and item.1 == inventory_hostname"
   tags: haproxy
 

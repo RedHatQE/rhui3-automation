@@ -4,20 +4,20 @@
 
 - name: set hostname
   hostname: name="gluster0{{ item.0 + 1 }}.example.com"
-  with_indexed_items: groups['GLUSTER']
+  with_indexed_items: "{{ groups['GLUSTER'] }}"
   when: "'GLUSTER' in groups and item.1 == inventory_hostname"
   tags: gluster
 
 - name: checking glusterfs-server install
-  yum: name=glusterfs-server state=present
+  package: name=glusterfs-server state=present
   tags: gluster
 
 - name: checking xfsprogs install
-  yum: name=xfsprogs state=present
+  package: name=xfsprogs state=present
   tags: gluster
 
 - name: checking glusterfs-cli install
-  yum: name=glusterfs-cli state=present
+  package: name=glusterfs-cli state=present
   tags: gluster
 
 - name: format the device as xfs

@@ -3,6 +3,6 @@
 # main cli role tasks
 - name: set hostname
   hostname: name="cli0{{ item.0 + 1 }}.example.com"
-  with_indexed_items: groups['CLI']
+  with_indexed_items: "{{ groups['CLI'] }}"
   when: "'CLI' in groups and item.1 == inventory_hostname"
   tags: cli

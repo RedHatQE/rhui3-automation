@@ -3,7 +3,7 @@
 # set-up&configure ntp
 
 - name: install ntp
-  yum: "pkg={{ item }} state=installed"
+  package: "pkg={{ item }} state=installed"
   with_items: [ntp, ntpdate]
   tags: ntp
 
