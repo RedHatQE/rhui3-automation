@@ -26,8 +26,8 @@ def test_02_list_rh_entitlements():
     '''
        list Red Hat content certificate entitlements
     '''
-    list = RHUIManagerEntitlements.list_rh_entitlements(connection)
-    nose.tools.assert_not_equal(len(list), 0)
+    entitlements = RHUIManagerEntitlements.list_rh_entitlements(connection)
+    nose.tools.eq_(isinstance(entitlements, list), True)
 
 def test_03_list_custom_entitlements():
     '''
@@ -42,4 +42,11 @@ def test_04_upload_rh_certificate():
     '''
     list = RHUIManagerEntitlements.upload_rh_certificate(connection)
     nose.tools.assert_not_equal(len(list), 0)
-    
+
+def test_02_list_rh_entitlements():
+    '''
+       list Red Hat content certificate entitlements
+    '''
+    entitlements = RHUIManagerEntitlements.list_rh_entitlements(connection)
+    nose.tools.eq_(isinstance(entitlements, list), True)
+

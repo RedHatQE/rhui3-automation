@@ -1,14 +1,14 @@
 """ Red Hat entitlement certificates """
 
 import re
+import nose
 
 from stitches.expect import Expect, ExpectFailed, CTRL_C
 from rhui3_tests_lib.rhuimanager import RHUIManager, PROCEED_PATTERN
-# from sepolgen import matching
 
-class InvalidCertificatePath(ExpectFailed):
+class MissingCertificate(ExpectFailed):
     """
-    To be risen in case rhui-manager wasn't able to locate provided certificate path
+    To be risen in case rhui-manager wasn't able to locate provided certificate
     """
 
 class RHUIManagerEntitlements(object):
@@ -65,11 +65,16 @@ class RHUIManagerEntitlements(object):
         '''
         upload a new or updated Red Hat content certificate
         '''
-         
+        
+        certificate_file = '/tmp/extra_files/rest-team/rest-team.pem'
+        
+        if connection.recv_exit_status("ls -la %s" % certificate_file)!=0:
+            raise ExpectFailed("Missing certificate file: %s" % certificate_file)
+
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "u")
         Expect.expect(connection, "Full path to the new content certificate:")
-        Expect.enter(connection, "/tmp/extra_files/rest-team/rest-team.pem")
+        Expect.enter(connection, certificate_file)
         Expect.expect(connection, "The RHUI will be updated with the following certificate:")
         Expect.enter(connection, "y")
         match = Expect.match(connection, re.compile("(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
