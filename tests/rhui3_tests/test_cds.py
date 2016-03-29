@@ -50,3 +50,12 @@ def test_04_delete_cds():
     cds_list3 = RHUIManagerCds.list(connection)
     nose.tools.assert_equal(cds_list3, [])
 
+
+def test_03_list_cds():
+    '''
+        list CDSs
+    '''
+    cds_list3 = RHUIManagerCds.list(connection)
+    nose.tools.assert_equal(cds_list3, [])
+
+

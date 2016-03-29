@@ -34,7 +34,7 @@ class RHUIManagerCds(object):
         @param cds: rhuilib.cds.Cds instance
         @param update: Bool; update the cds if it is already tracked or rise ExpectFailed
         '''
-         
+        
         RHUIManager.screen(connection, "cds")
         Expect.enter(connection, "a")
         Expect.expect(connection, "Hostname of the Content Delivery Server instance to register:")
@@ -69,9 +69,8 @@ class RHUIManagerCds(object):
         # all OK, confirm
         Expect.enter(connection, "y")
         # some installation and configuration through Puppet happens here, let it take its time
-#         Expect.expect(connection, "The Content Delivery Server was successfully configured." + ".*rhui \(.*\) =>", 180)
-        Expect.expect(connection, "Exiting; failed to retrieve certificate and waitforcert is disabled" + ".*rhui \(.*\) =>", 180)
-        
+        Expect.expect(connection, "The Content Delivery Server was successfully configured." + ".*rhui \(.*\) =>", 180)
+
 
     @staticmethod
     def delete_cdses(connection, *cdses):
