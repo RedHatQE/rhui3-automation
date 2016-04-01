@@ -26,7 +26,7 @@ class RHUIManagerCds(object):
     Represents -= Content Delivery Server (CDS) Management =- RHUI screen
     '''
     prompt = 'rhui \(cds\) => '
- 
+
     @staticmethod
     def add_cds(connection, cds=Cds(), update=False):
         '''
