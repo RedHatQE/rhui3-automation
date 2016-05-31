@@ -103,7 +103,7 @@ Important Note: GlusterFS Configuration
 ---------------------------------------
 The machines that are used for Gluster need to have EC2 Volumes of minimum size of 100GB connected to them!
 - Go to EC2 Dashboard > Volumes > Create Volume
-- Select volume, right click and do Attach 
+- Select volume, right click and do Attach
  
 Network Ports:
 ---------------------------------------
