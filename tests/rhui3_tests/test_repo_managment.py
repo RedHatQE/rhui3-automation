@@ -2,10 +2,8 @@
 
 import nose, unittest, stitches, logging, yaml
 
-#from rhui3_tests_lib.util import *
 from rhui3_tests_lib.rhuimanager import *
 from rhui3_tests_lib.rhuimanager_repo import *
-#from rhui3_tests_lib.rhui_testcase import *
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -36,3 +34,12 @@ def test_03_create_repo():
 def test_04_check_custom_repo_list():
     '''Check the repolist contains 3 custom repos'''
     nose.tools.assert_equal(RHUIManagerRepo.list(connection), ['custom-i386-i386', 'custom-i386-x86_64', 'custom-x86_64-x86_64'])
+
+def test_05_repo_id_uniqness():
+    '''Check that repo id should be unique'''
+    RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
+
+def test_06_cleanup():
+    '''Remove 3 custom repos'''
+    RHUIManagerRepo.delete_repo(connection, ["custom-i386-x86_64", "custom-x86_64-x86_64", "custom-i386-i386"])
+    nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
