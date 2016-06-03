@@ -37,7 +37,7 @@
   tags: dns
 
 - name: ensure named is running and enabled
-  service: name=named state=running enabled=yes
+  service: name=named state=started enabled=yes
   tags: dns
 
 - name: workaround over

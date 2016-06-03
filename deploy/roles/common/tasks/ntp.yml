@@ -14,6 +14,6 @@
   tags: ntp
 
 - name: enable and run ntpd
-  service: name=ntpd state=running enabled=yes
+  service: name=ntpd state=started enabled=yes
   tags: ntp
 
