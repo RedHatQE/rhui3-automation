@@ -2,6 +2,12 @@
 # file: roles/nfs/handlers/main.yml
 # handlers for nfs deployment
 
-# nfs restart handler
-- name: restart nfs-server
+# nfs restart handler if RHEL6
+- name: restart nfs
+  service: name=nfs state=restarted
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+
+# nfs restart handler if RHEL7
+- name: restart nfs
   service: name=nfs-server state=restarted
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7

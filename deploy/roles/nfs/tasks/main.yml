@@ -20,11 +20,17 @@
   service: name=rpcbind state=started enabled=yes
   tags: nfs
 
-- name: start nfs-server service
-  service: name=nfs-server state=started enabled=yes
+- name: start nfs service if RHEL6
+  service: name=nfs state=started enabled=yes
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+  tags: nfs
+
+- name: start nfs-server service if RHEL7
+  systemd: name=nfs-server state=started enabled=yes
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7
   tags: nfs
 
 - name: entry info in /etc/exports
   template: src=exports.j2 dest=/etc/exports
-  notify: restart nfs-server
+  notify: restart nfs
   tags: nfs
