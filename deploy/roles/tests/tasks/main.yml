@@ -43,6 +43,14 @@
   package: name=python-setuptools state=present
   tags: tests
 
+- name: install libffi-devel
+  package: name=libffi-devel state=present enablerepo=*
+  tags: tests
+
+- name: install openssl-devel
+  package: name=openssl-devel state=present enablerepo=*
+  tags: tests
+
 - name: install tests
   shell: cd /tmp/rhui3-tests/tests && python setup.py install
   tags: tests
@@ -95,5 +103,5 @@
 #  tags: tests
 
 - name: run tests suite
-  shell: nosetests -vsw /tmp/rhui3-tests/tests &>>/tmp/rhui3test.log
+  shell: nosetests -vs /tmp/rhui3-tests/tests &>>/tmp/rhui3test.log
   tags: run_tests
