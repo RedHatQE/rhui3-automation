@@ -2,6 +2,10 @@
 # file: roles/nfs/handlers/main.yml
 # handlers for nfs deployment
 
-# nfs restart handler
+# nfs restart handler if RHEL6
+- name: restart nfs
+  service: name=nfs state=restarted
+
+# nfs restart handler if RHEL7
 - name: restart nfs-server
   service: name=nfs-server state=restarted
