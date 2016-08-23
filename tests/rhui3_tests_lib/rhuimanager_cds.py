@@ -34,6 +34,7 @@ class RHUIManagerCds(object):
         @param cds: rhuilib.cds.Cds instance
         @param update: Bool; update the cds if it is already tracked or rise ExpectFailed
         '''
+        
         RHUIManager.screen(connection, "cds")
         Expect.enter(connection, "a")
         Expect.expect(connection, "Hostname of the Content Delivery Server instance to register:")
@@ -68,7 +69,8 @@ class RHUIManagerCds(object):
         # all OK, confirm
         Expect.enter(connection, "y")
         # some installation and configuration through Puppet happens here, let it take its time
-        RHUIManager.quit(connection, "The Content Delivery Server was successfully configured.", timeout=180)
+        Expect.expect(connection, "The Content Delivery Server was successfully configured." + ".*rhui \(.*\) =>", 180)
+
 
     @staticmethod
     def delete_cdses(connection, *cdses):
@@ -78,7 +80,8 @@ class RHUIManagerCds(object):
         RHUIManager.screen(connection, "cds")
         Expect.enter(connection, "d")
         RHUIManager.select_items(connection, *cdses)
-        RHUIManager.quit(connection, timeout=30)
+        Expect.enter(connection, "y")
+        Expect.expect(connection, "Unregistered" + ".*rhui \(.*\) =>", 180)
 
     @staticmethod
     def list(connection):
@@ -89,8 +92,6 @@ class RHUIManagerCds(object):
         # eating prompt!!
         lines = RHUIManager.list_lines(connection, prompt=RHUIManagerCds.prompt)
         ret = Cds.parse(lines)
-        # custom quitting; have eaten the prompt
-        Expect.enter(connection, 'q')
         return [cds for _, cds in ret]
 
 
