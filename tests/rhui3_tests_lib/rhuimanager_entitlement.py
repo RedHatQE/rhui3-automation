@@ -8,7 +8,7 @@ from rhui3_tests_lib.rhuimanager import RHUIManager, PROCEED_PATTERN
 
 class MissingCertificate(ExpectFailed):
     """
-    To be risen in case rhui-manager wasn't able to locate provided certificate
+    To be raised in case rhui-manager wasn't able to locate the provided certificate
     """
 
 class RHUIManagerEntitlements(object):

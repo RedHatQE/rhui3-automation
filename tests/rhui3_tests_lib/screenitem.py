@@ -7,7 +7,7 @@ import rhuimanager
 
 class NoSuchItem(ValueError):
     """
-    to be risen in case the item can't be located
+    to be raised in case the item can't be located
     """
 
 class ScreenItem(object):

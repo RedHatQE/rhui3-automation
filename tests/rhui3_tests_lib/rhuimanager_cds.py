@@ -8,17 +8,17 @@ from rhui3_tests_lib.cds import Cds
 
 class CdsAlreadyExistsError(ExpectFailed):
     """
-    To be risen when trying to add an already tracked Cds
+    To be raised when trying to add an already tracked Cds
     """
 
 class NoSuchCds(ExpectFailed):
     """
-    To be risen when e.g. trying to select non-existing Cds
+    To be raised e.g. when trying to select a non-existing Cds
     """
 
 class InvalidSshKeyPath(ExpectFailed):
     """
-    To be risen in case rhui-manager wasn't able to locate provided SSH key path
+    To be raised if rhui-manager wasn't able to locate the provided SSH key path
     """
 
 class RHUIManagerCds(object):
@@ -32,7 +32,7 @@ class RHUIManagerCds(object):
         '''
         Register (add) a new CDS instance
         @param cds: rhuilib.cds.Cds instance
-        @param update: Bool; update the cds if it is already tracked or rise ExpectFailed
+        @param update: Bool; update the cds if it is already tracked or raise ExpectFailed
         '''
         
         RHUIManager.screen(connection, "cds")

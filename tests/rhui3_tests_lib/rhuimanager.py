@@ -10,7 +10,7 @@ CONFIRM_PATTERN_STRING = "Enter value \([\d]+-[\d]+\) to toggle selection, 'c' t
 
 class NotSelectLine(ValueError):
     """
-    to be risen when the line isn't actually a selection line
+    to be raised when the line isn't actually a selection line
     """
 
 class RHUIManager(object):
