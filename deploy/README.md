@@ -117,4 +117,5 @@ Network Ports:
 * clients to CDS or HAProxy 5000/TCP for docker
 * HAProxy to CDS 443/TCP
 * HAProxy to CDS 5000/TCP for docker
+* NFS port 2049/TCP on the NFS server
 * glusterfs ports 24007/TCP, 49152-4/TCP
