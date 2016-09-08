@@ -49,9 +49,13 @@ def test_04():
 def test_05_login_with_wrong_password():
     '''
         BZ 1282522. Doing initial run with wrong password.
-        Expected to fail with a traceback, to be changed after BZ fix.
     '''
-    RHUIManager.initial_run(connection, password = 'wrong_pass')
+    Expect.enter(connection, "rhui-manager")
+    Expect.expect(connection, ".*RHUI Username:.*")
+    Expect.enter(connection, rhui_login)
+    Expect.expect(connection, "RHUI Password:")
+    Expect.enter(connection, "wrong_pass")
+    Expect.expect(connection, ".*Invalid login, please check the authentication credentials and try again.")
 
 @unittest.skipIf(rhui_iso_date == '20151013', 'skip for RHUI iso <= 20151013')
 def test_06_change_password_several_times():
