@@ -44,3 +44,16 @@
   service: name=network state=restarted
   tags: dns
 
+- name: install NetworkManager
+  package: name=NetworkManager state=installed
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) + groups['GLUSTER']|default([]) }}"
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+  tags: dns
+
+- name: start NetworkManager service
+  service: name=NetworkManager state=running
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) + groups['GLUSTER']|default([]) }}"
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+  tags: dns
