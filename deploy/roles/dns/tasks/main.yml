@@ -26,14 +26,12 @@
 
 - name: upload named config file
   template: src=named.conf.j2 dest=/etc/named.conf
-  notify:
-  - restart named
+  notify: restart named
   tags: dns
 
 - name: generate db.example.com file
   template: src=db.example.com.j2 dest=/var/named/db.example.com
-  notify:
-  - restart named
+  notify: restart named
   tags: dns
 
 - name: ensure named is running and enabled

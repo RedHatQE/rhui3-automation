@@ -15,9 +15,57 @@ options {
 	dump-file 	"/var/named/data/cache_dump.db";
 	statistics-file "/var/named/data/named_stats.txt";
 	memstatistics-file "/var/named/data/named_mem_stats.txt";
-	allow-query     { any ; };
+	allow-query {
+	  {% if 'MASTER' in groups %}
+          {% if groups['MASTER']|length > 0 %}
+          {{ hostvars[groups['MASTER'][0]]['ansible_eth0']['ipv4']['address'] }};
+          {% endif %}
+          {% endif %}
 
-	/* 
+          {% if 'DNS' in groups %}
+          {% for ns in groups['DNS'] %}
+          {{ hostvars[ns]['ansible_eth0']['ipv4']['address'] }};
+          {% endfor %}
+          {% endif %}
+
+          {% if 'NFS' in groups %}
+          {% if groups['NFS']|length > 0 %}
+          {{ hostvars[groups['NFS'][0]]['ansible_eth0']['ipv4']['address'] }};
+          {% endif %}
+          {% endif %}
+
+          {% if 'RHUA' in groups %}
+          {% if groups['RHUA']|length > 0 %}
+          {{ hostvars[groups['RHUA'][0]]['ansible_eth0']['ipv4']['address'] }};
+          {% endif %}
+          {% endif %}
+
+          {% if 'PROXY' in groups %}
+          {% if groups['PROXY']|length > 0 %}
+          {{ hostvars[groups['PROXY'][0]]['ansible_eth0']['ipv4']['address'] }};
+          {% endif %}
+          {% endif %}
+
+          {% if 'CDS' in groups %}
+          {% for cds in groups['CDS'] %}
+          {{ hostvars[cds]['ansible_eth0']['ipv4']['address'] }};
+          {% endfor %}
+          {% endif %}
+
+          {% if 'HAPROXY' in groups %}
+          {% for haproxy in groups['HAPROXY'] %}
+          {{ hostvars[haproxy]['ansible_eth0']['ipv4']['address'] }};
+          {% endfor %}
+          {% endif %}
+
+          {% if 'CLI' in groups %}
+          {% for cli in groups['CLI'] %}
+          {{ hostvars[cli]['ansible_eth0']['ipv4']['address'] }};
+          {% endfor %}
+          {% endif %}
+         };
+
+        /*
 	 - If you are building an AUTHORITATIVE DNS server, do NOT enable recursion.
 	 - If you are building a RECURSIVE (caching) DNS server, you need to enable 
 	   recursion. 
