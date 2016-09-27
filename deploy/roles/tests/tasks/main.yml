@@ -56,30 +56,29 @@
   tags: tests
 
 - name: generate ssh keys
-  command: ssh-keygen -N "" -f /root/.ssh/id_rsa_master creates=/root/.ssh/id_rsa_master
-  notify:
-  - restorecon root ssh
-  register: generated_ssh_master_keys
+  command: ssh-keygen -N "" -f /root/.ssh/id_rsa_test creates=/root/.ssh/id_rsa_test
+  notify: restorecon root ssh
+  register: generated_ssh_test_keys
   tags: tests
 
-- name: slurp the master pub key
-  slurp: src=/root/.ssh/id_rsa_master.pub
-  register: slurp_id_rsa_master
-  when: generated_ssh_master_keys|success
+- name: slurp the test pub key
+  slurp: src=/root/.ssh/id_rsa_test.pub
+  register: slurp_id_rsa_test
+  when: generated_ssh_test_keys|success
   tags: tests
 
 - name: set the pub_key as a global fact
-  set_fact: id_rsa_master_pub="{{ slurp_id_rsa_master.content|b64decode|trim + ' ' + 'master.example.com' }}"
-  when: slurp_id_rsa_master|success
+  set_fact: id_rsa_test_pub="{{ slurp_id_rsa_test.content|b64decode|trim + ' ' + 'test.example.com' }}"
+  when: slurp_id_rsa_test|success
   tags: tests
 
 - name: set authorized keys on all roles except Master itself to allow root connection with the key
-  authorized_key: key="{{ hostvars[groups['TESTS'][0]]['id_rsa_master_pub'] }}"
+  authorized_key: key="{{ hostvars[groups['TEST'][0]]['id_rsa_test_pub'] }}"
                   user='root'
                   state=present
   delegate_to: "{{ item }}"
   with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) }}"
-  when: slurp_id_rsa_master|success
+  when: slurp_id_rsa_test|success
   tags: tests
   
 - name: upload files containing auxiliary files that might be needed for some tests (e.g. entitlement certificate, RPMs for custom repos) 

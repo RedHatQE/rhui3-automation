@@ -16,9 +16,9 @@ options {
 	statistics-file "/var/named/data/named_stats.txt";
 	memstatistics-file "/var/named/data/named_mem_stats.txt";
 	allow-query {
-	  {% if 'MASTER' in groups %}
-          {% if groups['MASTER']|length > 0 %}
-          {{ hostvars[groups['MASTER'][0]]['ansible_eth0']['ipv4']['address'] }};
+	  {% if 'TEST' in groups %}
+          {% if groups['TEST']|length > 0 %}
+          {{ hostvars[groups['TEST'][0]]['ansible_eth0']['ipv4']['address'] }};
           {% endif %}
           {% endif %}
 
