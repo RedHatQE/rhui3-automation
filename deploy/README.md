@@ -62,7 +62,7 @@ Edit `hosts.cfg` to meet your preference:
 10.0.0.5
 10.0.0.6
 
-#[TESTS]
+#[TEST]
 #10.0.0.2
 ```
 

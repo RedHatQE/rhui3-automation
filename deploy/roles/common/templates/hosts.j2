@@ -1,8 +1,8 @@
 127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
-{% if 'MASTER' in groups %}
-{% if groups['MASTER']|length > 0 %}
-{{ hostvars[groups['MASTER'][0]]['ansible_eth0']['ipv4']['address'] }} master master.example.com
+{% if 'TEST' in groups %}
+{% if groups['TEST']|length > 0 %}
+{{ hostvars[groups['TEST'][0]]['ansible_eth0']['ipv4']['address'] }} test test.example.com
 {% endif %}
 {% endif %}
 

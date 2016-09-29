@@ -6,7 +6,6 @@
   - common
 
 - include: dns.yml
-- include: master.yml
 - include: filesystem.yml
 - include: gluster.yml
 - include: rhua.yml

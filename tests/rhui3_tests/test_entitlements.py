@@ -7,7 +7,7 @@ from rhui3_tests_lib.rhuimanager_entitlement import *
 
 logging.basicConfig(level=logging.DEBUG)
 
-connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_master")
+connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
 with open('/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml', 'r') as file:
     doc = yaml.load(file)

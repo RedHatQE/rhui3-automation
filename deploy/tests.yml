@@ -1,7 +1,7 @@
 ---
 # file: tests.yml
 # tests playbook
-- hosts: TESTS
+- hosts: TEST
   handlers:
     - include: roles/common/handlers/main.yml
   roles:
