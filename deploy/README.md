@@ -93,10 +93,10 @@ Check hosts.cfg file for more combinations.
 Configuration Limitations
 -------------------------
 Even though one can apply multiple roles to a single node, some combinations are restricted or make no sense:
-- singleton roles --- only one instance per site: Rhua, Nfs, Dns, Master, Proxy
+- singleton roles --- only one instance per site: Rhua, Nfs, Dns, Proxy, Test
 - mutually exclusive roles --- can't be applied to the same node: Rhua, Cds, HAProxy, Proxy (all listen on port 443)
 - site-wide mutually exclusive roles --- chose either Nfs or Gluster
-- optional roles --- may be absent in one's site: Dns, HAProxy, Master, Proxy, Cli
+- optional roles --- may be absent in one's site: Dns, HAProxy, Proxy, Cli, Test
 - multi-roles --- usually multiple instances per site: CDS, Gluster, HAProxy, Cli
 
 Important Note: GlusterFS Configuration

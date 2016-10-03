@@ -72,7 +72,7 @@
   when: slurp_id_rsa_test|success
   tags: tests
 
-- name: set authorized keys on all roles except Master itself to allow root connection with the key
+- name: set authorized keys on all roles except TEST itself to allow root connection with the key
   authorized_key: key="{{ hostvars[groups['TEST'][0]]['id_rsa_test_pub'] }}"
                   user='root'
                   state=present
