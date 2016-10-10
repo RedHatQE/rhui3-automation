@@ -7,7 +7,7 @@ from rhui3_tests_lib.rhuimanager_repo import *
 
 logging.basicConfig(level=logging.DEBUG)
 
-connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_master")
+connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
 with open('/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml', 'r') as file:
     doc = yaml.load(file)
@@ -39,7 +39,11 @@ def test_05_repo_id_uniqness():
     '''Check that repo id should be unique'''
     RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
 
-def test_06_cleanup():
+def test_06_upload_rpm_to_custom_repo():
+    '''Upload content to custom repo'''
+    RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp")
+
+def test_cleanup():
     '''Remove 3 custom repos'''
     RHUIManagerRepo.delete_repo(connection, ["custom-i386-x86_64", "custom-x86_64-x86_64", "custom-i386-i386"])
     nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])

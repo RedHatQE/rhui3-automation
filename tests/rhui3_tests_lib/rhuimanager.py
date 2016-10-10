@@ -40,6 +40,18 @@ class RHUIManager(object):
         return match[0].split('\r\n')
 
     @staticmethod
+    def select(connection, value_list):
+        '''
+        Select list of items (multiple choice)
+        '''
+        for value in value_list:
+            match = Expect.match(connection, re.compile(".*-\s+([0-9]+)\s*:[^\n]*\s+" + value + "\s*\n.*for more commands:.*", re.DOTALL))
+            Expect.enter(connection, match[0])
+            match = Expect.match(connection, re.compile(".*x\s+([0-9]+)\s*:[^\n]*\s+" + value + "\s*\n.*for more commands:.*", re.DOTALL))
+            Expect.enter(connection, "l")
+        Expect.enter(connection, "c")
+
+    @staticmethod
     def select_items(connection, *items):
         '''
         Select list of items (multiple choice)

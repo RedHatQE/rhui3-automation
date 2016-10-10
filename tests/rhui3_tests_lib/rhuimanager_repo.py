@@ -118,5 +118,18 @@ class RHUIManagerRepo(object):
         Expect.enter(connection, "d")
         RHUIManager.select(connection, repolist)
         RHUIManager.proceed_with_check(connection, "The following repositories will be deleted:", repolist, ["Red Hat Repositories", "Custom Repositories"])
-        #RHUIManager.quit(connection)
+        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+
+    @staticmethod
+    def upload_content(connection, repolist, path):
+        '''
+        upload content to a custom repository
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "u")
+        RHUIManager.select(connection, repolist)
+        Expect.expect(connection, "will be uploaded:")
+        Expect.enter(connection, path)
+        RHUIManager.proceed_without_check(connection)
+        Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
 
