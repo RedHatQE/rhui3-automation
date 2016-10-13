@@ -37,7 +37,7 @@ class RHUIManagerCds(object):
         
         RHUIManager.screen(connection, "cds")
         Expect.enter(connection, "a")
-        Expect.expect(connection, "Hostname of the Content Delivery Server instance to register:")
+        Expect.expect(connection, ".*Hostname of the CDS instance to register:")
         Expect.enter(connection, cds.host_name)
         state = Expect.expect_list(connection, [ \
             (re.compile(".*Username with SSH access to %s and sudo privileges:.*" % cds.host_name, re.DOTALL), 1),
@@ -69,7 +69,7 @@ class RHUIManagerCds(object):
         # all OK, confirm
         Expect.enter(connection, "y")
         # some installation and configuration through Puppet happens here, let it take its time
-        Expect.expect(connection, "The Content Delivery Server was successfully configured." + ".*rhui \(.*\) =>", 180)
+        Expect.expect(connection, "The CDS was successfully configured." + ".*rhui \(.*\) =>", 180)
 
 
     @staticmethod
