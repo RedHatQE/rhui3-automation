@@ -8,6 +8,17 @@
   when: "'GLUSTER' in groups and item.1 == inventory_hostname"
   tags: gluster
 
+- name: copy common custom rpm
+  copy: src={{common_custom_rpm}} dest=/tmp
+  when: common_custom_rpm is defined
+  register: copy_remote_rpm_result
+  tags: gluster
+
+- name: install common custom rpm
+  package: name='/tmp/{{common_custom_rpm|basename}}' state=present
+  when: common_custom_rpm is defined and copy_remote_rpm_result|success
+  tags: gluster
+
 - name: checking glusterfs-server install
   package: name=glusterfs-server state=present
   tags: gluster
