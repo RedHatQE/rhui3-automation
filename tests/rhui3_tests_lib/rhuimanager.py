@@ -135,14 +135,12 @@ class RHUIManager(object):
         '''
         Open specified rhui-manager screen
         '''
-        if screen_name in ["repo", "cds", "sync", "identity", "users"]:
+        if screen_name in ["repo", "cds", "loadbalancers", "sync", "identity", "users"]:
             key = screen_name[:1]
         elif screen_name == "client":
             key = "e"
         elif screen_name == "entitlements":
             key = "n"
-        elif screen_name == "haproxy":
-            key = "l"
         Expect.enter(connection, key)
         Expect.expect(connection, "rhui \(" + screen_name + "\) =>")
 
