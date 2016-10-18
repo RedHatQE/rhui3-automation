@@ -52,6 +52,12 @@ options {
           {% endfor %}
           {% endif %}
 
+          {% if 'GLUSTER' in groups %}
+          {% for cds in groups['CDS'] %}
+          {{ hostvars[cds]['ansible_eth0']['ipv4']['address'] }};
+          {% endfor %}
+          {% endif %}
+
           {% if 'HAPROXY' in groups %}
           {% for haproxy in groups['HAPROXY'] %}
           {{ hostvars[haproxy]['ansible_eth0']['ipv4']['address'] }};
