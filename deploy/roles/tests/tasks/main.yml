@@ -1,6 +1,11 @@
 # file: roles/tests/tasks/main.yml
 # deploy & run tests
 
+- name: set hostname
+  hostname: name="test.example.com"
+  when: "'TEST' in groups"
+  tags: tests
+
 - name: checking git install
   package: name=git state=present
   tags: tests
