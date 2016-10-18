@@ -17,9 +17,9 @@ Mind the mandatory extra variable `rhui_iso`
 
 Optional variables:
 
-`common_custom_rpm`=~/Path/To/Your/rh-amazon-rhui-client-rhs30.rpm to setup Gluster
-`haproxy_rpm`=~/Path/To/Your/haproxy.rpm to setup HAProxy on RHEL6
-`upgrade_all_pkg`=yes|no|True|TRUE|false to update ALL packages (taking obsoletes into account) prior to RHUI installation. Mind that it might take more than several minutes.
+- `common_custom_rpm`=~/Path/To/Your/rh-amazon-rhui-client-rhs30.rpm to setup Gluster
+- `haproxy_rpm`=~/Path/To/Your/haproxy.rpm to setup HAProxy on RHEL6
+- `upgrade_all_pkg`=yes|no|True|TRUE|false to update ALL packages (taking obsoletes into account) prior to RHUI installation. Mind that it might take more than several minutes.
 
 This is RHUI3.x [Ansible](https://www.ansible.com) deployment automation.
 Managed roles:
