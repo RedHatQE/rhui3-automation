@@ -3,7 +3,6 @@
 # set up & configure ntp on all the hosts
 # set up custom DNS if requested
 - include: upgrade_all_pkg.yml
-- include: custom_rpm.yml
 - include: ntp.yml
 - include: hosts.yml
 - include: dns_override.yml

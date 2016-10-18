@@ -6,6 +6,17 @@
 # - rhui_iso: path to the RHUI ISO to install from
 # - rhui_iso_gpgsigs: enable/disable RHUI ISO repo gpg signature checking (default: False; see the setup_package_repos script on the ISO
 
+- name: copy common custom rpm
+  copy: src={{common_custom_rpm}} dest=/tmp
+  when: common_custom_rpm is defined
+  register: copy_remote_rpm_result
+  tags: rhui_nodes
+
+- name: install common custom rpm
+  package: name='/tmp/{{common_custom_rpm|basename}}' state=present
+  when: common_custom_rpm is defined and copy_remote_rpm_result|success
+  tags: rhui_nodes
+
 - name: upload the rhui iso
   copy: src="{{ rhui_iso|mandatory }}" dest=/tmp/rhui.iso
   register: iso_sync
