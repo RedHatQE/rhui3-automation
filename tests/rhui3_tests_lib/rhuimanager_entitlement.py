@@ -66,7 +66,7 @@ class RHUIManagerEntitlements(object):
         upload a new or updated Red Hat content certificate
         '''
         
-        certificate_file = '/tmp/extra_files/rest-team/rest-team.pem'
+        certificate_file = '/tmp/extra_rhui_files/rhcert.pem'
         
         if connection.recv_exit_status("ls -la %s" % certificate_file)!=0:
             raise ExpectFailed("Missing certificate file: %s" % certificate_file)

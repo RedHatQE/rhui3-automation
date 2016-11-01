@@ -41,7 +41,7 @@ def test_05_repo_id_uniqness():
 
 def test_06_upload_rpm_to_custom_repo():
     '''Upload content to custom repo'''
-    RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp")
+    RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp/extra_rhui_files")
 
 def test_cleanup():
     '''Remove 3 custom repos'''

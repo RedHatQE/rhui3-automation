@@ -1,31 +1,32 @@
 About
 ---------------
-Setup of RHUI3 test framework
+Setup of the RHUI 3 Test Framework
 
 Requirements
 ---------------
-* [Ansible](http://docs.ansible.com/ansible/intro_installation.html#latest-release-via-yum) version 2.2.0 and higher. (It's possible that you will get older version using standard distro repositories. Try using "pip install -U ansible" instead. You might need to install easy_install first.)
-* RHUI3 set up.
+* [Ansible](http://docs.ansible.com/ansible/intro_installation.html#latest-release-via-yum) version 2.2.0 or later. (It's possible that you will get an older version using standard distro repositories. Try using `pip install -U ansible` instead. You might need to install `easy_install` first.)
+* RHUI 3 installed and configured.
 
 Usage
 --------
-  To include testing stage in RHUI3 deployment see [RHUI deployment Readme](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md).
+  To include the test stage in a RHUI 3 deployment, see the [RHUI deployment Readme](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md).
   
-  Tests can be run any time after RHUI3 deployment. 
-  * Update/create your hosts.cfg file with addresse of TEST machine in [TEST] section.
-  * To install tests framework be in deploy/ directory and run:
-  
-  `ansible-playbook -i ~/pathto/hosts.cfg site.yml --tags tests`
+  Tests can be run at any time after a RHUI 3 deployment. To run them:
 
-It will be installed in /tmp/rhui3-tests directory on TEST machine.
+  * Update or create your `hosts.cfg` file with the address of the TEST machine in the `[TEST]` section.
+  * To install the tests framework, run:
+  
+  `ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --tags tests`
+
+It will be installed in the `/tmp/rhui3-tests` directory on the TEST machine.
 
 Optional variables:
 
-`extra_files`=~/Path/To/Your/file.zip - This will upload auxiliary files that might be required by some tests (custom RPMs, certificates, etc.) to the RHUA machine.
+`extra_files`=~/Path/To/Your/file.zip - This will upload auxiliary files that are required by some tests to the RHUA machine. At present, in order for all the tests to be able to run as expected, you must have a ZIP file with one or more RPM packages (`*.rpm` files) to upload to a custom repository, and a valid Red Hat content certificate (in `rhcert.pem`).
   
-  * To run tests
-    * update file `/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml` on TEST machine with a relevant rhui password (default is 'admin') and iso version.
-    * be in deploy/ directory and run:
+  * To run the tests:
+    * Update file `/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml` on the TEST machine with a relevant RHUI password (default is 'admin') and ISO version.
+    * Execute the following command:
   
-      `ansible-playbook -i ~/pathto/hosts.cfg site.yml --tags run_tests`
+      `ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --tags run_tests`
 
