@@ -4,6 +4,8 @@ import nose, unittest, stitches, logging, yaml
 
 from rhui3_tests_lib.rhuimanager import *
 
+from os.path import basename
+
 logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
@@ -15,6 +17,9 @@ rhui_login = doc['rhui_login']
 rhui_pass = doc['rhui_pass']
 new_rhui_pass = 'new_pass'
 rhui_iso_date = doc['rhui_iso_date']
+
+def setUp():
+    print "*** Running %s: *** " % basename(__file__)
 
 def test_01_initial_run():
     '''
@@ -72,3 +77,6 @@ def test_06_change_password_several_times():
     Expect.expect(connection, "Password successfully updated" + ".*rhui \(users\) =>")
     RHUIManager.change_user_password(connection, password = rhui_pass + new_rhui_pass)
     Expect.expect(connection, "Password successfully updated" + ".*rhui \(users\) =>")
+
+def tearDown():
+    print "*** Finished running %s. *** " % basename(__file__)

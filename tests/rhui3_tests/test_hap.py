@@ -6,6 +6,8 @@ from rhui3_tests_lib.rhuimanager import *
 from rhui3_tests_lib.rhuimanager_hap import *
 from rhui3_tests_lib.hap import *
 
+from os.path import basename
+
 logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
@@ -15,6 +17,9 @@ with open('/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml', 'r') as file:
 
 rhui_login = doc['rhui_login']
 rhui_pass = doc['rhui_pass']
+
+def setUp():
+    print "*** Running %s: *** " % basename(__file__)
 
 def test_01_initial_run():
     '''
@@ -39,14 +44,12 @@ def test_03_add_hap():
     hap = Hap()
     RHUIManagerHap.add_hap(connection, hap)
 
-
 def test_04_list_hap():
     '''
         check if the HAProxy Load-balancer was added
     '''
     hap_list = RHUIManagerHap.list(connection)
     nose.tools.assert_not_equal(hap_list, [])
-
 
 def test_05_readd_hap():
     '''
@@ -57,14 +60,12 @@ def test_05_readd_hap():
     hap = Hap()
     RHUIManagerHap.add_hap(connection, hap, update=True)
 
-
 def test_06_list_hap():
     '''
         check if the HAProxy Load-balancer is still tracked
     '''
     hap_list = RHUIManagerHap.list(connection)
     nose.tools.assert_not_equal(hap_list, [])
-
 
 def test_07_delete_hap():
     '''
@@ -75,7 +76,6 @@ def test_07_delete_hap():
     hap_list = RHUIManagerHap.list(connection)
     nose.tools.assert_equal(hap_list, [])
 
-
 def test_08_list_hap():
     '''
         list HAProxy Load-balancers again, expect none
@@ -83,3 +83,5 @@ def test_08_list_hap():
     hap_list = RHUIManagerHap.list(connection)
     nose.tools.assert_equal(hap_list, [])
 
+def tearDown():
+    print "*** Finished running %s. *** " % basename(__file__)

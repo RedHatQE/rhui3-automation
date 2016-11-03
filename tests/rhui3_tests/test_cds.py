@@ -6,6 +6,8 @@ from rhui3_tests_lib.rhuimanager import *
 from rhui3_tests_lib.rhuimanager_cds import *
 from rhui3_tests_lib.cds import *
 
+from os.path import basename
+
 logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
@@ -15,6 +17,9 @@ with open('/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml', 'r') as file:
 
 rhui_login = doc['rhui_login']
 rhui_pass = doc['rhui_pass']
+
+def setUp():
+    print "*** Running %s: *** " % basename(__file__)
 
 def test_01_initial_run():
     '''
@@ -58,4 +63,5 @@ def test_03_list_cds():
     cds_list3 = RHUIManagerCds.list(connection)
     nose.tools.assert_equal(cds_list3, [])
 
-
+def tearDown():
+    print "*** Finished running %s. *** " % basename(__file__)

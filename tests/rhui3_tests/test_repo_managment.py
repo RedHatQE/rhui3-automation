@@ -5,6 +5,8 @@ import nose, unittest, stitches, logging, yaml
 from rhui3_tests_lib.rhuimanager import *
 from rhui3_tests_lib.rhuimanager_repo import *
 
+from os.path import basename
+
 logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
@@ -16,6 +18,9 @@ rhui_login = doc['rhui_login']
 rhui_pass = doc['rhui_pass']
 new_rhui_pass = 'new_pass'
 rhui_iso_date = doc['rhui_iso_date']
+
+def setUp():
+    print "*** Running %s: *** " % basename(__file__)
 
 def test_01_repo_setup():
     '''Do initial rhui-manager run'''
@@ -47,3 +52,6 @@ def test_cleanup():
     '''Remove 3 custom repos'''
     RHUIManagerRepo.delete_repo(connection, ["custom-i386-x86_64", "custom-x86_64-x86_64", "custom-i386-i386"])
     nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
+
+def tearDown():
+    print "*** Finished running %s. *** " % basename(__file__)
