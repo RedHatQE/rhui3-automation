@@ -90,7 +90,7 @@ class RHUIManagerRepo(object):
         '''
         RHUIManager.screen(connection, "repo")
         Expect.enter(connection, "a")
-        Expect.expect(connection, "Import Repositories:.*to abort:", 360)
+        Expect.expect(connection, "Import Repositories:.*to abort:", 180)
         Expect.enter(connection, "1")
         RHUIManager.proceed_without_check(connection)
         Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>", 180)
@@ -106,7 +106,6 @@ class RHUIManagerRepo(object):
         Expect.enter(connection, "2")
         RHUIManager.select(connection, productlist)
         RHUIManager.proceed_without_check(connection)
-        RHUIManager.quit(connection, "Content will not be downloaded", 45)
         Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
 
     @staticmethod
@@ -191,4 +190,3 @@ class RHUIManagerRepo(object):
         Expect.enter(connection, path)
         RHUIManager.proceed_without_check(connection)
         Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
-
