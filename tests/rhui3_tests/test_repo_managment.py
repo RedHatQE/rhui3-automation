@@ -4,7 +4,6 @@ import nose, unittest, stitches, logging, yaml
 
 from rhui3_tests_lib.rhuimanager import *
 from rhui3_tests_lib.rhuimanager_repo import *
-from os.path import basename
 
 from os.path import basename
 
