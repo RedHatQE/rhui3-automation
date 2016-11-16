@@ -28,7 +28,7 @@ class RHUIManagerRepo(object):
                 checklist.append("Name: " + displayname)
             else:   
                 checklist.append("Name: " + reponame)
-            Expect.expect(connection, "Path at which the repository will be served.*:")
+            Expect.expect(connection, "Unique path at which the repository will be served.*:")
             Expect.enter(connection, path)
             if path != "":
                 path_real = path
