@@ -42,6 +42,10 @@
 {% endfor %}
 {% endif %}
 
+{% if 'HAPROXY' in groups %}
+{{ hostvars[groups['HAPROXY'][0]]['ansible_eth0']['ipv4']['address'] }} cds cds.example.com
+{% endif %}
+
 {% if 'CLI' in groups %}
 {% for cli in groups['CLI'] %}
 {{ hostvars[cli]['ansible_eth0']['ipv4']['address'] }} cli0{{ loop.index }} cli0{{ loop.index }}.example.com
