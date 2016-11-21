@@ -79,6 +79,16 @@ class RHUIManager(object):
         Expect.enter(connection, match[0])
 
     @staticmethod
+    def select_all(connection):
+        '''
+        Select all items
+        '''
+        Expect.expect(connection, "Enter value .*:")
+        Expect.enter(connection, "a")
+        Expect.expect(connection, "Enter value .*:")
+        Expect.enter(connection, "c")
+
+    @staticmethod
     def quit(connection, prefix="", timeout=10):
         '''
         Quit from rhui-manager

@@ -84,6 +84,66 @@ class RHUIManagerRepo(object):
             Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
 
     @staticmethod
+    def add_rh_repo_all(connection):
+        '''
+        add a new Red Hat content repository (All in Certificate)
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "a")
+        Expect.expect(connection, "Import Repositories:.*to abort:", 660)
+        Expect.enter(connection, "1")
+        RHUIManager.proceed_without_check(connection)
+        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>", 180)
+
+    @staticmethod
+    def add_rh_repo_by_product(connection, productlist):
+        '''
+        add a new Red Hat content repository (By Product)
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "a")
+        Expect.expect(connection, "Import Repositories:.*to abort:", 660)
+        Expect.enter(connection, "2")
+        RHUIManager.select(connection, productlist)
+        RHUIManager.proceed_without_check(connection)
+        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+
+    @staticmethod
+    def add_rh_repo_by_repo(connection, repolist):
+        '''
+        add a new Red Hat content repository (By Repository)
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "a")
+        Expect.expect(connection, "Import Repositories:.*to abort:", 660)
+        Expect.enter(connection, "3")
+        RHUIManager.select(connection, repolist)
+        repocheck = list(repolist)
+        for repo in repolist:
+            #adding repo titles to check list
+            repotitle = re.sub(" \\\\\([^\(]*\\\\\)$", "", repo)
+            if not repotitle in repocheck:
+                repocheck.append(repotitle)
+        RHUIManager.proceed_without_check(connection)
+        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+
+    @staticmethod
+    def add_docker_container(connection, containername, containerid="", displayname=""):
+        '''
+        add a new Red Hat docker container
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "ad")
+        Expect.expect(connection, "Name of the container in the registry:")
+        Expect.enter(connection, containername)
+        Expect.expect(connection, "Unique ID for the container .*]", 60)
+        Expect.enter(connection, containerid)
+        Expect.expect(connection, "Display name for the container.*]:")
+        Expect.enter(connection, displayname)
+        RHUIManager.proceed_without_check(connection)
+        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+
+    @staticmethod
     def list(connection):
         ''' 
         list repositories
@@ -117,8 +177,22 @@ class RHUIManagerRepo(object):
         RHUIManager.screen(connection, "repo")
         Expect.enter(connection, "d")
         RHUIManager.select(connection, repolist)
-        RHUIManager.proceed_with_check(connection, "The following repositories will be deleted:", repolist, ["Red Hat Repositories", "Custom Repositories"])
+        RHUIManager.proceed_without_check(connection)
         Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+
+    @staticmethod
+    def delete_all_repos(connection):
+        '''
+        delete all repositories from the RHUI
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "d")
+        Expect.expect(connection, "Enter value .*:", 360)
+        Expect.enter(connection, "a")
+        Expect.expect(connection, "Enter value .*:")
+        Expect.enter(connection, "c")
+        RHUIManager.proceed_without_check(connection)
+        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>", 360)
 
     @staticmethod
     def upload_content(connection, repolist, path):
@@ -132,4 +206,3 @@ class RHUIManagerRepo(object):
         Expect.enter(connection, path)
         RHUIManager.proceed_without_check(connection)
         Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
-
