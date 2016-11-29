@@ -105,7 +105,7 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "Import Repositories:.*to abort:", 660)
         Expect.enter(connection, "2")
         RHUIManager.select(connection, productlist)
-        RHUIManager.proceed_without_check(connection)
+        RHUIManager.proceed_with_check(connection, "The following products will be deployed:", productlist)
         Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
 
     @staticmethod
@@ -124,7 +124,7 @@ class RHUIManagerRepo(object):
             repotitle = re.sub(" \\\\\([^\(]*\\\\\)$", "", repo)
             if not repotitle in repocheck:
                 repocheck.append(repotitle)
-        RHUIManager.proceed_without_check(connection)
+        RHUIManager.proceed_with_check(connection, "The following product repositories will be deployed:", [repolist[0].replace(".*", ""), repolist[0].replace(".*", "") + " \(6Server-x86_64\) \(Yum\)"])
         Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
 
     @staticmethod
@@ -140,7 +140,10 @@ class RHUIManagerRepo(object):
         Expect.enter(connection, containerid)
         Expect.expect(connection, "Display name for the container.*]:")
         Expect.enter(connection, displayname)
-        RHUIManager.proceed_without_check(connection)
+        RHUIManager.proceed_with_check(connection, "The following container will be added:",
+        ["Container Id: " + containername.replace("/","_").replace(".","_"),
+         "Display Name: " + displayname,
+         "Upstream Container Name: " + containername])
         Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
 
     @staticmethod
@@ -204,5 +207,5 @@ class RHUIManagerRepo(object):
         RHUIManager.select(connection, repolist)
         Expect.expect(connection, "will be uploaded:")
         Expect.enter(connection, path)
-        RHUIManager.proceed_without_check(connection)
+        RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", ["rhui-rpm-upload-test-1-1.noarch.rpm"])
         Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
