@@ -55,7 +55,7 @@ def test_07_remove_3_custom_repos():
 
 def test_08_add_rh_repo_by_repository():
     '''Add a RH repo by repository'''
-    RHUIManagerRepo.add_rh_repo_by_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\).*"])
+    RHUIManagerRepo.add_rh_repo_by_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\) \(Yum\)"])
     nose.tools.assert_not_equal(RHUIManagerRepo.list(connection), [])
 
 def test_09_delete_one_repo():

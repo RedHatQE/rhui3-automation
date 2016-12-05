@@ -118,13 +118,10 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "Import Repositories:.*to abort:", 660)
         Expect.enter(connection, "3")
         RHUIManager.select(connection, repolist)
-        repocheck = list(repolist)
+        repolist_mod = list(repolist)
         for repo in repolist:
-            #adding repo titles to check list
-            repotitle = re.sub(" \\\\\([^\(]*\\\\\)$", "", repo)
-            if not repotitle in repocheck:
-                repocheck.append(repotitle)
-        RHUIManager.proceed_with_check(connection, "The following product repositories will be deployed:", [repolist[0].replace(".*", ""), repolist[0].replace(".*", "") + " \(6Server-x86_64\) \(Yum\)"])
+            repolist_mod.append(re.sub(" \\\\\([a-zA-Z0-9_-]*\\\\\) \\\\\(Yum\\\\\)", "", repo))
+        RHUIManager.proceed_with_check(connection, "The following product repositories will be deployed:", repolist_mod)
         Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
 
     @staticmethod

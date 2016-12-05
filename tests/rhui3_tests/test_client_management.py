@@ -27,7 +27,7 @@ def test_02_add_repos():
        add a custom and RH content repos to protect by a client entitlement certificate
     '''
     RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
-    RHUIManagerRepo.add_rh_repo_by_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\).*"])
+    RHUIManagerRepo.add_rh_repo_by_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\) \(Yum\)"])
 
 def test_02_generate_ent_cert():
     '''
