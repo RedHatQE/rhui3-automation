@@ -71,7 +71,7 @@ argparser.add_argument('--fakecf', action='store_const', const=True,
 argparser.add_argument('--dry-run', action='store_const', const=True,
                        default=False, help='do not run stack creation, validate only')
 argparser.add_argument('--parameters', metavar='<expr>', nargs="*",
-                       help="space-separated NAME=VALUE list of parametars")
+                       help="space-separated NAME=VALUE list of parameters")
 
 argparser.add_argument('--timeout', type=int,
                        default=10, help='stack creation timeout')
@@ -219,6 +219,10 @@ json_dict['Resources'] = \
                                                                    u'IpProtocol': u'tcp',
                                                                    u'ToPort': u'443'},
                                                                    {u'CidrIp': u'0.0.0.0/0',
+                                                                   u'FromPort': u'2049',
+                                                                   u'IpProtocol': u'tcp',
+                                                                   u'ToPort': u'2049'},
+                                                                   {u'CidrIp': u'0.0.0.0/0',
                                                                    u'FromPort': u'5674',
                                                                    u'IpProtocol': u'tcp',
                                                                    u'ToPort': u'5674'},
@@ -234,6 +238,10 @@ json_dict['Resources'] = \
                                                                    u'FromPort': u'24007',
                                                                    u'IpProtocol': u'tcp',
                                                                    u'ToPort': u'24007'},
+                                                                   {u'CidrIp': u'0.0.0.0/0',
+                                                                   u'FromPort': u'49152',
+                                                                   u'IpProtocol': u'tcp',
+                                                                   u'ToPort': u'49154'},
                                                                    {u'CidrIp': u'0.0.0.0/0',
                                                                    u'FromPort': u'80',
                                                                    u'IpProtocol': u'tcp',
