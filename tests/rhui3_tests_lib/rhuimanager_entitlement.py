@@ -53,12 +53,14 @@ class RHUIManagerEntitlements(object):
          
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "c")
-        match = Expect.match(connection, re.compile("c\r\n\r\nCustom Repository Entitlements\r\n\r\n(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
+        match = Expect.match(connection, re.compile("c\r\n\r\nCustom Repository Entitlements\r\n\r\n(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))[0]
         
         repo_list = []
         
-        if match[0].find('No custom repositories exist in the RHUI') != -1:
-            return repo_list
+        for line in match.split("\n"):
+            if "Name:" in line:
+                repo_list.append(line.replace("Name:", "").strip())
+        return sorted(repo_list)
 
     @staticmethod
     def upload_rh_certificate(connection):
