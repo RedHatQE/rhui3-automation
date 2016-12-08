@@ -66,13 +66,30 @@ Other options:
 
 #### NFS filesystem
 
+Configuration with NFS filesystem needs at least 1 CDS, 1 HAProxy and RHUA machine. <br />
+If there is separate NFS machine, an extra 100 GB volume is attached to this machine. If not, an extra 100 GB volume is attached to RHUA machine.
 
+<img src="https://github.com/RedHatQE/rhui3-automation/blob/stack_script/scripts/img/rhui-storage-nfs.png" width="350">
 
 #### Gluster filesystem
 
+Configuration with Gluster filesystem needs at least 2 CDS, 1 HAProxy and RHUA machine. <br />
+There is an extra 100 GB volume attached to each CDS machine.
+
+<img src="https://github.com/RedHatQE/rhui3-automation/blob/stack_script/scripts/img/rhui-storage-gluster.png" width="350">
+
 ### Examples
 
-* 
+#### Usage example
+
+* `scripts/create-cf-stack.py --iso 20160809` - basic RHEL6 NFS configuration (1xRHUA=DNS=NFS, 1xCDS, 1xHAProxy)
+* `scripts/create-cf-stack.py --rhua RHEL7 --tests --gluster --cds 3 --iso 20160809` - RHEL7 gluster conf. (1xRHUA=DNS, 3xCDS, 1xHAProxy, 1xtest_machine)
+* `scripts/create-cf-stack.py --region eu-central-1 --nfs cli6 2 --haproxy 2 --iso 20160809` - RHEL6 NFS conf. on eu-central-1 region (1xRHUA=DNS, 1xNFS, 2xCLI6, 2xHAProxy)
+* `scripts/create-cf-stack.py --rhua RHEL7 --dns --cds 2 --cli6 1 --cli7 1 --input-conf /etc/rhui_amazon.yaml --output-conf my_new_hosts_config_file.cfg --iso 20160809` - RHEL7 NFS conf. (1xRHUA=NFS, 1xDNS, 2xCDS, 1xCLI6, 1xCLI7, 1xHAProxy)
+
+#### Input configuration file
+
+#### Output configuration file
 
 ### How to delete stack
 
