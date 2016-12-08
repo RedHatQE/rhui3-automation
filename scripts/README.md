@@ -6,7 +6,7 @@ Script creates ec2 instance machines (m3.large) according to specification.
 
 Instances are named `$ROLE_$RHELrelease_$filesystem_type$iso_date_$user_key_name` (*RHUA_RHEL7_nfs_20160809_pbartiko-eu-west-1*)
 
-The script produce output config file suitable for the RHUI3 ansible installation. [Example](/output-configuration-file/) of the output file. Default
+The script produce output config file suitable for the RHUI3 ansible installation. [Example](#output-configuration-file) of the output file. Default
 name of the file is `hosts_$RHEL_release_$filesystem_type_$iso.cfg` (*hosts_RHEL7_nfs_20160809.cfg*)
 
 New security group is created. Its name contains stack id. <br />
@@ -28,12 +28,12 @@ Inbound rules:
 
 ### Requirements
 
-1. yaml config file with ec2 credentials - default path is `/etc/rhui_ec2.yaml` [(example)](/input-configuration-file/)
+1. yaml config file with ec2 credentials - default path is `/etc/rhui_ec2.yaml` [(example)](#input-configuration-file)
 2. AMI needs to be updated (section `json_dict['Mappings']` in the code)
 
 ### Usage
 
-Run `scripts/create-cf-stack.py [optional parameters]`
+Run `scripts/create-cf-stack.py [optional parameters]` [(example)](#usage-example)
 
 Default configuration: 
   * NFS filesystem
