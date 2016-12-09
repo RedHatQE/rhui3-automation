@@ -11,12 +11,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
-with open('/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml', 'r') as file:
-    doc = yaml.load(file)
-
-rhui_login = doc['rhui_login']
-rhui_pass = doc['rhui_pass']
-
 def setUp():
     print "*** Running %s: *** " % basename(__file__)
 
@@ -25,7 +19,7 @@ def test_01_initial_run():
         log in into RHUI
         see roles/tests/tasks/main.yml
     '''
-    RHUIManager.initial_run(connection, username  = rhui_login, password = rhui_pass)
+    RHUIManager.initial_run(connection)
 
 def test_02_list_rh_entitlements():
     '''
