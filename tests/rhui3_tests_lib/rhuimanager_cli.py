@@ -46,3 +46,19 @@ class RHUIManagerClient(object):
             RHUIManager.select(connection, unprotected_repos)
         Expect.expect(connection, ".*rhui \(" + "client" + "\) =>")
 
+    @staticmethod
+    def create_docker_conf_rpm(connection, dirname, rpmname, rpmversion="", dockerport=""):
+        '''
+        create a client configuration RPM from an entitlement certificate
+        '''
+        RHUIManager.screen(connection, "client")
+        Expect.enter(connection, "d")
+        Expect.expect(connection, "Full path to local directory.*:")
+        Expect.enter(connection, dirname)
+        Expect.expect(connection, "Name of the RPM:")
+        Expect.enter(connection, rpmname)
+        Expect.expect(connection, "Version of the configuration RPM.*:")
+        Expect.enter(connection, rpmversion)
+        Expect.expect(connection, "Port to serve Docker content on .*:")
+        Expect.enter(connection, dockerport)
+        Expect.expect(connection, ".*rhui \(" + "client" + "\) =>")

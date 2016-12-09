@@ -43,9 +43,18 @@ def test_02_create_cli_rpm():
     Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
 
-def test_03_cleanup():
+def test_03_create_docker_cli_rpm():
     '''
-       remove created repos, entitlement and custom cli rpm
+       create a docker client configuration RPM
+    '''
+    RHUIManager.initial_run(connection)
+    RHUIManagerClient.create_docker_conf_rpm(connection, "/root", "test_docker_cli_rpm", "4.0")
+    Expect.enter(connection, 'q')
+    Expect.ping_pong(connection, "test -f /root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
+
+def test_04_cleanup():
+    '''
+       remove created repos, entitlement and custom cli rpms
     '''
     RHUIManager.initial_run(connection)
     RHUIManagerRepo.delete_all_repos(connection)
@@ -53,6 +62,7 @@ def test_03_cleanup():
     Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "rm -f /root/test_ent_cli.* && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_cli_rpm-3.0/ && echo SUCCESS", "[^ ]SUCCESS")
+    Expect.ping_pong(connection, "rm -rf /root/test_docker_cli_rpm-4.0/ && echo SUCCESS", "[^ ]SUCCESS")
     RHUIManager.initial_run(connection)
 
 def tearDown():
