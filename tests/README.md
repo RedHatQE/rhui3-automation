@@ -29,8 +29,8 @@ Optional variables:
 
 To run the tests:
 
-    * Update file `/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml` on the TEST machine with a relevant RHUI password (default is 'admin') and ISO version.
-    * Execute the following command:
+  * Update file `/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml` on the TEST machine with a relevant RHUI password (default is 'admin') and ISO version.
+  * Execute the following command:
   
       `ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --tags run_tests`
 
