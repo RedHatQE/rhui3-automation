@@ -75,7 +75,7 @@ class RHUIManager(object):
         '''
         Select one item (single choice)
         '''
-        match = Expect.match(connection, re.compile(".*([0-9]+)\s+-\s+" + value + "\s*\n.*to abort:.*", re.DOTALL))
+        match = Expect.match(connection, re.compile(".*([0-9]+)\s+-\s+" + item + "\s*\n.*to abort:.*", re.DOTALL))
         Expect.enter(connection, match[0])
 
     @staticmethod
