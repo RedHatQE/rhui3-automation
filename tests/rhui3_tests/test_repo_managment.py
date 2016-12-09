@@ -11,20 +11,12 @@ logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
-with open('/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml', 'r') as file:
-    doc = yaml.load(file)
-
-rhui_login = doc['rhui_login']
-rhui_pass = doc['rhui_pass']
-new_rhui_pass = 'new_pass'
-rhui_iso_date = doc['rhui_iso_date']
-
 def setUp():
     print "*** Running %s: *** " % basename(__file__)
 
 def test_01_repo_setup():
     '''Do initial rhui-manager run'''
-    RHUIManager.initial_run(connection, username = rhui_login, password = rhui_pass)
+    RHUIManager.initial_run(connection)
 
 def test_02_check_empty_repo_list():
     '''Check if the repolist is empty'''
