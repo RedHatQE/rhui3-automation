@@ -28,10 +28,7 @@ Optional variables:
   * `rhui-rpm-upload-test-1-1.noarch.rpm` — This package will be uploaded to a custom repository.
   * `rhui-rpm-upload-trial-1-1.noarch.rpm` — This package will also be uploaded to a custom repository.
 
-To run the tests:
+To run the tests, execute the following command:
 
-  * Update file `/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml` on the TEST machine with a relevant RHUI password (default is 'admin') and ISO version.
-  * Execute the following command:
-  
-      `ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --tags run_tests`
+`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --tags run_tests`
 

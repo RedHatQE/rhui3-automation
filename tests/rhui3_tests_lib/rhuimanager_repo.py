@@ -204,7 +204,10 @@ class RHUIManagerRepo(object):
         RHUIManager.select(connection, repolist)
         Expect.expect(connection, "will be uploaded:")
         Expect.enter(connection, path)
-        RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", ["rhui-rpm-upload-test-1-1.noarch.rpm"])
+        if path.endswith("/"):
+            RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", ["rhui-rpm-upload-test-1-1.noarch.rpm", "rhui-rpm-upload-trial-1-1.noarch.rpm"])
+        else:
+            RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", ["rhui-rpm-upload-test-1-1.noarch.rpm"])
         Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
 
     @staticmethod
