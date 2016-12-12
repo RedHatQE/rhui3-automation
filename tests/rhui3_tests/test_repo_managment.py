@@ -40,6 +40,17 @@ def test_06_upload_rpm_to_custom_repo():
     '''Upload content to the custom repo'''
     RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
 
+def test_06_01_upload_several_rpms_to_custom_repo():
+    '''Upload several rpms to the custom repo from a directory'''
+    RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp/extra_rhui_files/")
+ 
+def test_06_02_check_for_package():
+    '''Check the packages list'''
+    nose.tools.assert_equal(RHUIManagerRepo.check_for_package(connection, "custom-i386-x86_64", ""), ["rhui-rpm-upload-test-1-1.noarch.rpm", "rhui-rpm-upload-trial-1-1.noarch.rpm"])
+    nose.tools.assert_equal(RHUIManagerRepo.check_for_package(connection, "custom-i386-x86_64", "rhui-rpm-upload-test"), ["rhui-rpm-upload-test-1-1.noarch.rpm"])
+    nose.tools.assert_equal(RHUIManagerRepo.check_for_package(connection, "custom-i386-x86_64", "test"), [])
+    nose.tools.assert_equal(RHUIManagerRepo.check_for_package(connection, "custom-x86_64-x86_64", ""), [])
+
 def test_07_remove_3_custom_repos():
     '''Remove 3 custom repos'''
     RHUIManagerRepo.delete_repo(connection, ["custom-i386-x86_64", "custom-x86_64-x86_64", "custom-i386-i386"])

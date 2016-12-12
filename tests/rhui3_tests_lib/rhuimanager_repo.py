@@ -204,5 +204,39 @@ class RHUIManagerRepo(object):
         RHUIManager.select(connection, repolist)
         Expect.expect(connection, "will be uploaded:")
         Expect.enter(connection, path)
-        RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", ["rhui-rpm-upload-test-1-1.noarch.rpm"])
+        if path.endswith("/"):
+            RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", ["rhui-rpm-upload-test-1-1.noarch.rpm", "rhui-rpm-upload-trial-1-1.noarch.rpm"])
+        else:
+            RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", ["rhui-rpm-upload-test-1-1.noarch.rpm"])
         Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
+
+    @staticmethod
+    def check_for_package(connection, reponame, package):
+        '''
+        list packages in a repository
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "p")
+
+        RHUIManager.select_one(connection, reponame)
+        Expect.expect(connection, "\(blank line for no filter\):")
+        Expect.enter(connection, package)
+
+        pattern = re.compile('.*only\.\r\n(.*)\r\n-+\r\nrhui\s* \(repo\)\s* =>',
+                             re.DOTALL)
+        ret = Expect.match(connection, pattern, grouplist=[1])[0]
+        reslist = map(lambda x: x.strip(), ret.split("\r\n"))
+        packagelist = []
+        for line in reslist:
+            if line == '':
+                continue
+            if line == 'Packages:':
+                continue
+            if line == 'No packages found that match the given filter.':
+                continue
+            if line == 'No packages in the repository.':
+                continue
+            packagelist.append(line)
+
+        return packagelist
+
