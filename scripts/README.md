@@ -4,9 +4,9 @@
 
 Script creates ec2 instance machines (m3.large) according to specification.
 
-Instances are named `$ROLE_$RHELrelease_$filesystem_type$iso_date_$user_key_name` (*RHUA_RHEL7_nfs_20160809_pbartiko-eu-west-1*)
+Instances are named `$ROLE_$RHELrelease_$filesystem_type$iso_date_$user_key_name` (*RHUA_RHEL7_nfs_20160809_user-eu-west-1*)
 
-The script produce output config file suitable for the RHUI3 ansible installation. [Example](#output-configuration-file) of the output file. Default
+The script produces an output config file suitable for the RHUI3 ansible installation. [Example](#output-configuration-file) of the output file. Default
 name of the file is `hosts_$RHEL_release_$filesystem_type_$iso.cfg` (*hosts_RHEL7_nfs_20160809.cfg*)
 
 New security group is created. Its name contains stack id. <br />
@@ -29,7 +29,7 @@ Inbound rules:
 ### Requirements
 
 1. yaml config file with ec2 credentials - default path is `/etc/rhui_ec2.yaml` [(example)](#input-configuration-file)
-2. AMI needs to be updated (section `json_dict['Mappings']` in the code)
+2. list of AMI in the script needs to be updated (section `json_dict['Mappings']` in the code)
 
 ### Usage
 
@@ -67,7 +67,7 @@ Other options:
 #### NFS filesystem
 
 Configuration with NFS filesystem needs at least 1 CDS, 1 HAProxy and RHUA machine. <br />
-If there is separate NFS machine, an extra 100 GB volume is attached to this machine. If not, an extra 100 GB volume is attached to RHUA machine.
+If there is a separate NFS machine, an extra 100 GB volume is attached to this machine. If not, an extra 100 GB volume is attached to the RHUA machine.
 
 <img src="https://github.com/RedHatQE/rhui3-automation/blob/stack_script/scripts/img/rhui-storage-nfs.png" width="350">
 
@@ -122,30 +122,30 @@ Example of an output file with Gluster configuration (1xRHUA=DNS, 3xCDS, 2xCLI, 
 
 ```
 [RHUA]
-ec2-54-170-205-98.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
+ec2-54-170-205-98.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
 
 [GLUSTER]
-ec2-54-78-213-201.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
-ec2-54-78-165-67.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
-ec2-54-155-142-185.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
+ec2-54-78-213-201.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
+ec2-54-78-165-67.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
+ec2-54-155-142-185.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
 
 [CDS]
-ec2-54-78-213-201.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
-ec2-54-78-165-67.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
-ec2-54-155-142-185.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
+ec2-54-78-213-201.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
+ec2-54-78-165-67.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
+ec2-54-155-142-185.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
 
 [DNS]
-ec2-54-170-205-98.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
+ec2-54-170-205-98.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
 
 [CLI]
-ec2-54-155-178-68.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
-ec2-54-228-24-150.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
+ec2-54-155-178-68.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
+ec2-54-228-24-150.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
 
 [TESTS]
-ec2-54-73-34-96.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
+ec2-54-73-34-96.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
 
 [HAPROXY]
-ec2-54-73-134-159.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/pbartiko/.ssh/pbartiko-eu-west-1.pem
+ec2-54-73-134-159.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
 
 ```
 
