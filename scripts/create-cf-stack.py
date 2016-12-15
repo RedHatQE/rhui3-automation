@@ -161,17 +161,7 @@ if fs_type_f == "rhua":
 
 
 json_dict['Mappings'] = \
-  {u'Fedora': {
-                u'ap-northeast-1': {u'AMI': u'ami-20d6cd21'},
-                u'ap-southeast-1': {u'AMI': u'ami-06edc754'},
-                u'ap-southeast-2': {u'AMI': u'ami-ddf480e7'},
-                u'eu-west-1': {u'AMI': u'ami-030f2174'},
-                u'eu-central-1': {u'AMI': u'ami-5cd9ea41'},
-                u'sa-east-1': {u'AMI': u'ami-650cb078'},
-                u'us-east-1': {u'AMI': u'ami-acd999c4'},
-                u'us-west-1': {u'AMI': u'ami-15326925'},
-                u'us-west-2': {u'AMI': u'ami-dce3fb99'}},
-   u'RHEL7': {
+  { u'RHEL7': {
                 u'us-east-1': {u'AMI': u'ami-10663b78'},
                 u'eu-central-1': {u'AMI': u'ami-defdcfc3'},
                 u'us-west-1': {u'AMI': u'ami-9b40a5df'},
