@@ -1,6 +1,7 @@
 """ RHUIManager Repo functions """
 
 import re
+from os.path import basename
 
 from stitches.expect import Expect, ExpectFailed
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -199,15 +200,32 @@ class RHUIManagerRepo(object):
         '''
         upload content to a custom repository
         '''
+        # Temporarily quit rhui-manager and check whether "path" is a file or a directory.
+        # If it is a directory, get a list of *.rpm files in it.
+        Expect.enter(connection, 'q')
+        Expect.enter(connection, "stat -c %F " + path)
+        path_type = Expect.expect_list(connection, [(re.compile(".*regular file.*", re.DOTALL), 1), (re.compile(".*directory.*", re.DOTALL), 2)])
+        if path_type == 1:
+            content = [basename(path)]
+        elif path_type == 2:
+            Expect.enter(connection, "echo " + path + "/*.rpm")
+            output = Expect.match(connection, re.compile("(.*)", re.DOTALL))[0]
+            rpm_files = output.splitlines()[1]
+            content = []
+            for rpm_file in rpm_files.split():
+                content.append(basename(rpm_file))
+        else:
+            # This should not happen. Getting here means that "path" is neither a file nor a directory.
+            # Anyway, going on with no content, leaving it up to proceed_with_check() to handle this situation.
+            content = []
+        # Start rhui-manager again and continue.
+        RHUIManager.initial_run(connection)
         RHUIManager.screen(connection, "repo")
         Expect.enter(connection, "u")
         RHUIManager.select(connection, repolist)
         Expect.expect(connection, "will be uploaded:")
         Expect.enter(connection, path)
-        if path.endswith("/"):
-            RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", ["rhui-rpm-upload-test-1-1.noarch.rpm", "rhui-rpm-upload-trial-1-1.noarch.rpm"])
-        else:
-            RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", ["rhui-rpm-upload-test-1-1.noarch.rpm"])
+        RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", content)
         Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
 
     @staticmethod
