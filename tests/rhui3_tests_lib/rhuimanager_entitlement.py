@@ -57,7 +57,7 @@ class RHUIManagerEntitlements(object):
         
         repo_list = []
         
-        for line in match.split("\n"):
+        for line in match.splitlines():
             if "Name:" in line:
                 repo_list.append(line.replace("Name:", "").strip())
         return sorted(repo_list)
