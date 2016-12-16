@@ -74,5 +74,13 @@ def test_08_remove_custom_repo():
     RHUIManagerRepo.delete_repo(connection, ["custom-enttest"])
     nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
 
+def test_09_list_custom_entitlements():
+    '''
+       list custom content certificate entitlements, expect none
+    '''
+    Expect.enter(connection, "home")
+    list = RHUIManagerEntitlements.list_custom_entitlements(connection)
+    nose.tools.assert_equal(len(list), 0)
+
 def tearDown():
     print "*** Finished running %s. *** " % basename(__file__)
