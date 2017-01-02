@@ -49,7 +49,7 @@ class RHUIManagerClient(object):
     @staticmethod
     def create_docker_conf_rpm(connection, dirname, rpmname, rpmversion="", dockerport=""):
         '''
-        create a client configuration RPM from an entitlement certificate
+        create a docker client configuration RPM
         '''
         RHUIManager.screen(connection, "client")
         Expect.enter(connection, "d")
