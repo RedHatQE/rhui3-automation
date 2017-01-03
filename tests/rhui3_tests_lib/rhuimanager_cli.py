@@ -62,3 +62,22 @@ class RHUIManagerClient(object):
         Expect.expect(connection, "Port to serve Docker content on .*:")
         Expect.enter(connection, dockerport)
         Expect.expect(connection, ".*rhui \(" + "client" + "\) =>")
+
+    @staticmethod
+    def create_atomic_conf_pkg(connection, dirname, tarname, certpath, certkey, dockerport=""):
+        '''
+        create an atomic client configuration package (RHEL 7+ only)
+        '''
+        RHUIManager.screen(connection, "client")
+        Expect.enter(connection, "o")
+        Expect.expect(connection, "Full path to local directory.*:")
+        Expect.enter(connection, dirname)
+        Expect.expect(connection, "Name of the tar file.*:")
+        Expect.enter(connection, tarname)
+        Expect.expect(connection, "Full path to the entitlement certificate.*:")
+        Expect.enter(connection, certpath)
+        Expect.expect(connection, "Full path to the private key.*:")
+        Expect.enter(connection, certkey)
+        Expect.expect(connection, "Port to serve Docker content on .*:")
+        Expect.enter(connection, dockerport)
+        Expect.expect(connection, ".*rhui \(" + "client" + "\) =>")

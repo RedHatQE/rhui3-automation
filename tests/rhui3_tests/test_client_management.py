@@ -5,6 +5,10 @@ from rhui3_tests_lib.rhuimanager_repo import *
 
 from os.path import basename
 
+# The parts related to Atomic can be skipped because they only work on RHEL 7; BZ 1405083.
+import platform
+oldrhel = float(platform.linux_distribution()[1]) < 7
+
 logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
@@ -52,9 +56,42 @@ def test_03_create_docker_cli_rpm():
     Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "test -f /root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
 
-def test_04_cleanup():
+def test_04_add_atomic_repo():
     '''
-       remove created repos, entitlement and custom cli rpms
+       add the RHEL RHUI Atomic 7 Ostree Repo (RHEL 7+ only)
+    '''
+    if oldrhel:
+        return
+    RHUIManager.initial_run(connection)
+    RHUIManagerRepo.add_rh_repo_by_product(connection, ["RHEL RHUI Atomic 7 Ostree Repo"])
+
+def test_05_generate_atomic_ent_cert():
+    '''
+       generate an entitlement certificate for the Atomic repo (RHEL 7+ only)
+    '''
+    if oldrhel:
+        return
+    Expect.enter(connection, "home")
+    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
+    RHUIManagerClient.generate_ent_cert(connection, ["RHEL RHUI Atomic 7 Ostree Repo"], "test_atomic_ent_cli", "/root/")
+    Expect.enter(connection, 'q')
+    Expect.ping_pong(connection, "test -f /root/test_atomic_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
+    Expect.ping_pong(connection, "test -f /root/test_atomic_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
+
+def test_06_create_atomic_pkg():
+    '''
+       create an Atomic client configuration package (RHEL 7+ only)
+    '''
+    if oldrhel:
+        return
+    RHUIManager.initial_run(connection)
+    RHUIManagerClient.create_atomic_conf_pkg(connection, "/root", "test_atomic_pkg", "/root/test_atomic_ent_cli.crt", "/root/test_atomic_ent_cli.key")
+    Expect.enter(connection, 'q')
+    Expect.ping_pong(connection, "test -f /root/test_atomic_pkg.tar.gz && echo SUCCESS", "[^ ]SUCCESS")
+
+def test_99_cleanup():
+    '''
+       remove created repos, entitlements and custom cli rpms (and tar on RHEL 7+)
     '''
     RHUIManager.initial_run(connection)
     RHUIManagerRepo.delete_all_repos(connection)
@@ -63,6 +100,8 @@ def test_04_cleanup():
     Expect.ping_pong(connection, "rm -f /root/test_ent_cli.* && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_cli_rpm-3.0/ && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_docker_cli_rpm-4.0/ && echo SUCCESS", "[^ ]SUCCESS")
+    if not oldrhel:
+        Expect.ping_pong(connection, "rm -f /root/test_atomic_pkg.tar.gz && echo SUCCESS", "[^ ]SUCCESS")
     RHUIManager.initial_run(connection)
 
 def tearDown():
