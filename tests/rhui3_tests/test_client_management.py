@@ -5,9 +5,9 @@ from rhui3_tests_lib.rhuimanager_repo import *
 
 from os.path import basename
 
-# The parts related to Atomic can be skipped because they only work on RHEL 7; BZ 1405083.
+# The parts related to Atomic are applicable to RHEL 7+ only.
 import platform
-oldrhel = float(platform.linux_distribution()[1]) < 7
+atomic_unsupported = float(platform.linux_distribution()[1]) < 7
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -60,7 +60,7 @@ def test_04_add_atomic_repo():
     '''
        add the RHEL RHUI Atomic 7 Ostree Repo (RHEL 7+ only)
     '''
-    if oldrhel:
+    if atomic_unsupported:
         return
     RHUIManager.initial_run(connection)
     RHUIManagerRepo.add_rh_repo_by_product(connection, ["RHEL RHUI Atomic 7 Ostree Repo"])
@@ -69,7 +69,7 @@ def test_05_generate_atomic_ent_cert():
     '''
        generate an entitlement certificate for the Atomic repo (RHEL 7+ only)
     '''
-    if oldrhel:
+    if atomic_unsupported:
         return
     Expect.enter(connection, "home")
     Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
@@ -82,7 +82,7 @@ def test_06_create_atomic_pkg():
     '''
        create an Atomic client configuration package (RHEL 7+ only)
     '''
-    if oldrhel:
+    if atomic_unsupported:
         return
     RHUIManager.initial_run(connection)
     RHUIManagerClient.create_atomic_conf_pkg(connection, "/root", "test_atomic_pkg", "/root/test_atomic_ent_cli.crt", "/root/test_atomic_ent_cli.key")
@@ -100,7 +100,7 @@ def test_99_cleanup():
     Expect.ping_pong(connection, "rm -f /root/test_ent_cli.* && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_cli_rpm-3.0/ && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_docker_cli_rpm-4.0/ && echo SUCCESS", "[^ ]SUCCESS")
-    if not oldrhel:
+    if not atomic_unsupported:
         Expect.ping_pong(connection, "rm -f /root/test_atomic_ent_cli* && echo SUCCESS", "[^ ]SUCCESS")
         Expect.ping_pong(connection, "rm -f /root/test_atomic_pkg.tar.gz && echo SUCCESS", "[^ ]SUCCESS")
     RHUIManager.initial_run(connection)
