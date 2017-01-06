@@ -97,7 +97,7 @@ def test_99_cleanup():
     RHUIManagerRepo.delete_all_repos(connection)
     nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
     Expect.enter(connection, 'q')
-    Expect.ping_pong(connection, "rm -f /root/test_ent_cli.* && echo SUCCESS", "[^ ]SUCCESS")
+    Expect.ping_pong(connection, "rm -f /root/test_ent_cli* && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_cli_rpm-3.0/ && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_docker_cli_rpm-4.0/ && echo SUCCESS", "[^ ]SUCCESS")
     if not atomic_unsupported:
