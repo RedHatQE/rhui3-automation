@@ -125,7 +125,7 @@ json_dict = {}
 
 json_dict['AWSTemplateFormatVersion'] = '2010-09-09'
 
-    
+
 if args.gluster:
     fs_type = "gluster"
     if args.cds < 2:
@@ -156,12 +156,12 @@ if args.nfs:
 
 fs_type_f = fs_type
 
-if fs_type_f == "rhua":  
+if fs_type_f == "rhua":
     fs_type_f = "nfs"
 
 
 json_dict['Mappings'] = \
-  { u'RHEL7': {
+  {u'RHEL7': {
                 u'us-east-1': {u'AMI': u'ami-10663b78'},
                 u'eu-central-1': {u'AMI': u'ami-defdcfc3'},
                 u'us-west-1': {u'AMI': u'ami-9b40a5df'},
@@ -256,7 +256,7 @@ if (fs_type == "rhua"):
                                  u'BlockDeviceMappings' : [
                                             {
                                               "DeviceName" : "/dev/sdb",
-                                              "Ebs" : { "VolumeSize" : "100" }
+                                              "Ebs" : {"VolumeSize" : "100"}
                                             },
                                  ],
                                u'Tags': [{u'Key': u'Name',
@@ -287,7 +287,7 @@ if (fs_type == "gluster"):
                                    u'BlockDeviceMappings' : [
                                               {
                                                 "DeviceName" : "/dev/sdb",
-                                                "Ebs" : { "VolumeSize" : "100" }
+                                                "Ebs" : {"VolumeSize" : "100"}
                                               },
                                      ],
                                    u'KeyName': {u'Ref': u'KeyName'},
@@ -313,7 +313,7 @@ else:
 
 # clients
 os_dict = {5: "RHEL5", 6: "RHEL6", 7: "RHEL7"}
-for i in (5,6,7):
+for i in (5, 6, 7):
     num_cli_ver = args.__getattribute__("cli%i" % i)
     if num_cli_ver:
         for j in range(1, num_cli_ver + 1):
@@ -330,7 +330,7 @@ for i in (5,6,7):
                                              {u'Key': u'Role', u'Value': u'CLI'},
                                              {u'Key': u'OS', u'Value': u'%s' % os[:5]}]},
                    u'Type': u'AWS::EC2::Instance'}
-                   
+
 # nfs
 if (fs_type == "nfs"):
     json_dict['Resources']["nfs"] = \
@@ -341,7 +341,7 @@ if (fs_type == "nfs"):
                                  u'BlockDeviceMappings' : [
                                             {
                                               "DeviceName" : "/dev/sdb",
-                                              "Ebs" : { "VolumeSize" : "100" }
+                                              "Ebs" : {"VolumeSize" : "100"}
                                             },
                                  ],
                                u'Tags': [{u'Key': u'Name',
@@ -349,7 +349,7 @@ if (fs_type == "nfs"):
                                          {u'Key': u'Role', u'Value': u'NFS'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
-                   
+
 # dns
 if args.dns:
     json_dict['Resources']["dns"] = \
@@ -362,7 +362,7 @@ if args.dns:
                                          {u'Key': u'Role', u'Value': u'DNS'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
-                   
+
 # tests
 if args.dns:
     json_dict['Resources']["tests"] = \
@@ -375,18 +375,18 @@ if args.dns:
                                          {u'Key': u'Role', u'Value': u'TESTS'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
-               
+
 # HAProxy
 for i in range(1, args.haproxy + 1):
-        json_dict['Resources']["haproxy%i" % i] = \
-            {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
-                                   u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
-                                   u'KeyName': {u'Ref': u'KeyName'},
-                                   u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
-                                   u'Tags': [{u'Key': u'Name',
-                                              u'Value': {u'Fn::Join': [u'_', [u'HAProxy%i' % i, args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
-                                             {u'Key': u'Role', u'Value': u'HAProxy'},
-                                             ]},
+    json_dict['Resources']["haproxy%i" % i] = \
+        {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
+                               u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                               u'KeyName': {u'Ref': u'KeyName'},
+                               u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
+                               u'Tags': [{u'Key': u'Name',
+                                          u'Value': {u'Fn::Join': [u'_', [u'HAProxy%i' % i, args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
+                                         {u'Key': u'Role', u'Value': u'HAProxy'},
+                                         ]},
                    u'Type': u'AWS::EC2::Instance'}
 
 if args.vpcid and args.subnetid:
@@ -403,14 +403,14 @@ if args.vpcid and args.subnetid:
             {
                 "Type" : "AWS::EC2::EIP",
                 "Properties" : {"Domain" : "vpc",
-                                "InstanceId" : { "Ref" : key }
+                                "InstanceId" : {"Ref" : key}
                                }
             }
 
-    
+
 json_dict['Outputs'] = {}
 
-json_body =  json.dumps(json_dict, indent=4)
+json_body = json.dumps(json_dict, indent=4)
 
 region = regioninfo.RegionInfo(name=args.region,
                                endpoint="cloudformation." + args.region + ".amazonaws.com")
@@ -555,8 +555,8 @@ for instance in instances_detail:
     else:
         hostname = instance["public_hostname"]
     instance['hostname'] = hostname
-    
-    
+
+
 # output file
 
 if args.output_conf:
@@ -570,7 +570,7 @@ try:
         for instance in instances_detail:
             if instance["role"] == "RHUA":
                 f.write(str(instance['public_hostname']))
-                f.write(' ') 
+                f.write(' ')
                 f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                 f.write(ssh_key)
                 f.write('\n')
@@ -580,7 +580,7 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "RHUA":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ') 
+                    f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
                     f.write('\n')
@@ -590,7 +590,7 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "NFS":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ') 
+                    f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
                     f.write('\n')
@@ -600,7 +600,7 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "CDS":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ') 
+                    f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
                     f.write('\n')
@@ -609,7 +609,7 @@ try:
         for instance in instances_detail:
             if instance["role"] == "CDS":
                 f.write(str(instance['public_hostname']))
-                f.write(' ') 
+                f.write(' ')
                 f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                 f.write(ssh_key)
                 f.write('\n')
@@ -619,7 +619,7 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "DNS":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ') 
+                    f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
                     f.write('\n')
@@ -627,7 +627,7 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "RHUA":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ') 
+                    f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
                     f.write('\n')
@@ -635,38 +635,38 @@ try:
         if args.cli5 or args.cli6 or args.cli7:
             f.write('\n[CLI]\n')
             for instance in instances_detail:
-                    if instance["role"] == "CLI":
-                        f.write(str(instance['public_hostname']))
-                        f.write(' ') 
-                        f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                        f.write(ssh_key)
-                        f.write('\n')
+                if instance["role"] == "CLI":
+                    f.write(str(instance['public_hostname']))
+                    f.write(' ')
+                    f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
+                    f.write(ssh_key)
+                    f.write('\n')
         # tests
         if args.tests:
             f.write('\n[TESTS]\n')
             for instance in instances_detail:
-                    if instance["role"] == "TESTS":
-                        f.write(str(instance['public_hostname']))
-                        f.write(' ') 
-                        f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                        f.write(ssh_key)
-                        f.write('\n')
-        # haproxy
-        f.write('\n[HAPROXY]\n')
-        for instance in instances_detail:
-                if instance["role"] == "HAProxy":
+                if instance["role"] == "TESTS":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ') 
+                    f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
                     f.write('\n')
+        # haproxy
+        f.write('\n[HAPROXY]\n')
+        for instance in instances_detail:
+            if instance["role"] == "HAProxy":
+                f.write(str(instance['public_hostname']))
+                f.write(' ')
+                f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
+                f.write(ssh_key)
+                f.write('\n')
 
 
 except Exception as e:
     logging.error("got '%s' error processing: %s", e, args.output_conf)
     sys.exit(1)
-    
-    
+
+
 # --- close the channels
 for instance in instances_detail:
     logging.debug('closing instance %s channel', instance['hostname'])
