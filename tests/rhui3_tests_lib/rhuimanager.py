@@ -75,7 +75,7 @@ class RHUIManager(object):
         '''
         Select one item (single choice)
         '''
-        match = Expect.match(connection, re.compile(".*([0-9]+)\s+-\s+" + value + "\s*\n.*to abort:.*", re.DOTALL))
+        match = Expect.match(connection, re.compile(".*([0-9]+)\s+-\s+" + item + "\s*\n.*to abort:.*", re.DOTALL))
         Expect.enter(connection, match[0])
 
     @staticmethod
@@ -155,32 +155,29 @@ class RHUIManager(object):
         Expect.expect(connection, "rhui \(" + screen_name + "\) =>")
 
     @staticmethod
-    def initial_run(connection, crt="/etc/rhui/pem/ca.crt", key="/etc/rhui/pem/ca.key", cert_pw=None, days="", username="admin", password="admin"):
+    def initial_run(connection, username="admin", password="admin"):
         '''
         Do rhui-manager initial run
         '''
         Expect.enter(connection, "rhui-manager")
-        state = Expect.expect_list(connection, [(re.compile(".*Full path to the new signing CA certificate:.*", re.DOTALL), 1),
-                                                (re.compile(".*RHUI Username:.*", re.DOTALL),2),
-                                                (re.compile(".*rhui \(home\) =>.*", re.DOTALL), 3)])
-        if state in [1, 2]:
-            if state == 1:
-                # Need to answer sone first-run questions
-                Expect.enter(connection, crt)
-                Expect.expect(connection, "Full path to the new signing CA certificate private key:")
-                Expect.enter(connection, key)
-                Expect.expect(connection, "regenerated using rhui-manager.*:")
-                Expect.enter(connection, days)
-                Expect.expect(connection, "Enter pass phrase for.*:")
-                if cert_pw:
-                    Expect.enter(connection, cert_pw)
-                else:
-                    Expect.enter(connection, Util.get_ca_password(connection))
-                Expect.expect(connection, "RHUI Username:")
+        state = Expect.expect_list(connection, [(re.compile(".*RHUI Username:.*", re.DOTALL),1),
+                                                (re.compile(".*rhui \(home\) =>.*", re.DOTALL), 2)])
+        if state == 1:
             Expect.enter(connection, username)
             Expect.expect(connection, "RHUI Password:")
             Expect.enter(connection, password)
-            Expect.expect(connection, "rhui \(home\) =>")
+            password_state = Expect.expect_list(connection, [(re.compile(".*Invalid login.*", re.DOTALL),1),
+                                                (re.compile(".*rhui \(home\) =>.*", re.DOTALL), 2)])
+            if password_state == 1:
+                initial_password = Util.get_initial_password(connection)
+                Expect.enter(connection, "rhui-manager")
+                Expect.expect(connection, ".*RHUI Username:")
+                Expect.enter(connection, username)
+                Expect.expect(connection, "RHUI Password:")
+                Expect.enter(connection, initial_password)
+                Expect.expect(connection, "rhui \(home\) =>")
+            else:
+                pass
         else:
             # initial step was already performed by someone
             pass

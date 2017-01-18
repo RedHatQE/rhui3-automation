@@ -1,6 +1,7 @@
 """ RHUIManager Repo functions """
 
 import re
+from os.path import basename
 
 from stitches.expect import Expect, ExpectFailed
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -118,13 +119,10 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "Import Repositories:.*to abort:", 660)
         Expect.enter(connection, "3")
         RHUIManager.select(connection, repolist)
-        repocheck = list(repolist)
+        repolist_mod = list(repolist)
         for repo in repolist:
-            #adding repo titles to check list
-            repotitle = re.sub(" \\\\\([^\(]*\\\\\)$", "", repo)
-            if not repotitle in repocheck:
-                repocheck.append(repotitle)
-        RHUIManager.proceed_with_check(connection, "The following product repositories will be deployed:", [repolist[0].replace(".*", ""), repolist[0].replace(".*", "") + " \(6Server-x86_64\) \(Yum\)"])
+            repolist_mod.append(re.sub(" \\\\\([a-zA-Z0-9_-]*\\\\\) \\\\\(Yum\\\\\)", "", repo))
+        RHUIManager.proceed_with_check(connection, "The following product repositories will be deployed:", repolist_mod)
         Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
 
     @staticmethod
@@ -202,10 +200,61 @@ class RHUIManagerRepo(object):
         '''
         upload content to a custom repository
         '''
+        # Temporarily quit rhui-manager and check whether "path" is a file or a directory.
+        # If it is a directory, get a list of *.rpm files in it.
+        Expect.enter(connection, 'q')
+        Expect.enter(connection, "stat -c %F " + path)
+        path_type = Expect.expect_list(connection, [(re.compile(".*regular file.*", re.DOTALL), 1), (re.compile(".*directory.*", re.DOTALL), 2)])
+        if path_type == 1:
+            content = [basename(path)]
+        elif path_type == 2:
+            Expect.enter(connection, "echo " + path + "/*.rpm")
+            output = Expect.match(connection, re.compile("(.*)", re.DOTALL))[0]
+            rpm_files = output.splitlines()[1]
+            content = []
+            for rpm_file in rpm_files.split():
+                content.append(basename(rpm_file))
+        else:
+            # This should not happen. Getting here means that "path" is neither a file nor a directory.
+            # Anyway, going on with no content, leaving it up to proceed_with_check() to handle this situation.
+            content = []
+        # Start rhui-manager again and continue.
+        RHUIManager.initial_run(connection)
         RHUIManager.screen(connection, "repo")
         Expect.enter(connection, "u")
         RHUIManager.select(connection, repolist)
         Expect.expect(connection, "will be uploaded:")
         Expect.enter(connection, path)
-        RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", ["rhui-rpm-upload-test-1-1.noarch.rpm"])
+        RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", content)
         Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
+
+    @staticmethod
+    def check_for_package(connection, reponame, package):
+        '''
+        list packages in a repository
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "p")
+
+        RHUIManager.select_one(connection, reponame)
+        Expect.expect(connection, "\(blank line for no filter\):")
+        Expect.enter(connection, package)
+
+        pattern = re.compile('.*only\.\r\n(.*)\r\n-+\r\nrhui\s* \(repo\)\s* =>',
+                             re.DOTALL)
+        ret = Expect.match(connection, pattern, grouplist=[1])[0]
+        reslist = map(lambda x: x.strip(), ret.split("\r\n"))
+        packagelist = []
+        for line in reslist:
+            if line == '':
+                continue
+            if line == 'Packages:':
+                continue
+            if line == 'No packages found that match the given filter.':
+                continue
+            if line == 'No packages in the repository.':
+                continue
+            packagelist.append(line)
+
+        return packagelist
+
