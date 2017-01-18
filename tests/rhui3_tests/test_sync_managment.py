@@ -11,18 +11,12 @@ logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
-with open('/tmp/rhui3-tests/tests/rhui3_tests/rhui_manager.yaml', 'r') as file:
-    doc = yaml.load(file)
-
-rhui_login = doc['rhui_login']
-rhui_pass = doc['rhui_pass']
-
 def setUp():
     print "*** Running %s: *** " % basename(__file__)
 
 def test_01_setup():
     '''do rhui-manager login, upload RH cert, add a repo to sync '''
-    RHUIManager.initial_run(connection, username = rhui_login, password = rhui_pass)
+    RHUIManager.initial_run(connection)
     RHUIManagerEntitlements.upload_rh_certificate(connection)
     Expect.enter(connection, "home")
     Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
@@ -40,12 +34,11 @@ def test_03_check_sync_status():
 
 def test_04_cleanup():
     '''Wait until repo is synced and remove it then'''
-    reposync = ["In Progress", "", ""]
-    while reposync[0] == "In Progress" or reposync[0] == "Never":
+    reposync = ["", "", "Running"]
+    while reposync[2] == "Running" or reposync[2] == "Never":
         time.sleep(10)
         reposync = RHUIManagerSync.get_repo_status(connection, "Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\)")
     nose.tools.assert_equal(reposync[2], "Success")
-
 
     '''remove the RH repo '''
     Expect.enter(connection, "home")
