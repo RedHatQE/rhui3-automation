@@ -12,44 +12,6 @@ class RHUIManagerSync(object):
     Represents -= Synchronization Status =- RHUI screen
     '''
     @staticmethod
-    def sync_cds(connection, cdslist):
-        '''
-        sync an individual CDS immediately
-        '''
-        RHUIManager.screen(connection, "sync")
-        Expect.enter(connection, "sc")
-        RHUIManager.select(connection, cdslist)
-        RHUIManager.proceed_with_check(connection, "The following CDS instances will be scheduled for synchronization:", cdslist)
-        RHUIManager.quit(connection)
-
-    @staticmethod
-    def sync_cluster(connection, clusterlist):
-        '''
-        sync a CDS cluster immediately
-        '''
-        RHUIManager.screen(connection, "sync")
-        Expect.enter(connection, "sl")
-        RHUIManager.select(connection, clusterlist)
-        RHUIManager.proceed_with_check(connection, "The following CDS clusters will be scheduled for synchronization:", clusterlist)
-        RHUIManager.quit(connection)
-
-    @staticmethod
-    def get_cds_status(connection, cdsname):
-        '''
-        display CDS sync summary
-        '''
-        RHUIManager.screen(connection, "sync")
-        Expect.enter(connection, "dc")
-        res_list = Expect.match(connection, re.compile(".*\n" + cdsname.replace(".", "\.") + "[\.\s]*\[([^\n]*)\].*" + cdsname.replace(".", "\.") + "\s*\r\n([^\n]*)\r\n", re.DOTALL), [1, 2], 60)
-        connection.cli.exec_command("killall -s SIGINT rhui-manager")
-        ret_list = []
-        for val in [res_list[0]] + res_list[1].split("             "):
-            val = Util.uncolorify(val.strip())
-            ret_list.append(val)
-        RHUIManager.quit(connection)
-        return ret_list
-
-    @staticmethod
     def sync_repo(connection, repolist):
         '''
         sync an individual repository immediately
@@ -60,7 +22,7 @@ class RHUIManagerSync(object):
         Expect.enter(connection, "l")
         RHUIManager.select(connection, repolist)
         RHUIManager.proceed_with_check(connection, "The following repositories will be scheduled for synchronization:", repolist)
-        RHUIManager.quit(connection)
+        Expect.expect(connection, ".*rhui \(" + "sync" + "\) =>")
 
     @staticmethod
     def get_repo_status(connection, reponame):
@@ -76,5 +38,7 @@ class RHUIManagerSync(object):
         ret_list = res.split("             ")
         for i in range(len(ret_list)):
             ret_list[i] = ret_list[i].strip()
-        RHUIManager.quit(connection)
+
+        Expect.enter(connection, '\x03')
+        Expect.expect(connection, ".*rhui \(" + "sync" + "\) =>")
         return ret_list
