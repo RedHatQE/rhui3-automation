@@ -1,6 +1,7 @@
 import nose, unittest, stitches, logging, yaml
 
 from rhui3_tests_lib.rhuimanager_cli import *
+from rhui3_tests_lib.rhuimanager_entitlement import *
 from rhui3_tests_lib.rhuimanager_repo import *
 
 from os.path import basename
@@ -20,14 +21,22 @@ def test_01_repo_setup():
     '''do initial rhui-manager run'''
     RHUIManager.initial_run(connection)
 
-def test_02_add_repos():
+def test_02_upload_rh_certificate():
+    '''
+       upload a new or updated Red Hat content certificate
+    '''
+    list = RHUIManagerEntitlements.upload_rh_certificate(connection)
+    nose.tools.assert_not_equal(len(list), 0)
+
+def test_03_add_repos():
     '''
        add a custom and RH content repos to protect by a client entitlement certificate
     '''
+    Expect.enter(connection, "home")
     RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
     RHUIManagerRepo.add_rh_repo_by_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\) \(Yum\)"])
 
-def test_02_generate_ent_cert():
+def test_04_generate_ent_cert():
     '''
        generate an entitlement certificate
     '''
@@ -38,7 +47,7 @@ def test_02_generate_ent_cert():
     Expect.ping_pong(connection, "test -f /root/test_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "test -f /root/test_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
 
-def test_02_create_cli_rpm():
+def test_05_create_cli_rpm():
     '''
        create a client configuration RPM from an entitlement certificate
     '''
@@ -47,7 +56,7 @@ def test_02_create_cli_rpm():
     Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
 
-def test_03_create_docker_cli_rpm():
+def test_06_create_docker_cli_rpm():
     '''
        create a docker client configuration RPM
     '''
@@ -56,7 +65,7 @@ def test_03_create_docker_cli_rpm():
     Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "test -f /root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
 
-def test_04_add_atomic_repo():
+def test_07_add_atomic_repo():
     '''
        add the RHEL RHUI Atomic 7 Ostree Repo (RHEL 7+ only)
     '''
@@ -65,7 +74,7 @@ def test_04_add_atomic_repo():
     RHUIManager.initial_run(connection)
     RHUIManagerRepo.add_rh_repo_by_product(connection, ["RHEL RHUI Atomic 7 Ostree Repo"])
 
-def test_05_generate_atomic_ent_cert():
+def test_08_generate_atomic_ent_cert():
     '''
        generate an entitlement certificate for the Atomic repo (RHEL 7+ only)
     '''
@@ -78,7 +87,7 @@ def test_05_generate_atomic_ent_cert():
     Expect.ping_pong(connection, "test -f /root/test_atomic_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "test -f /root/test_atomic_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
 
-def test_06_create_atomic_pkg():
+def test_09_create_atomic_pkg():
     '''
        create an Atomic client configuration package (RHEL 7+ only)
     '''
