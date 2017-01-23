@@ -66,8 +66,6 @@ argparser.add_argument('--output-conf', help='output file')
 argparser.add_argument('--region', default="eu-west-1", help='use specified region')
 argparser.add_argument('--debug', action='store_const', const=True,
                        default=False, help='debug mode')
-argparser.add_argument('--fakecf', action='store_const', const=True,
-                       default=False, help='use fakecf creator')
 argparser.add_argument('--dry-run', action='store_const', const=True,
                        default=False, help='do not run stack creation, validate only')
 argparser.add_argument('--parameters', metavar='<expr>', nargs="*",
@@ -419,15 +417,9 @@ if not region:
     logging.error("Unable to connect to region: " + args.region)
     sys.exit(1)
 
-if args.fakecf:
-    from fakecf.fakecf import FakeCF
-    con_cf = FakeCF(aws_access_key_id=ec2_key,
-                    aws_secret_access_key=ec2_secret_key,
-                    region=args.region)
-else:
-    con_cf = cloudformation.connection.CloudFormationConnection(aws_access_key_id=ec2_key,
-                                                                aws_secret_access_key=ec2_secret_key,
-                                                                region=region)
+con_cf = cloudformation.connection.CloudFormationConnection(aws_access_key_id=ec2_key,
+                                                            aws_secret_access_key=ec2_secret_key,
+                                                            region=region)
 
 con_ec2 = ec2.connect_to_region(args.region,
                                 aws_access_key_id=ec2_key,
