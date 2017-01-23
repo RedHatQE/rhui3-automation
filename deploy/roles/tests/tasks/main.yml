@@ -82,7 +82,7 @@
                   user='root'
                   state=present
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) }}"
+  with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) + groups['CLI']|default([]) }}"
   when: slurp_id_rsa_test|success
   tags: tests
   

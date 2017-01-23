@@ -6,3 +6,38 @@
   with_indexed_items: "{{ groups['CLI'] }}"
   when: "'CLI' in groups and item.1 == inventory_hostname"
   tags: cli
+
+- name: install docker-client if RHEL7
+  package: name=docker state=present enablerepo=rhui-REGION-rhel-server-extras
+  with_indexed_items: "{{ groups['CLI'] }}"
+  when: >
+    "'CLI' in groups" and
+    ansible_os_family == "RedHat" and
+    ansible_distribution_major_version|int == 7
+  tags: cli
+
+- name: install epel if RHEL6
+  package: >
+    name=http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+    state=present
+  with_indexed_items: "{{ groups['CLI'] }}"
+  when: >
+    "'CLI' in groups" and
+    ansible_os_family == "RedHat" and
+    ansible_distribution_major_version|int == 6
+  tags: cli
+
+- name: install docker-io if RHEL6
+  package: name=docker-io state=present
+  with_indexed_items: "{{ groups['CLI'] }}"
+  when: >
+    "'CLI' in groups" and
+    ansible_os_family == "RedHat" and
+    ansible_distribution_major_version|int == 6
+  tags: cli
+
+- name: enable and run docker
+  service: name=docker state=started enabled=yes
+  with_indexed_items: "{{ groups['CLI'] }}"
+  when: "'CLI' in groups"
+  tags: cli
