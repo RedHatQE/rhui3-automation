@@ -68,6 +68,16 @@ class Util(object):
         Expect.expect(connection, "[^ ]SUCCESS.*root@", 60)
 
     @staticmethod
+    def remove_cli_rpm(connection, rpmlist):
+        '''
+        Remove installed rpms from cli
+        '''
+        Expect.enter(connection, "")
+        Expect.expect(connection, "root@")
+        Expect.enter(connection, "rpm -e " + ' '.join(rpmlist) + " && echo SUCCESS")
+        Expect.expect(connection, "[^ ]SUCCESS.*root@", 60)
+
+    @staticmethod
     def install_rpm_from_rhua(rhua_connection, connection, rpmpath):
         '''
         Transfer RPM package from RHUA host to the instance and install it
