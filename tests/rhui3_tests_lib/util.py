@@ -58,17 +58,17 @@ class Util(object):
                 continue
 
     @staticmethod
-    def remove_conf_rpm(connection):
+    def remove_amazon_rhui_conf_rpm(connection):
         '''
-        Remove RHUI configuration rpm from instance (which owns /etc/yum/pluginconf.d/rhui-lb.conf file)
+        Remove Amazon RHUI configuration rpm from instance (which owns /etc/yum/pluginconf.d/rhui-lb.conf file)
         '''
         Expect.enter(connection, "")
         Expect.expect(connection, "root@")
-        Expect.enter(connection, "([ ! -f /etc/yum/pluginconf.d/rhui-lb.conf ] && echo SUCCESS ) || (rpm -e `rpm -qf --queryformat %{NAME} /etc/yum/pluginconf.d/rhui-lb.conf` && echo SUCCESS)")
+        Expect.enter(connection, "([ ! -f /etc/yum/pluginconf.d/rhui-lb.conf ] && echo SUCCESS ) || (rpm -e `rpm -qf --queryformat '%{NAME}\n' /etc/yum/pluginconf.d/rhui-lb.conf` && echo SUCCESS)")
         Expect.expect(connection, "[^ ]SUCCESS.*root@", 60)
 
     @staticmethod
-    def remove_cli_rpm(connection, rpmlist):
+    def remove_rpm(connection, rpmlist):
         '''
         Remove installed rpms from cli
         '''

@@ -93,11 +93,11 @@ def test_07_create_cli_rpm():
     Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
 
-def test_08_remove_rhui_conf_rpm():
+def test_08_remove_amazon_rhui_conf_rpm():
     '''
-       remove rhui configuration rpm from client
+       remove amazon rhui configuration rpm from client
     '''
-    Util.remove_conf_rpm(cli)
+    Util.remove_amazon_rhui_conf_rpm(cli)
 
 def test_09_install_conf_rpm():
     '''
@@ -138,7 +138,7 @@ def test_13_install_rpm_from_rh_repo():
        install rpm from a RH repo
     '''
     if atomic_unsupported:
-       Expect.ping_pong(cli, "yum install -y mongodb && echo SUCCESS", "[^ ]SUCCESS", 60)
+       Expect.ping_pong(cli, "yum install -y js && echo SUCCESS", "[^ ]SUCCESS", 60)
     else:
        Expect.ping_pong(cli, "yum install -y libntirpc && echo SUCCESS", "[^ ]SUCCESS", 60)
 
@@ -153,14 +153,18 @@ def test_14_create_docker_cli_rpm():
 
 def test_15_install_docker_rpm():
     '''
-       install a docker client configuration RPM to client
+       install a docker client configuration RPM to client (RHEL 7+ CLI only)
     '''
+    if atomic_unsupported:
+        return    
     Util.install_rpm_from_rhua(connection, cli, "/root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm")
 
 def test_16_check_docker_rpm_version():
     '''
-       check docker rpm version
+       check docker rpm version (RHEL 7+ CLI only)
     '''
+    if atomic_unsupported:
+        return  
     Expect.ping_pong(cli, "[ `rpm -q --queryformat \"%{VERSION}\" test_docker_cli_rpm` = '4.0' ] && echo SUCCESS", "[^ ]SUCCESS")
 
 def test_17_add_atomic_repo():
@@ -218,11 +222,10 @@ def test_99_cleanup():
     if not atomic_unsupported:
         Expect.ping_pong(connection, "rm -f /root/test_atomic_ent_cli* && echo SUCCESS", "[^ ]SUCCESS")
         Expect.ping_pong(connection, "rm -f /root/test_atomic_pkg.tar.gz && echo SUCCESS", "[^ ]SUCCESS")
-        Util.remove_cli_rpm(cli, ["libntirpc"])
+        Util.remove_rpm(cli, ["libntirpc", "test_docker_cli_rpm"])
     else:
-        Util.remove_cli_rpm(cli, ["mongodb"])
-    Util.remove_conf_rpm(cli)
-    Util.remove_cli_rpm(cli, ["test_cli_rpm", "test_docker_cli_rpm"])
+        Util.remove_rpm(cli, ["js"])
+    Util.remove_rpm(cli, ["test_cli_rpm", "rhui-rpm-upload-test"])
 
 def tearDown():
     print "*** Finished running %s. *** " % basename(__file__)
