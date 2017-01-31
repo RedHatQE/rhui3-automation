@@ -6,3 +6,21 @@
   with_indexed_items: "{{ groups['CLI'] }}"
   when: "'CLI' in groups and item.1 == inventory_hostname"
   tags: cli
+
+- name: install docker if RHEL7
+  package: name=docker state=present enablerepo=rhui-REGION-rhel-server-extras
+  with_indexed_items: "{{ groups['CLI'] }}"
+  when: >
+    "'CLI' in groups" and
+    ansible_os_family == "RedHat" and
+    ansible_distribution_major_version|int == 7
+  tags: cli
+  
+- name: enable and run docker
+  service: name=docker state=started enabled=yes
+  with_indexed_items: "{{ groups['CLI'] }}"
+  when: >
+    "'CLI' in groups" and
+    ansible_os_family == "RedHat" and
+    ansible_distribution_major_version|int == 7
+  tags: cli
