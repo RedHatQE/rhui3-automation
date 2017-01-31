@@ -5,9 +5,10 @@ Setup of the RHUI 3 Test Framework
 Requirements
 ---------------
 Same as the [general RHUI deployment](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md), plus a ZIP file with the following files in the root of the archive:
-* `rhcert.pem` — This must be a valid Red Hat content certificate allowing access to the following repositories:
+* `rhcert.pem` — This must be a valid Red Hat content certificate allowing access to the following products:
   * _Red Hat Update Infrastructure 2.0 (RPMs)_
   * _RHEL RHUI Atomic 7 Ostree Repo_
+  * _RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS_
 * `rhui-rpm-upload-test-1-1.noarch.rpm` — This package will be uploaded to a custom repository.
 * `rhui-rpm-upload-trial-1-1.noarch.rpm` — This package will also be uploaded to a custom repository.
 
