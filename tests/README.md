@@ -22,14 +22,12 @@ To install and run the test suite as part of the initial deployment, use the fol
 
 Provide any other optional variables described in the RHUI deployment Readme as needed.
 
-To install and run the test suite after a completed deployment, use this command instead:
+To install the test suite after a completed deployment, use this command instead:
 
 `ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "extra_files=~/Path/To/Your/file.zip" --tags tests`
 
-The framework will be installed in the `/tmp/rhui3-tests` directory on the TEST machine.
-
-To run the tests, execute the following command:
+And then, to run the tests, execute the following command:
 
 `ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --tags run_tests`
 
-The output of the tests will be stored in `/tmp/rhui3test.log` on the TEST machine.
+The framework will be installed in the `/tmp/rhui3-tests` directory on the TEST machine. The output of the tests will be stored in `/tmp/rhui3test.log` on the TEST machine.
