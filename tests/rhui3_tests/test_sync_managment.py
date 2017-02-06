@@ -18,11 +18,7 @@ def test_01_setup():
     '''do rhui-manager login, upload RH cert, add a repo to sync '''
     RHUIManager.initial_run(connection)
     RHUIManagerEntitlements.upload_rh_certificate(connection)
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
     RHUIManagerRepo.add_rh_repo_by_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\) \(Yum\)"])
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
 
 def test_02_sync_repo():
     '''sync a RH repo '''
@@ -41,8 +37,6 @@ def test_04_cleanup():
     nose.tools.assert_equal(reposync[2], "Success")
 
     '''remove the RH repo '''
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
     RHUIManagerRepo.delete_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\).*"])
 
 def tearDown():

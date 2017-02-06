@@ -23,7 +23,7 @@ class RHUIManagerClient(object):
         Expect.expect(connection, "Number of days the certificate should be valid.*:")
         Expect.enter(connection, validity_days)
         RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, ".*rhui \(" + "client" + "\) =>")
+        RHUIManager.quit(connection)
 
     @staticmethod
     def create_conf_rpm(connection, dirname, certpath, certkey, rpmname, rpmversion="", unprotected_repos=None):
@@ -44,7 +44,7 @@ class RHUIManagerClient(object):
         Expect.enter(connection, certkey)
         if unprotected_repos:
             RHUIManager.select(connection, unprotected_repos)
-        Expect.expect(connection, ".*rhui \(" + "client" + "\) =>")
+        RHUIManager.quit(connection)
 
     @staticmethod
     def create_docker_conf_rpm(connection, dirname, rpmname, rpmversion="", dockerport=""):
@@ -61,7 +61,7 @@ class RHUIManagerClient(object):
         Expect.enter(connection, rpmversion)
         Expect.expect(connection, "Port to serve Docker content on .*:")
         Expect.enter(connection, dockerport)
-        Expect.expect(connection, ".*rhui \(" + "client" + "\) =>")
+        RHUIManager.quit(connection)
 
     @staticmethod
     def create_atomic_conf_pkg(connection, dirname, tarname, certpath, certkey, dockerport=""):
@@ -80,4 +80,4 @@ class RHUIManagerClient(object):
         Expect.enter(connection, certkey)
         Expect.expect(connection, "Port to serve Docker content on .*:")
         Expect.enter(connection, dockerport)
-        Expect.expect(connection, ".*rhui \(" + "client" + "\) =>")
+        RHUIManager.quit(connection)

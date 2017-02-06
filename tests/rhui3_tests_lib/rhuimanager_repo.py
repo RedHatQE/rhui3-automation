@@ -78,11 +78,10 @@ class RHUIManagerRepo(object):
                 checklist.append("Red Hat GPG Key: No")
     
             RHUIManager.proceed_with_check(connection, "The following repository will be created:", checklist)
-            Expect.expect(connection, "Successfully created repository *")
-            Expect.enter(connection, "home")
+            RHUIManager.quit(connection, "Successfully created repository *")
         else:      
             Expect.enter(connection, '\x03')
-            Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
+            RHUIManager.quit(connection)
 
     @staticmethod
     def add_rh_repo_all(connection):
@@ -94,7 +93,7 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "Import Repositories:.*to abort:", 660)
         Expect.enter(connection, "1")
         RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>", 180)
+        RHUIManager.quit(connection, "", 180)
 
     @staticmethod
     def add_rh_repo_by_product(connection, productlist):
@@ -107,7 +106,7 @@ class RHUIManagerRepo(object):
         Expect.enter(connection, "2")
         RHUIManager.select(connection, productlist)
         RHUIManager.proceed_with_check(connection, "The following products will be deployed:", productlist)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+        RHUIManager.quit(connection)
 
     @staticmethod
     def add_rh_repo_by_repo(connection, repolist):
@@ -123,7 +122,7 @@ class RHUIManagerRepo(object):
         for repo in repolist:
             repolist_mod.append(re.sub(" \\\\\([a-zA-Z0-9_-]*\\\\\) \\\\\(Yum\\\\\)", "", repo))
         RHUIManager.proceed_with_check(connection, "The following product repositories will be deployed:", repolist_mod)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+        RHUIManager.quit(connection)
 
     @staticmethod
     def add_docker_container(connection, containername, containerid="", displayname=""):
@@ -142,7 +141,7 @@ class RHUIManagerRepo(object):
         ["Container Id: " + containername.replace("/","_").replace(".","_"),
          "Display Name: " + displayname,
          "Upstream Container Name: " + containername])
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+        RHUIManager.quit(connection)
 
     @staticmethod
     def list(connection):
@@ -168,6 +167,7 @@ class RHUIManagerRepo(object):
             if "No repositories are currently managed by the RHUI" in line:
                 continue
             repolist.append(line)
+        Expect.enter(connection, 'q')
         return repolist
 
     @staticmethod
@@ -179,7 +179,7 @@ class RHUIManagerRepo(object):
         Expect.enter(connection, "d")
         RHUIManager.select(connection, repolist)
         RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+        RHUIManager.quit(connection)
 
     @staticmethod
     def delete_all_repos(connection):
@@ -193,7 +193,7 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "Enter value .*:")
         Expect.enter(connection, "c")
         RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>", 360)
+        RHUIManager.quit(connection, "", 360)
 
     @staticmethod
     def upload_content(connection, repolist, path):
@@ -226,7 +226,7 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "will be uploaded:")
         Expect.enter(connection, path)
         RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", content)
-        Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
+        RHUIManager.quit(connection)
 
     @staticmethod
     def check_for_package(connection, reponame, package):
@@ -255,6 +255,6 @@ class RHUIManagerRepo(object):
             if line == 'No packages in the repository.':
                 continue
             packagelist.append(line)
-
+        Expect.enter(connection, 'q')
         return packagelist
 

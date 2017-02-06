@@ -22,7 +22,7 @@ class RHUIManagerSync(object):
         Expect.enter(connection, "l")
         RHUIManager.select(connection, repolist)
         RHUIManager.proceed_with_check(connection, "The following repositories will be scheduled for synchronization:", repolist)
-        Expect.expect(connection, ".*rhui \(" + "sync" + "\) =>")
+        RHUIManager.quit(connection)
 
     @staticmethod
     def get_repo_status(connection, reponame):
@@ -40,5 +40,5 @@ class RHUIManagerSync(object):
             ret_list[i] = ret_list[i].strip()
 
         Expect.enter(connection, '\x03')
-        Expect.expect(connection, ".*rhui \(" + "sync" + "\) =>")
+        Expect.enter(connection, 'q') 
         return ret_list
