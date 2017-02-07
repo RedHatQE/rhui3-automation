@@ -14,7 +14,7 @@ Same as the [general RHUI deployment](https://github.com/RedHatQE/rhui3-automati
 
 Usage
 --------
-You can include the test stage in a RHUI 3 deployment by providing the address of your TEST machine in the `[TEST]` section of the your `hosts.cfg` file; see the [RHUI deployment Readme](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md). Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the required ZIP file as a parameter of the `--extra-vars` option.
+You can include the test stage in a RHUI 3 deployment by providing the address of your TEST machine in the `[TEST]` section and the address of your CLI machine in the `[CLI]` section of the `hosts.cfg` file; see the [RHUI deployment Readme](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md). Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the required ZIP file as a parameter of the `--extra-vars` option.
 
 To install and run the test suite as part of the initial deployment or after a completed deployment, use the following command:
 
