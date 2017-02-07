@@ -24,6 +24,7 @@ class RHUIManagerEntitlements(object):
         '''
         RHUIManager.screen(connection, "entitlements")
         lines = RHUIManager.list_lines(connection, prompt=RHUIManagerEntitlements.prompt)
+        Expect.enter(connection, 'q')
         return lines
     
     @staticmethod
@@ -42,6 +43,7 @@ class RHUIManagerEntitlements(object):
         pattern = re.compile('(.*?\r\n.*?pem)', re.DOTALL)
         for entitlement in pattern.findall(matched_string):
             entitlements_list.append(entitlement.strip())
+        Expect.enter(connection, 'q')
         return entitlements_list
 
 
@@ -60,6 +62,7 @@ class RHUIManagerEntitlements(object):
         for line in match.splitlines():
             if "Name:" in line:
                 repo_list.append(line.replace("Name:", "").strip())
+        Expect.enter(connection, 'q')
         return sorted(repo_list)
 
     @staticmethod
@@ -85,5 +88,6 @@ class RHUIManagerEntitlements(object):
         pattern = re.compile('(.*?\r\n.*?pem)', re.DOTALL)
         for entitlement in pattern.findall(matched_string):
             entitlements_list.append(entitlement.strip())
+        Expect.enter(connection, 'q')
         return entitlements_list
 

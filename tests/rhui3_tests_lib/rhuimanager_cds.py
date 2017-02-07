@@ -69,7 +69,7 @@ class RHUIManagerCds(object):
         # all OK, confirm
         Expect.enter(connection, "y")
         # some installation and configuration through Puppet happens here, let it take its time
-        Expect.expect(connection, "The CDS was successfully configured." + ".*rhui \(.*\) =>", 180)
+        RHUIManager.quit(connection, "The CDS was successfully configured.", 180)
 
 
     @staticmethod
@@ -81,7 +81,7 @@ class RHUIManagerCds(object):
         Expect.enter(connection, "d")
         RHUIManager.select_items(connection, *cdses)
         Expect.enter(connection, "y")
-        Expect.expect(connection, "Unregistered" + ".*rhui \(.*\) =>", 180)
+        RHUIManager.quit(connection, "Unregistered", 180)
 
     @staticmethod
     def list(connection):
@@ -92,6 +92,7 @@ class RHUIManagerCds(object):
         # eating prompt!!
         lines = RHUIManager.list_lines(connection, prompt=RHUIManagerCds.prompt)
         ret = Cds.parse(lines)
+        Expect.enter(connection, 'q')
         return [cds for _, cds in ret]
 
 

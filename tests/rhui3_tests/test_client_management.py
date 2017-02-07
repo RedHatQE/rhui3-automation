@@ -39,8 +39,6 @@ def test_03_add_cds():
     '''
         add a CDS
     '''
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
     cds_list = RHUIManagerCds.list(connection)
     nose.tools.assert_equal(cds_list, [])
     cds = Cds()
@@ -50,8 +48,6 @@ def test_04_add_hap():
     '''
         add an HAProxy Load-balancer
     '''
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
     hap_list = RHUIManagerHap.list(connection)
     nose.tools.assert_equal(hap_list, [])
     hap = Hap()
@@ -61,26 +57,19 @@ def test_05_add_repos_upload_rpm_sync():
     '''
        add a custom and RH content repos to protect by a cli entitlement cert, upload rpm, sync
     '''
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
     RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
     RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
     RHUIManagerRepo.add_rh_repo_by_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\) \(Yum\)", "RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS \(7Server-x86_64\) \(Yum\)"])
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
     RHUIManagerSync.sync_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\)", "RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS \(7Server-x86_64\)"])
 
 def test_06_generate_ent_cert():
     '''
        generate an entitlement certificate
     '''
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
     if atomic_unsupported:
        RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", "Red Hat Update Infrastructure 2.0 \(RPMs\)"], "test_ent_cli", "/root/")
     else:
        RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", "RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS"], "test_ent_cli", "/root/")
-    Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "test -f /root/test_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "test -f /root/test_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
 
@@ -90,7 +79,6 @@ def test_07_create_cli_rpm():
     '''
     RHUIManager.initial_run(connection)
     RHUIManagerClient.create_conf_rpm(connection, "/root", "/root/test_ent_cli.crt", "/root/test_ent_cli.key", "test_cli_rpm", "3.0")
-    Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
 
 def test_08_remove_amazon_rhui_conf_rpm():
@@ -125,7 +113,6 @@ def test_11_check_repo_sync_status():
             reposync = RHUIManagerSync.get_repo_status(connection, "RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS \(7Server-x86_64\)")
 
     nose.tools.assert_equal(reposync[2], "Success")
-    Expect.enter(connection, 'q')
 
 def test_12_install_rpm_from_custom_repo():
     '''
@@ -148,7 +135,6 @@ def test_14_create_docker_cli_rpm():
     '''
     RHUIManager.initial_run(connection)
     RHUIManagerClient.create_docker_conf_rpm(connection, "/root", "test_docker_cli_rpm", "4.0")
-    Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "test -f /root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
 
 def test_15_install_docker_rpm():
@@ -182,10 +168,7 @@ def test_18_generate_atomic_ent_cert():
     '''
     if atomic_unsupported:
         return
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
     RHUIManagerClient.generate_ent_cert(connection, ["RHEL RHUI Atomic 7 Ostree Repo"], "test_atomic_ent_cli", "/root/")
-    Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "test -f /root/test_atomic_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "test -f /root/test_atomic_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
 
@@ -197,7 +180,6 @@ def test_19_create_atomic_pkg():
         return
     RHUIManager.initial_run(connection)
     RHUIManagerClient.create_atomic_conf_pkg(connection, "/root", "test_atomic_pkg", "/root/test_atomic_ent_cli.crt", "/root/test_atomic_ent_cli.key")
-    Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "test -f /root/test_atomic_pkg.tar.gz && echo SUCCESS", "[^ ]SUCCESS")
 
 def test_99_cleanup():
@@ -207,15 +189,10 @@ def test_99_cleanup():
     RHUIManager.initial_run(connection)
     RHUIManagerRepo.delete_all_repos(connection)
     nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
     hap = Hap()
     RHUIManagerHap.delete_haps(connection, hap)
-    Expect.enter(connection, "home")
-    Expect.expect(connection, ".*rhui \(" + "home" + "\) =>")
     cds = Cds()
     RHUIManagerCds.delete_cdses(connection, cds)
-    Expect.enter(connection, 'q')
     Expect.ping_pong(connection, "rm -f /root/test_ent_cli* && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_cli_rpm-3.0/ && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_docker_cli_rpm-4.0/ && echo SUCCESS", "[^ ]SUCCESS")

@@ -69,7 +69,7 @@ class RHUIManagerHap(object):
         # all OK, confirm
         Expect.enter(connection, "y")
         # some installation and configuration through Puppet happens here, let it take its time
-        Expect.expect(connection, "The HAProxy Load-balancer was successfully configured." + ".*rhui \(.*\) =>", 180)
+        RHUIManager.quit(connection, "The HAProxy Load-balancer was successfully configured.", 180)
 
 
     @staticmethod
@@ -81,7 +81,7 @@ class RHUIManagerHap(object):
         Expect.enter(connection, "d")
         RHUIManager.select_items(connection, *hapes)
         Expect.enter(connection, "y")
-        Expect.expect(connection, "Unregistered" + ".*rhui \(.*\) =>", 180)
+        RHUIManager.quit(connection, "Unregistered", 180)
 
     @staticmethod
     def list(connection):
@@ -92,6 +92,7 @@ class RHUIManagerHap(object):
         # eating prompt!!
         lines = RHUIManager.list_lines(connection, prompt=RHUIManagerHap.prompt)
         ret = Hap.parse(lines)
+        Expect.enter(connection, 'q')
         return [hap for _, hap in ret]
 
 
