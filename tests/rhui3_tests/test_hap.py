@@ -3,8 +3,8 @@
 import nose, unittest, stitches, logging, yaml
 
 from rhui3_tests_lib.rhuimanager import *
-from rhui3_tests_lib.rhuimanager_hap import *
-from rhui3_tests_lib.hap import *
+from rhui3_tests_lib.rhuimanager_instance import *
+from rhui3_tests_lib.instance import *
 
 from os.path import basename
 
@@ -26,55 +26,46 @@ def test_02_list_empty_hap():
     '''
         check if there are no HAProxy Load-balancers
     '''
-    hap_list = RHUIManagerHap.list(connection)
+    hap_list = RHUIManagerInstance.list(connection, "loadbalancers")
     nose.tools.assert_equal(hap_list, [])
 
 def test_03_add_hap():
     '''
         add an HAProxy Load-balancer
     '''
-    hap_list = RHUIManagerHap.list(connection)
-    nose.tools.assert_equal(hap_list, [])
-    hap = Hap()
-    RHUIManagerHap.add_hap(connection, hap)
+    RHUIManagerInstance.add_instance(connection, "loadbalancers", "hap01.example.com")
 
 def test_04_list_hap():
     '''
         check if the HAProxy Load-balancer was added
     '''
-    hap_list = RHUIManagerHap.list(connection)
+    hap_list = RHUIManagerInstance.list(connection, "loadbalancers")
     nose.tools.assert_not_equal(hap_list, [])
 
 def test_05_readd_hap():
     '''
         add the HAProxy Load-balancer again (reapply the configuration)
     '''
-    hap_list = RHUIManagerHap.list(connection)
-    nose.tools.assert_not_equal(hap_list, [])
-    hap = Hap()
-    RHUIManagerHap.add_hap(connection, hap, update=True)
+    RHUIManagerInstance.add_instance(connection, "loadbalancers", "hap01.example.com", update=True)
 
 def test_06_list_hap():
     '''
         check if the HAProxy Load-balancer is still tracked
     '''
-    hap_list = RHUIManagerHap.list(connection)
+    hap_list = RHUIManagerInstance.list(connection, "loadbalancers")
     nose.tools.assert_not_equal(hap_list, [])
 
 def test_07_delete_hap():
     '''
         delete the HAProxy Load-balancer
     '''
-    hap = Hap()
-    RHUIManagerHap.delete_haps(connection, hap)
-    hap_list = RHUIManagerHap.list(connection)
-    nose.tools.assert_equal(hap_list, [])
+    RHUIManagerInstance.delete(connection, "loadbalancers", ["hap01.example.com"])
 
 def test_08_list_hap():
     '''
         list HAProxy Load-balancers again, expect none
     '''
-    hap_list = RHUIManagerHap.list(connection)
+    hap_list = RHUIManagerInstance.list(connection, "loadbalancers")
     nose.tools.assert_equal(hap_list, [])
 
 def tearDown():

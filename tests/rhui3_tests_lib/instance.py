@@ -1,10 +1,10 @@
-""" Hap container """
+""" Cds container """
 import re
 import screenitem
 import lineparser
 
-class Hap(screenitem.ScreenItem):
-    """An HAP attributes container"""
+class Instance(screenitem.ScreenItem):
+    """A CDS and HAProxy attributes container"""
     parser = lineparser.Parser(mapping=[
             ('host_name', re.compile("^  Hostname:\s*(.*)$")),
             ('user_name', re.compile("^  SSH Username:\s*(.*)$")),
@@ -12,7 +12,7 @@ class Hap(screenitem.ScreenItem):
     ])
 
     def __init__(self,
-            host_name="hap01.example.com",
+            host_name=None,
             user_name="ec2-user",
             ssh_key_path="/root/.ssh/id_rsa_rhua",
         ):
@@ -21,7 +21,7 @@ class Hap(screenitem.ScreenItem):
         self.ssh_key_path = ssh_key_path
 
     def __repr__(self):
-        return "Hap(" + \
+        return  "Instance(" + \
                 "host_name=%r, " % self.host_name + \
                 "user_name=%r, " % self.user_name + \
                 "ssh_key_path=%r)" % self.ssh_key_path

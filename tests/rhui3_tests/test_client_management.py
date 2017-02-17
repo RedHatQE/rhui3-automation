@@ -4,10 +4,8 @@ from rhui3_tests_lib.rhuimanager_cli import *
 from rhui3_tests_lib.rhuimanager_entitlement import *
 from rhui3_tests_lib.rhuimanager_repo import *
 from rhui3_tests_lib.rhuimanager_sync import *
-from rhui3_tests_lib.rhuimanager_cds import *
-from rhui3_tests_lib.cds import *
-from rhui3_tests_lib.rhuimanager_hap import *
-from rhui3_tests_lib.hap import *
+from rhui3_tests_lib.rhuimanager_instance import *
+from rhui3_tests_lib.instance import *
 from rhui3_tests_lib.util import Util
 
 from os.path import basename
@@ -39,19 +37,17 @@ def test_03_add_cds():
     '''
         add a CDS
     '''
-    cds_list = RHUIManagerCds.list(connection)
+    cds_list = RHUIManagerInstance.list(connection, "cds")
     nose.tools.assert_equal(cds_list, [])
-    cds = Cds()
-    RHUIManagerCds.add_cds(connection, cds)
+    RHUIManagerInstance.add_instance(connection, "cds", "cds01.example.com")
 
 def test_04_add_hap():
     '''
         add an HAProxy Load-balancer
     '''
-    hap_list = RHUIManagerHap.list(connection)
+    hap_list = RHUIManagerInstance.list(connection, "loadbalancers")
     nose.tools.assert_equal(hap_list, [])
-    hap = Hap()
-    RHUIManagerHap.add_hap(connection, hap)
+    RHUIManagerInstance.add_instance(connection, "loadbalancers", "hap01.example.com")
 
 def test_05_add_repos_upload_rpm_sync():
     '''
@@ -189,10 +185,8 @@ def test_99_cleanup():
     RHUIManager.initial_run(connection)
     RHUIManagerRepo.delete_all_repos(connection)
     nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
-    hap = Hap()
-    RHUIManagerHap.delete_haps(connection, hap)
-    cds = Cds()
-    RHUIManagerCds.delete_cdses(connection, cds)
+    RHUIManagerInstance.delete(connection, "loadbalancers", ["hap01.example.com"])
+    RHUIManagerInstance.delete(connection, "cds", ["cds01.example.com"])
     Expect.ping_pong(connection, "rm -f /root/test_ent_cli* && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_cli_rpm-3.0/ && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "rm -rf /root/test_docker_cli_rpm-4.0/ && echo SUCCESS", "[^ ]SUCCESS")
