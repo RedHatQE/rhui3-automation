@@ -52,22 +52,17 @@ class RHUIManager(object):
         Expect.enter(connection, "c")
 
     @staticmethod
-    def select_items(connection, *items):
+    def select_items(connection, itemslist):
         '''
         Select list of items (multiple choice)
         '''
-        for item in items:
-            index = 0
-            selected = False
-            lines = RHUIManager.list_lines(connection, prompt=CONFIRM_PATTERN_STRING, enter_l=False)
-            selected, index = item.selected(lines)
-            if not selected:
-                # insert the on-screen index nr to trigger item selection
-                Expect.enter(connection, str(index))
-                lines = RHUIManager.list_lines(connection, prompt=CONFIRM_PATTERN_STRING, enter_l=False)
-                selected, index = item.selected(lines)
-                assert selected, 'item #%s %s not selected' % (index, item)
-        # confirm selection
+        lines = RHUIManager.list_lines(connection, prompt=CONFIRM_PATTERN_STRING, enter_l=False)
+        for item in itemslist:
+            for line in lines:
+                if item in line:
+                     index = filter(str.isdigit, lines[lines.index(line)-1])
+                     Expect.enter(connection, index)
+                     break
         Expect.enter(connection, "c")
 
     @staticmethod
