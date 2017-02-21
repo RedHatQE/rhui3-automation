@@ -4,7 +4,18 @@ Setup of the RHUI 3 Test Framework
 
 Requirements
 ---------------
-Same as the [general RHUI deployment](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md), plus a ZIP file with the following files in the root of the archive:
+RHUI deployment with the following hosts:
+
+* one RHUA instance
+* two CDS instances
+* one HAProxy instance
+* one client instance
+* one test instance
+
+See the [RHUI deployment readme file ](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md) for details. Also, if you use Gluster instead of NFS, note that you need two more hosts serving as Gluster instances.
+
+In addition, you need a ZIP file with the following files in the root of the archive:
+
 * `rhcert.pem` — This must be a valid Red Hat content certificate allowing access to the following products:
   * _Red Hat Update Infrastructure 2.0 (RPMs)_
   * _RHEL RHUI Atomic 7 Ostree Repo_
@@ -14,7 +25,7 @@ Same as the [general RHUI deployment](https://github.com/RedHatQE/rhui3-automati
 
 Usage
 --------
-You can include the test stage in a RHUI 3 deployment by providing the address of your TEST machine in the `[TEST]` section and the address of your CLI machine in the `[CLI]` section of the `hosts.cfg` file; see the [RHUI deployment Readme](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md). Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the required ZIP file as a parameter of the `--extra-vars` option.
+You can include the test stage in a RHUI 3 deployment by providing the address of your test instance in the `[TEST]` section and the address of your client instance in the `[CLI]` section of the `hosts.cfg` file. Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the required ZIP file as a parameter of the `--extra-vars` option.
 
 To install and run the test suite as part of the initial deployment or after a completed deployment, use the following command:
 
