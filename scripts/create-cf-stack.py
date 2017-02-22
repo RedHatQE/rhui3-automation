@@ -113,6 +113,7 @@ try:
     (ssh_key_name, ssh_key) = valid_config["ssh"][REGION]
     ec2_key = valid_config["ec2"]["ec2-key"]
     ec2_secret_key = valid_config["ec2"]["ec2-secret-key"]
+    ec2_name = ssh_key_name.split('-', 1)[0]
 
 except Exception as e:
     logging.error("got '%s' error processing: %s", e, args.input_conf)
@@ -258,7 +259,7 @@ if (fs_type == "rhua"):
                                             },
                                  ],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [u'RHUA', args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'rhua']]}},
                                          {u'Key': u'Role', u'Value': u'RHUA'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -270,7 +271,7 @@ else:
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [u'RHUA', args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'rhua']]}},
                                          {u'Key': u'Role', u'Value': u'RHUA'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -291,7 +292,7 @@ if (fs_type == "gluster"):
                                    u'KeyName': {u'Ref': u'KeyName'},
                                    u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                    u'Tags': [{u'Key': u'Name',
-                                              u'Value': {u'Fn::Join': [u'_', [u'CDS%i' % i, args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
+                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'cds%i' % i]]}},
                                              {u'Key': u'Role', u'Value': u'CDS'},
                                              ]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -304,7 +305,7 @@ else:
                                    u'KeyName': {u'Ref': u'KeyName'},
                                    u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                    u'Tags': [{u'Key': u'Name',
-                                              u'Value': {u'Fn::Join': [u'_', [u'CDS%i' % i, args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
+                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'cds%i' % i]]}},
                                              {u'Key': u'Role', u'Value': u'CDS'},
                                              ]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -324,7 +325,7 @@ for i in (5, 6, 7):
                                    u'KeyName': {u'Ref': u'KeyName'},
                                    u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                    u'Tags': [{u'Key': u'Name',
-                                              u'Value': {u'Fn::Join': [u'_', [u'CLI%i_%i' % (i, j), args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
+                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'cli%i_%i' % (i, j)]]}},
                                              {u'Key': u'Role', u'Value': u'CLI'},
                                              {u'Key': u'OS', u'Value': u'%s' % os[:5]}]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -343,7 +344,7 @@ if (fs_type == "nfs"):
                                             },
                                  ],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [u'NFS', args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'nfs']]}},
                                          {u'Key': u'Role', u'Value': u'NFS'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -356,7 +357,7 @@ if args.dns:
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [u'DNS', args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'dns']]}},
                                          {u'Key': u'Role', u'Value': u'DNS'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -369,7 +370,7 @@ if args.dns:
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [u'TESTS', args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'tests']]}},
                                          {u'Key': u'Role', u'Value': u'TESTS'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -382,7 +383,7 @@ for i in range(1, args.haproxy + 1):
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [u'HAProxy%i' % i, args.rhua, fs_type_f, args.iso, {u'Ref': u'KeyName'}]]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'haproxy%i' % i]]}},
                                          {u'Key': u'Role', u'Value': u'HAProxy'},
                                          ]},
                    u'Type': u'AWS::EC2::Instance'}
