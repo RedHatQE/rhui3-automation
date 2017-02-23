@@ -16,6 +16,7 @@ import json
 import tempfile
 import paramiko
 import yaml
+import re
 
 # pylint: disable=W0621
 
@@ -113,7 +114,7 @@ try:
     (ssh_key_name, ssh_key) = valid_config["ssh"][REGION]
     ec2_key = valid_config["ec2"]["ec2-key"]
     ec2_secret_key = valid_config["ec2"]["ec2-secret-key"]
-    ec2_name = ssh_key_name.split('-', 1)[0]
+    ec2_name = re.search("[a-zA-Z]+", ssh_key_name).group(0)
 
 except Exception as e:
     logging.error("got '%s' error processing: %s", e, args.input_conf)
@@ -363,7 +364,7 @@ if args.dns:
                u'Type': u'AWS::EC2::Instance'}
 
 # tests
-if args.dns:
+if args.tests:
     json_dict['Resources']["tests"] = \
      {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
                                u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
