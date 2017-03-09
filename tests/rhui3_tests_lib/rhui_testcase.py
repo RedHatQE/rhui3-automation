@@ -64,29 +64,6 @@ class RHUITestcase(object):
             self.rs.reconnect_all()
             self._cleanup()
 
-    def _sync_cds(self, cdslist):
-        """ Sync cds """
-        if (not "RHUA" in self.rs.Instances.keys()) or len(self.rs.Instances["RHUA"]) < 1:
-            raise nose.exc.SkipTest("can't test without RHUA!")
-        try:
-            RHUIManagerSync.sync_cds(self.rs.Instances["RHUA"][0], cdslist)
-        except ExpectFailed:
-            # The CDS is not available for syncing so most probably it's syncing right now
-            # Trying to check the status
-            Expect.enter(self.rs.Instances["RHUA"][0], "b")
-            RHUIManager.quit(self.rs.Instances["RHUA"][0])
-        self._sync_wait_cds(cdslist)
-
-    def _sync_wait_cds(self, cdslist):
-        """ Sync CDS and wait """
-        # waits for the cds sync conclusion
-        for cds in cdslist:
-            cdssync = ["UP", "In Progress", "", ""]
-            while cdssync[1] == "In Progress":
-                time.sleep(10)
-                cdssync = RHUIManagerSync.get_cds_status(self.rs.Instances["RHUA"][0], cds)
-            nose.tools.assert_equal(cdssync[3], "Success")
-
     def _sync_repo(self, repolist):
         """ Sync repo """
         if (not "RHUA" in self.rs.Instances.keys()) or len(self.rs.Instances["RHUA"]) < 1:

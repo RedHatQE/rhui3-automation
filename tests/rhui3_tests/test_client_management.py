@@ -100,15 +100,10 @@ def test_11_check_repo_sync_status():
        check if RH repos were synced to install rpm
     '''
     RHUIManager.initial_run(connection)
-    reposync = ["", "", "Running"]
-    while reposync[2] == "Running" or reposync[2] == "Never":
-        time.sleep(10)
-        if atomic_unsupported:
-            reposync = RHUIManagerSync.get_repo_status(connection, "Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\)")
-        else:
-            reposync = RHUIManagerSync.get_repo_status(connection, "RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS \(7Server-x86_64\)")
-
-    nose.tools.assert_equal(reposync[2], "Success")
+    if atomic_unsupported:
+        RHUIManagerSync.wait_till_repo_synced(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\)"])
+    else:
+        RHUIManagerSync.wait_till_repo_synced(connection, ["RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS \(7Server-x86_64\)"])
 
 def test_12_install_rpm_from_custom_repo():
     '''

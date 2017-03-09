@@ -30,11 +30,7 @@ def test_03_check_sync_status():
 
 def test_04_cleanup():
     '''Wait until repo is synced and remove it then'''
-    reposync = ["", "", "Running"]
-    while reposync[2] == "Running" or reposync[2] == "Never":
-        time.sleep(10)
-        reposync = RHUIManagerSync.get_repo_status(connection, "Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\)")
-    nose.tools.assert_equal(reposync[2], "Success")
+    RHUIManagerSync.wait_till_repo_synced(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\)"])
 
     '''remove the RH repo '''
     RHUIManagerRepo.delete_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\).*"])
