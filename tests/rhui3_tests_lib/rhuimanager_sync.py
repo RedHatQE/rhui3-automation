@@ -1,6 +1,6 @@
 """ RHUIManager Sync functions """
 
-import re
+import re, nose, time
 
 from stitches.expect import Expect
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -42,3 +42,15 @@ class RHUIManagerSync(object):
         Expect.enter(connection, '\x03')
         Expect.enter(connection, 'q') 
         return ret_list
+
+    @staticmethod
+    def wait_till_repo_synced(connection, repolist):
+        '''
+        wait untill repo is synced
+        '''
+        for repo in repolist:
+            reposync = ["", "", "Running"]
+            while reposync[2] in ["Running", "Never", "Unknown"]:
+                time.sleep(10)
+                reposync = RHUIManagerSync.get_repo_status(connection, repo)
+            nose.tools.assert_equal(reposync[2], "Success")
