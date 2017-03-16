@@ -66,12 +66,10 @@ class RHUIManagerEntitlements(object):
         return sorted(repo_list)
 
     @staticmethod
-    def upload_rh_certificate(connection):
+    def upload_rh_certificate(connection, certificate_file = '/tmp/extra_rhui_files/rhcert.pem'):
         '''
         upload a new or updated Red Hat content certificate
         '''
-        
-        certificate_file = '/tmp/extra_rhui_files/rhcert.pem'
         
         if connection.recv_exit_status("ls -la %s" % certificate_file)!=0:
             raise ExpectFailed("Missing certificate file: %s" % certificate_file)
