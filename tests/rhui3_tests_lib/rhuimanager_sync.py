@@ -53,4 +53,6 @@ class RHUIManagerSync(object):
             while reposync[2] in ["Running", "Never", "Unknown"]:
                 time.sleep(10)
                 reposync = RHUIManagerSync.get_repo_status(connection, repo)
+            if reposync[2] == "Error":
+                raise TypeError("The repo sync returned Error")
             nose.tools.assert_equal(reposync[2], "Success")
