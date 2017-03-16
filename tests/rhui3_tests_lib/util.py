@@ -78,17 +78,23 @@ class Util(object):
         Expect.expect(connection, "[^ ]SUCCESS.*root@", 60)
 
     @staticmethod
-    def install_rpm_from_rhua(rhua_connection, connection, rpmpath):
+    def install_pkg_from_rhua(rhua_connection, connection, pkgpath):
         '''
-        Transfer RPM package from RHUA host to the instance and install it
-        @param rpmpath: path to RPM package on RHUA node
+        Transfer package from RHUA host to the instance and install it
+        @param pkgpath: path to package on RHUA node
         '''
         tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.close()
-        rhua_connection.sftp.get(rpmpath, tfile.name)
-        connection.sftp.put(tfile.name, tfile.name + ".rpm")
-        os.unlink(tfile.name)
-        Expect.ping_pong(connection, "rpm -i " + tfile.name + ".rpm" + " && echo SUCCESS", "[^ ]SUCCESS", 60)
+        rhua_connection.sftp.get(pkgpath, tfile.name)
+        file_extension=os.path.splitext(pkgpath)[1]
+        if file_extension == '.rpm':
+            connection.sftp.put(tfile.name, tfile.name + file_extension)
+            os.unlink(tfile.name)
+            Expect.ping_pong(connection, "rpm -i " + tfile.name + file_extension + " && echo SUCCESS", "[^ ]SUCCESS", 60)
+        else:
+            connection.sftp.put(tfile.name, tfile.name + '.tar.gz')
+            os.unlink(tfile.name)
+            Expect.ping_pong(connection,  "tar -xzf" + tfile.name + ".tar.gz" + " && ./install.sh && echo SUCCESS", "[^ ]SUCCESS", 60)
 
     @staticmethod
     def get_initial_password(connection, pwdfile="/etc/rhui-installer/answers.yaml"):
