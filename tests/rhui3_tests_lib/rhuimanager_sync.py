@@ -46,7 +46,7 @@ class RHUIManagerSync(object):
     @staticmethod
     def wait_till_repo_synced(connection, repolist):
         '''
-        wait untill repo is synced
+        wait until repo is synced
         '''
         for repo in repolist:
             reposync = ["", "", "Running"]

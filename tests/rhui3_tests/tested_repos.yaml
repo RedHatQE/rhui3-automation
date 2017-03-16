@@ -1,0 +1,8 @@
+yum_repo1:
+    name: "Red Hat Update Infrastructure 2 \\(RPMs\\)"
+    version: " \\(6Server-x86_64\\)"
+yum_repo2:
+    name: "Red Hat Enterprise Linux for SAP \\(RHEL 7 Server\\) \\(RPMs\\) from RHUI"
+    version: " \\(7Server-x86_64\\)"
+atomic_repo:
+    name: "Red Hat Enterprise Linux Atomic Host \\(Trees\\) from RHUI"

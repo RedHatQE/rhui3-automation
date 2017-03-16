@@ -1,4 +1,4 @@
-import nose, unittest, stitches, logging, yaml, time
+import nose, unittest, stitches, logging, yaml, time, re
 
 from rhui3_tests_lib.rhuimanager_cli import *
 from rhui3_tests_lib.rhuimanager_entitlement import *
@@ -18,6 +18,16 @@ logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 cli=stitches.connection.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
+atomic_cli=stitches.connection.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
+
+with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as file:
+    doc = yaml.load(file)
+
+yum_repo1_name = doc['yum_repo1']['name']
+yum_repo1_version = doc['yum_repo1']['version']
+yum_repo2_name = doc['yum_repo2']['name']
+yum_repo2_version = doc['yum_repo2']['version']
+atomic_repo_name = doc['atomic_repo']['name']
 
 def setUp():
     print "*** Running %s: *** " % basename(__file__)
@@ -55,17 +65,17 @@ def test_05_add_repos_upload_rpm_sync():
     '''
     RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
     RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
-    RHUIManagerRepo.add_rh_repo_by_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\) \(Yum\)", "RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS \(7Server-x86_64\) \(Yum\)"])
-    RHUIManagerSync.sync_repo(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\)", "RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS \(7Server-x86_64\)"])
+    RHUIManagerRepo.add_rh_repo_by_repo(connection, [yum_repo1_name + yum_repo1_version + " \(Yum\)", yum_repo2_name + yum_repo2_version + " \(Yum\)"])
+    RHUIManagerSync.sync_repo(connection, [yum_repo1_name + yum_repo1_version, yum_repo2_name + yum_repo2_version])
 
 def test_06_generate_ent_cert():
     '''
        generate an entitlement certificate
     '''
     if atomic_unsupported:
-       RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", "Red Hat Update Infrastructure 2.0 \(RPMs\)"], "test_ent_cli", "/root/")
+       RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", yum_repo1_name], "test_ent_cli", "/root/")
     else:
-       RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", "RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS"], "test_ent_cli", "/root/")
+       RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", yum_repo2_name], "test_ent_cli", "/root/")
     Expect.ping_pong(connection, "test -f /root/test_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "test -f /root/test_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
 
@@ -87,7 +97,7 @@ def test_09_install_conf_rpm():
     '''
        install configuration rpm to client
     '''
-    Util.install_rpm_from_rhua(connection, cli, "/root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm")
+    Util.install_pkg_from_rhua(connection, cli, "/root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm")
 
 def test_10_check_cli_conf_rpm_version():
     '''
@@ -101,9 +111,9 @@ def test_11_check_repo_sync_status():
     '''
     RHUIManager.initial_run(connection)
     if atomic_unsupported:
-        RHUIManagerSync.wait_till_repo_synced(connection, ["Red Hat Update Infrastructure 2.0 \(RPMs\) \(6Server-x86_64\)"])
+        RHUIManagerSync.wait_till_repo_synced(connection, [yum_repo1_name + yum_repo1_version])
     else:
-        RHUIManagerSync.wait_till_repo_synced(connection, ["RHEL RHUI Server 7 Rhgs-server-nfs 3.1 OS \(7Server-x86_64\)"])
+        RHUIManagerSync.wait_till_repo_synced(connection, [yum_repo2_name + yum_repo2_version])
 
 def test_12_install_rpm_from_custom_repo():
     '''
@@ -118,7 +128,7 @@ def test_13_install_rpm_from_rh_repo():
     if atomic_unsupported:
        Expect.ping_pong(cli, "yum install -y js && echo SUCCESS", "[^ ]SUCCESS", 60)
     else:
-       Expect.ping_pong(cli, "yum install -y libntirpc && echo SUCCESS", "[^ ]SUCCESS", 60)
+       Expect.ping_pong(cli, "yum install -y vm-dump-metrics && echo SUCCESS", "[^ ]SUCCESS", 60)
 
 def test_14_create_docker_cli_rpm():
     '''
@@ -134,7 +144,7 @@ def test_15_install_docker_rpm():
     '''
     if atomic_unsupported:
         return    
-    Util.install_rpm_from_rhua(connection, cli, "/root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm")
+    Util.install_pkg_from_rhua(connection, cli, "/root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm")
 
 def test_16_check_docker_rpm_version():
     '''
@@ -151,19 +161,29 @@ def test_17_add_atomic_repo():
     if atomic_unsupported:
         return
     RHUIManager.initial_run(connection)
-    RHUIManagerRepo.add_rh_repo_by_product(connection, ["RHEL RHUI Atomic 7 Ostree Repo"])
+    RHUIManagerEntitlements.upload_rh_certificate(connection, "/tmp/extra_rhui_files/rhcert_atomic.pem")
+    RHUIManagerRepo.add_rh_repo_by_product(connection, [atomic_repo_name])
 
-def test_18_generate_atomic_ent_cert():
+def test_18_sync_atomic_repo():
+    '''
+       sync the RHEL RHUI Atomic 7 Ostree Repo (RHEL 7+ only)
+    '''
+    if atomic_unsupported:
+        return
+    atomic_repo_version = RHUIManagerRepo.get_repo_version(connection, atomic_repo_name)
+    RHUIManagerSync.sync_repo(connection, [atomic_repo_name + atomic_repo_version])
+
+def test_19_generate_atomic_ent_cert():
     '''
        generate an entitlement certificate for the Atomic repo (RHEL 7+ only)
     '''
     if atomic_unsupported:
         return
-    RHUIManagerClient.generate_ent_cert(connection, ["RHEL RHUI Atomic 7 Ostree Repo"], "test_atomic_ent_cli", "/root/")
+    RHUIManagerClient.generate_ent_cert(connection, [atomic_repo_name], "test_atomic_ent_cli", "/root/")
     Expect.ping_pong(connection, "test -f /root/test_atomic_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
     Expect.ping_pong(connection, "test -f /root/test_atomic_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
 
-def test_19_create_atomic_pkg():
+def test_20_create_atomic_pkg():
     '''
        create an Atomic client configuration package (RHEL 7+ only)
     '''
@@ -172,6 +192,32 @@ def test_19_create_atomic_pkg():
     RHUIManager.initial_run(connection)
     RHUIManagerClient.create_atomic_conf_pkg(connection, "/root", "test_atomic_pkg", "/root/test_atomic_ent_cli.crt", "/root/test_atomic_ent_cli.key")
     Expect.ping_pong(connection, "test -f /root/test_atomic_pkg.tar.gz && echo SUCCESS", "[^ ]SUCCESS")
+
+def test_21_check_sync_status_of_atomic_repo():
+    '''
+       check if Atomic repo was synced to pull the content (RHEL 7+ only)
+    '''
+    if atomic_unsupported:
+        return
+    RHUIManager.initial_run(connection)
+    atomic_repo_version = RHUIManagerRepo.get_repo_version(connection, atomic_repo_name)
+    RHUIManagerSync.wait_till_repo_synced(connection, atomic_repo_name + atomic_repo_version)
+
+def test_22_install_atomic_pkg():
+    '''
+       install atomic pkg on atomic host
+    '''
+    if atomic_unsupported:
+        return
+    Util.install_pkg_from_rhua(connection, atomic_cli, "/root/test_atomic_pkg.tar.gz")
+
+def test_23_pull_atomic_content():
+    '''
+       pull atomic content
+    '''
+    if atomic_unsupported:
+        return
+    Expect.ping_pong(atomic_cli, "sudo ostree pull rhui-rhel-rhui-atomic-7-ostree-repo:rhel-atomic-host/7/x86_64/standard && echo SUCCESS", "[^ ]SUCCESS")
 
 def test_99_cleanup():
     '''
@@ -188,11 +234,12 @@ def test_99_cleanup():
     if not atomic_unsupported:
         Expect.ping_pong(connection, "rm -f /root/test_atomic_ent_cli* && echo SUCCESS", "[^ ]SUCCESS")
         Expect.ping_pong(connection, "rm -f /root/test_atomic_pkg.tar.gz && echo SUCCESS", "[^ ]SUCCESS")
-        Util.remove_rpm(cli, ["libntirpc", "test_docker_cli_rpm"])
+        Util.remove_rpm(cli, ["vm-dump-metrics", "test_docker_cli_rpm"])
+        Expect.ping_pong(atomic_cli, "sudo ostree remote delete rhui-rhel-rhui-atomic-7-ostree-repo \
+                                     && echo SUCCESS", "[^ ]SUCCESS")
     else:
         Util.remove_rpm(cli, ["js"])
     Util.remove_rpm(cli, ["test_cli_rpm", "rhui-rpm-upload-test"])
 
 def tearDown():
     print "*** Finished running %s. *** " % basename(__file__)
-

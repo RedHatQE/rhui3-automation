@@ -164,6 +164,23 @@ class RHUIManagerRepo(object):
         return repolist
 
     @staticmethod
+    def get_repo_version(connection, reponame):
+        '''
+        get repo version
+        '''
+        repolist = RHUIManagerRepo.list(connection)
+        # delete escape back slash from the reponame
+        reponame = reponame.replace("\\", "")
+        # get full repo name with its version from the list of all repos
+        full_reponame = next((s for s in repolist if reponame in s), None)
+        #return full_reponame
+        # get its version
+        repo_version = re.sub('^.*\((.*?)\)[^\(]*$', '\g<1>', full_reponame)
+
+        #return repo_version
+        return " \(" + repo_version + "\)"
+
+    @staticmethod
     def delete_repo(connection, repolist):
         '''
         delete a repository from the RHUI
