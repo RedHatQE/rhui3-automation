@@ -186,7 +186,10 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "Enter value .*:")
         Expect.enter(connection, "c")
         RHUIManager.proceed_without_check(connection)
+        # Wait until all repos are deleted
         RHUIManager.quit(connection, "", 360)
+        while len(RHUIManagerRepo.list(connection)) != 0:
+            time.sleep(10)
 
     @staticmethod
     def upload_content(connection, repolist, path):
