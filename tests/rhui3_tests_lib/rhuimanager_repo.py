@@ -157,14 +157,7 @@ class RHUIManagerRepo(object):
         reslist = map(lambda x: x.strip(), ret.split("\r\n"))
         repolist = []
         for line in reslist:
-            # Readling lines and searching for repos
-            if line == '':
-                continue
-            if "Custom Repositories" in line:
-                continue
-            if "Red Hat Repositories" in line:
-                continue
-            if "No repositories are currently managed by the RHUI" in line:
+            if line in ["", "Custom Repositories", "Red Hat Repositories", "OSTree", "Docker", "Yum", "No repositories are currently managed by the RHUI"]:
                 continue
             repolist.append(line)
         Expect.enter(connection, 'q')
