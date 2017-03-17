@@ -30,14 +30,15 @@ def test_02_sync_repo():
     '''sync a RH repo '''
     RHUIManagerSync.sync_repo(connection, [yum_repo_name + yum_repo_version])
 
-def test_03_check_sync_status():
-    '''check sync status of the repo'''
-    Expect.ping_pong(connection, "rhui-manager status | grep yum_repo_name + yum_repo_version | grep \"Success\|Running\" && echo SUCCESS", "[^ ]SUCCESS", 120)
+def test_03_check_sync_started():
+    '''ensure that sync started'''
+    RHUIManagerSync.check_sync_started(connection, [yum_repo_name + yum_repo_version])
 
-def test_04_cleanup():
-    '''Wait until repo is synced and remove it then'''
+def test_04_wait_till_repo_synced():
+    '''wait until repo is synced'''
     RHUIManagerSync.wait_till_repo_synced(connection, [yum_repo_name + yum_repo_version])
 
+def test_99_cleanup():
     '''remove the RH repo '''
     RHUIManagerRepo.delete_repo(connection, [yum_repo_name + ".*"])
 
