@@ -683,5 +683,6 @@ print '# --- instances created ---'
 yaml.dump(result, sys.stdout)
 # miserable hack --- cannot make paramiko not hang upon exit
 # [revised in February 2017] not necessary anymore
-# import os
-# os.system('kill %d' % os.getpid())
+#import os
+#os.system('kill %d' % os.getpid())
+
