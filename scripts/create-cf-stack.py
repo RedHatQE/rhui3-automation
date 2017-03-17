@@ -61,7 +61,7 @@ argparser.add_argument('--dns', help='DNS', action='store_const', const=True, de
 argparser.add_argument('--nfs', help='NFS', action='store_const', const=True, default=False)
 argparser.add_argument('--haproxy', help='number of HAProxies', type=int, default=1)
 argparser.add_argument('--gluster', help='Gluster', action='store_const', const=True, default=False)
-argparser.add_argument('--tests', help='test machine', action='store_const', const=True, default=False)
+argparser.add_argument('--test', help='test machine', action='store_const', const=True, default=False)
 argparser.add_argument('--input-conf', default="/etc/rhui_ec2.yaml", help='use supplied yaml config file')
 argparser.add_argument('--output-conf', help='output file')
 argparser.add_argument('--region', default="eu-west-1", help='use specified region')
@@ -146,8 +146,8 @@ if args.cli7 > 0:
     json_dict['Description'] += " %s RHEL7 clients" % args.cli7
 if args.gluster:
     json_dict['Description'] += " Gluster"
-if args.tests:
-    json_dict['Description'] += " TESTS machine"
+if args.test:
+    json_dict['Description'] += " TEST machine"
 if args.dns:
     json_dict['Description'] += " DNS"
 if args.nfs:
@@ -363,16 +363,16 @@ if args.dns:
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
 
-# tests
-if args.tests:
-    json_dict['Resources']["tests"] = \
+# test
+if args.test:
+    json_dict['Resources']["test"] = \
      {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
                                u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'tests']]}},
-                                         {u'Key': u'Role', u'Value': u'TESTS'},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'test']]}},
+                                         {u'Key': u'Role', u'Value': u'TEST'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
 
@@ -635,11 +635,11 @@ try:
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
                     f.write('\n')
-        # tests
-        if args.tests:
-            f.write('\n[TESTS]\n')
+        # test
+        if args.test:
+            f.write('\n[TEST]\n')
             for instance in instances_detail:
-                if instance["role"] == "TESTS":
+                if instance["role"] == "TEST":
                     f.write(str(instance['public_hostname']))
                     f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
@@ -682,5 +682,6 @@ for instance in instances_detail:
 print '# --- instances created ---'
 yaml.dump(result, sys.stdout)
 # miserable hack --- cannot make paramiko not hang upon exit
-import os
-os.system('kill %d' % os.getpid())
+# [revised in February 2017] not necessary anymore
+# import os
+# os.system('kill %d' % os.getpid())

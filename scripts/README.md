@@ -51,7 +51,7 @@ Default configuration:
   * **--input-conf [name]** - the name of input conf file, `default = "/etc/rhui_ec2.yaml"`
   * **--output-conf [name]** - the name of output conf file, `default = "hosts_$RHELrelease_$iso.cfg"`
   * **--cli5/6/7 [number]** - amount of CLI machines, `default = 0`
-  * **--tests** - if specified, TEST/MASTER machine, `default = 0`
+  * **--test** - if specified, TEST/MASTER machine, `default = 0`
   * **--region [name]** - `default = eu-west-1`
   
 Mutually exclusive options: 
@@ -85,7 +85,7 @@ There is an extra 100 GB volume attached to each CDS machine.
 * `scripts/create-cf-stack.py --iso 20160809`
   * basic RHEL6 NFS configuration
   * 1xRHUA=DNS=NFS, 1xCDS, 1xHAProxy
-* `scripts/create-cf-stack.py --rhua RHEL7 --tests --gluster --cds 3 --iso 20160809`
+* `scripts/create-cf-stack.py --rhua RHEL7 --test --gluster --cds 3 --iso 20160809`
   * RHEL7 Gluster configuration
   * 1xRHUA=DNS, 3xCDS, 1xHAProxy, 1xtest_machine
 * `scripts/create-cf-stack.py --region eu-central-1 --nfs cli6 2 --haproxy 2 --iso 20160809`
@@ -141,7 +141,7 @@ ec2-54-170-205-98.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansi
 ec2-54-155-178-68.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
 ec2-54-228-24-150.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
 
-[TESTS]
+[TEST]
 ec2-54-73-34-96.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
 
 [HAPROXY]
