@@ -25,7 +25,6 @@ ami_description="RHEL-6.9_HVM_GA-20170309-x86_64-1-Hourly2-GP"
 
 for i in "${regions[@]}"
 do
-	:
 	echo "u'"$i"': {u'AMI': u'"`aws ec2 describe-images --filters "Name=name,Values=*$ami_description*" --query 'Images[*].[{ID:ImageId}]' --region=$i`"'},"
 	sleep 5
 done
