@@ -7,8 +7,8 @@ Requirements
 Usage
 --------
 
-* Update/create your hosts.cfg file with addresses of your machines.
-* Be in deploy/ directory and run:
+* Update/create your hosts.cfg file with the addresses of your machines. (See [Configuration Samples](#configuration-samples).)
+* Be in the deploy/ directory and run:
 ```
 ansible-playbook -i ~/pathto/hosts.cfg site.yml  --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso"
 ```
@@ -47,48 +47,51 @@ Edit `hosts.cfg` to meet your preference:
 ```ini
 # Rhua+Dns+Nfs, 2*Cds, 2*HAProxy
 [DNS]
-10.0.0.2
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [NFS]
-10.0.0.2
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [RHUA]
-10.0.0.2
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [CDS]
-10.0.0.3
-10.0.0.4
+ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [HAPROXY]
-10.0.0.5
-10.0.0.6
+ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+
+[CLI]
+ec2-10.0.0.6.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 #[TEST]
-#10.0.0.2
+#ec2-10.0.0.7.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 ```
 
 * example 2:
 ```ini
 # Rhua, Dns, 2*(Cds+Gluster), HAProxy
 [RHUA]
-10.0.0.1
+ec2-10.0.0.1.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [DNS]
-10.0.0.2
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [GLUSTER]
-10.0.0.3
-10.0.0.4
+ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [CDS]
-10.0.0.3
-10.0.0.4
+ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [HAPROXY]
-10.0.0.5
+ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 ```
+Replace _USER_ with the actual local user name and make sure the .pem file has this name.
 
-Check hosts.cfg file for more combinations.
+Check the [hosts.cfg](../hosts.cfg) file for more combinations.
 
 
 Configuration Limitations
