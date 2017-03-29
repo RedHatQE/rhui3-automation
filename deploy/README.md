@@ -7,10 +7,10 @@ Requirements
 Usage
 --------
 
-* Update/create your hosts.cfg file with the addresses of your machines. (See [Configuration Samples](#configuration-samples).)
-* Be in the deploy/ directory and run:
+* Create a copy of the `hosts.cfg` file and put the addresses of your machines to it. (See [Configuration Samples](#configuration-samples).) Do _not_ edit the `hosts.cfg` file directly as that would prevent you from updating your git clone of rhui3-automation.
+* Run:
 ```
-ansible-playbook -i ~/pathto/hosts.cfg site.yml  --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso"
+ansible-playbook -i pathto/your_hosts.cfg deploy/site.yml  --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso"
 ```
 
 Mind the mandatory extra variable `rhui_iso`
@@ -42,7 +42,7 @@ Although all the role hostnames are properly resolvable (through /etc/hosts and 
 
 Configuration Samples
 ---------------------
-Edit `hosts.cfg` to meet your preference:
+Edit your copy of the `hosts.cfg` to meet your preferences:
 * example 1:
 ```ini
 # Rhua+Dns+Nfs, 2*Cds, 2*HAProxy
