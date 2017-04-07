@@ -27,13 +27,13 @@ class RHUIManagerRepo(object):
             Expect.enter(connection, displayname)
             if displayname != "":
                 checklist.append("Name: " + displayname)
-            else:   
+            else:
                 checklist.append("Name: " + reponame)
             Expect.expect(connection, "Unique path at which the repository will be served.*:")
             Expect.enter(connection, path)
             if path != "":
                 path_real = path
-            else:   
+            else:
                 path_real = reponame
             checklist.append("Path: " + path_real)
             Expect.expect(connection, "Enter value.*:")
@@ -45,7 +45,7 @@ class RHUIManagerRepo(object):
                 Expect.enter(connection, entitlement_path)
                 if entitlement_path != "":
                     checklist.append("Entitlement: " + entitlement_path)
-                else:       
+                else:
                     educated_guess, replace_count = re.subn("(i386|x86_64)", "$basearch", path_real)
                     if replace_count > 1:
                         # bug 815975
@@ -59,7 +59,7 @@ class RHUIManagerRepo(object):
                 Expect.enter(connection, redhat_gpg)
                 if redhat_gpg == "y":
                     checklist.append("Red Hat GPG Key: Yes")
-                else:       
+                else:
                     checklist.append("Red Hat GPG Key: No")
                 Expect.expect(connection, "Will the repository be used to host any custom GPG signed content\? \(y/n\)")
                 if custom_gpg:
@@ -69,17 +69,17 @@ class RHUIManagerRepo(object):
                     Expect.expect(connection, "Would you like to enter another public key\? \(y/n\)")
                     Expect.enter(connection, "n")
                     checklist.append("Custom GPG Keys: '" + custom_gpg + "'")
-                else:       
+                else:
                     Expect.enter(connection, "n")
                     checklist.append("Custom GPG Keys: \(None\)")
-            else:           
+            else:
                 Expect.enter(connection, "n")
-                checklist.append("GPG Check No") 
+                checklist.append("GPG Check No")
                 checklist.append("Red Hat GPG Key: No")
-    
+
             RHUIManager.proceed_with_check(connection, "The following repository will be created:", checklist)
             RHUIManager.quit(connection, "Successfully created repository *")
-        else:      
+        else:
             Expect.enter(connection, '\x03')
             RHUIManager.quit(connection)
 
@@ -145,9 +145,9 @@ class RHUIManagerRepo(object):
 
     @staticmethod
     def list(connection):
-        ''' 
+        '''
         list repositories
-        '''     
+        '''
         RHUIManager.screen(connection, "repo")
         Expect.enter(connection, "l")
         # eating prompt!!

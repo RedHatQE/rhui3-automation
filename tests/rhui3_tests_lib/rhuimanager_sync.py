@@ -40,10 +40,10 @@ class RHUIManagerSync(object):
             ret_list[i] = ret_list[i].strip()
 
         Expect.enter(connection, '\x03')
-        Expect.enter(connection, 'q') 
+        Expect.enter(connection, 'q')
         return ret_list
 
-   @staticmethod
+    @staticmethod
     def check_sync_started(connection, repolist):
         '''ensure that sync started'''
         for repo in repolist:

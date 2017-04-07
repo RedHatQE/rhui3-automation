@@ -35,7 +35,7 @@ class RHUIManagerInstance(object):
         @param hostname instance
         @param update: Bool; update the cds or hap if it is already tracked or raise ExpectFailed
         '''
-        
+
         RHUIManager.screen(connection, screen)
         Expect.enter(connection, "a")
         Expect.expect(connection, ".*Hostname of the .*instance to register:")

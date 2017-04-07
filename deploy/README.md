@@ -66,14 +66,11 @@ ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_b
 [CLI]
 ec2-10.0.0.6.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
-#[CLI]
-#10.0.0.7
-
 #[ATOMIC_CLI]
-#10.0.0.8
+#ec2-10.0.0.7.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 #[TEST]
-#ec2-10.0.0.7.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+#ec2-10.0.0.8.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 ```
 
 * example 2:

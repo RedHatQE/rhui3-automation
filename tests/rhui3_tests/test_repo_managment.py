@@ -49,7 +49,7 @@ def test_06_upload_rpm_to_custom_repo():
 def test_06_01_upload_several_rpms_to_custom_repo():
     '''Upload several rpms to the custom repo from a directory'''
     RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp/extra_rhui_files/")
- 
+
 def test_06_02_check_for_package():
     '''Check the packages list'''
     nose.tools.assert_equal(RHUIManagerRepo.check_for_package(connection, "custom-i386-x86_64", ""), ["rhui-rpm-upload-test-1-1.noarch.rpm", "rhui-rpm-upload-trial-1-1.noarch.rpm"])
