@@ -28,6 +28,7 @@ Managed roles:
 - Cdses
 - HAProxy (load balancer)
 - Nfs server
+- Cli and Atomic Cli (optional)
 - [Tests](https://github.com/RedHatQE/rhui3-automation/blob/master/tests/README.md) (optional)
 
 Supported configurations
@@ -65,8 +66,11 @@ ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_b
 [CLI]
 ec2-10.0.0.6.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
-#[TEST]
+#[ATOMIC_CLI]
 #ec2-10.0.0.7.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+
+#[TEST]
+#ec2-10.0.0.8.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 ```
 
 * example 2:
@@ -100,7 +104,7 @@ Even though one can apply multiple roles to a single node, some combinations are
 - singleton roles --- only one instance per site: Rhua, Nfs, Dns, Proxy, Test
 - mutually exclusive roles --- can't be applied to the same node: Rhua, Cds, HAProxy, Proxy (all listen on port 443)
 - site-wide mutually exclusive roles --- chose either Nfs or Gluster
-- optional roles --- may be absent in one's site: Dns, HAProxy, Proxy, Cli, Test
+- optional roles --- may be absent in one's site: Dns, HAProxy, Proxy, Cli, Atomic Cli, Test
 - multi-roles --- usually multiple instances per site: CDS, Gluster, HAProxy, Cli
 
 Important Note: GlusterFS Configuration

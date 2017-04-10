@@ -82,7 +82,7 @@
                   user='root'
                   state=present
   delegate_to: "{{ item }}"
-  with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) + groups['CLI']|default([]) }}"
+  with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) + groups['CLI']|default([]) + groups['ATOMIC_CLI']|default([]) }}"
   when: slurp_id_rsa_test|success
   tags: tests
   
@@ -100,11 +100,6 @@
   with_items: "{{ groups['RHUA']|default([]) }}"
   when: (extra_files is defined) and (upload_extra_files|success)
   tags: tests
-
-#TODO
-#- name: copy answers.yaml file
-#  src=/etc/rhui-installer/answers.yaml dest=/tmp/rhui3-tests/tests/rhui3_tests/
-#  tags: tests
 
 - name: run tests suite
   shell: nosetests -vs /tmp/rhui3-tests/tests &>>/tmp/rhui3test.log

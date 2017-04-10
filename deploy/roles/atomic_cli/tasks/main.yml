@@ -1,0 +1,8 @@
+---
+# file: roles/atomic_cli/tasks/main.yml
+# main atomic cli role tasks
+- name: set hostname
+  command: hostname "atomiccli.example.com"
+  with_indexed_items: "{{ groups['ATOMIC_CLI'] }}"
+  when: "'ATOMIC_CLI' in groups"
+  tags: atomic_cli
