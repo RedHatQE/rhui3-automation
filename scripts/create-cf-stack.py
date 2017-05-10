@@ -62,6 +62,7 @@ argparser.add_argument('--nfs', help='NFS', action='store_const', const=True, de
 argparser.add_argument('--haproxy', help='number of HAProxies', type=int, default=1)
 argparser.add_argument('--gluster', help='Gluster', action='store_const', const=True, default=False)
 argparser.add_argument('--test', help='test machine', action='store_const', const=True, default=False)
+argparser.add_argument('--atomic_cli', help='amount of Atomic CLI machines', type=int, default=0)
 argparser.add_argument('--input-conf', default="/etc/rhui_ec2.yaml", help='use supplied yaml config file')
 argparser.add_argument('--output-conf', help='output file')
 argparser.add_argument('--region', default="eu-west-1", help='use specified region')
@@ -135,6 +136,10 @@ if args.gluster:
         sys.exit(1)
 if args.nfs:
     fs_type = "nfs"
+if args.atomic_cli:
+    if args.rhua != "RHEL7":
+        logging.error("ATOMIC clients need 'RHEL7' for RHUI setup")
+        sys.exit(1)
 
 json_dict['Description'] = 'RHUI with %s CDSes' % args.cds
 json_dict['Description'] += " %s HAProxy" % args.haproxy
@@ -144,6 +149,8 @@ if args.cli6 > 0:
     json_dict['Description'] += " %s RHEL6 clients" % args.cli6
 if args.cli7 > 0:
     json_dict['Description'] += " %s RHEL7 clients" % args.cli7
+if args.atomic_cli > 0:
+    json_dict['Description'] += " %s ATOMIC clients" % args.atomic_cli
 if args.gluster:
     json_dict['Description'] += " Gluster"
 if args.test:
@@ -286,7 +293,7 @@ if (fs_type == "gluster"):
                                    u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                    u'BlockDeviceMappings' : [
                                               {
-                                                "DeviceName" : "/dev/sdb",
+                                                "DeviceName" : "/dev/sdf",
                                                 "Ebs" : {"VolumeSize" : "100"}
                                               },
                                      ],
@@ -330,6 +337,19 @@ for i in (5, 6, 7):
                                              {u'Key': u'Role', u'Value': u'CLI'},
                                              {u'Key': u'OS', u'Value': u'%s' % os[:5]}]},
                    u'Type': u'AWS::EC2::Instance'}
+                   
+# atomic clients
+for i in range(1, args.atomic_cli + 1):
+    json_dict['Resources']["atomiccli%i" % i] = \
+        {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
+                               u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                               u'KeyName': {u'Ref': u'KeyName'},
+                               u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
+                               u'Tags': [{u'Key': u'Name',
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'atomic_cli%i' % i]]}},
+                                         {u'Key': u'Role', u'Value': u'ATOMIC_CLI'},
+                                         ]},
+               u'Type': u'AWS::EC2::Instance'}
 
 # nfs
 if (fs_type == "nfs"):
@@ -630,6 +650,16 @@ try:
             f.write('\n[CLI]\n')
             for instance in instances_detail:
                 if instance["role"] == "CLI":
+                    f.write(str(instance['public_hostname']))
+                    f.write(' ')
+                    f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
+                    f.write(ssh_key)
+                    f.write('\n')
+        # atomic_cli
+        if args.atomic_cli:
+            f.write('\n[ATOMIC_CLI]\n')
+            for instance in instances_detail:
+                if instance["role"] == "ATOMIC_CLI":
                     f.write(str(instance['public_hostname']))
                     f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
