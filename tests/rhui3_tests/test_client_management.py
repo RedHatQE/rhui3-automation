@@ -14,19 +14,14 @@ logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 cli=stitches.connection.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
-atomic_cli=stitches.connection.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
 
 with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as file:
     doc = yaml.load(file)
 
-yum_repo1_name = doc['yum_repo1']['name']
-yum_repo1_version = doc['yum_repo1']['version']
-yum_repo2_name = doc['yum_repo2']['name']
-yum_repo2_version = doc['yum_repo2']['version']
-atomic_repo_name = doc['atomic_repo']['name']
-
-def setUp():
-    print "*** Running %s: *** " % basename(__file__)
+repo1_name = doc['yum_repo1']['repo_name']
+repo1_product = doc['yum_repo1']['product_name']
+repo2_name = doc['yum_repo2']['repo_name']
+repo2_product = doc['yum_repo2']['product_name']
 
 class TestClient:
 
@@ -68,17 +63,17 @@ class TestClient:
         '''
         RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
         RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
-        RHUIManagerRepo.add_rh_repo_by_repo(connection, [yum_repo1_name + yum_repo1_version + " \(Yum\)", yum_repo2_name + yum_repo2_version + " \(Yum\)"])
-        RHUIManagerSync.sync_repo(connection, [yum_repo1_name + yum_repo1_version, yum_repo2_name + yum_repo2_version])
+        RHUIManagerRepo.add_rh_repo_by_repo(connection, [repo1_name + " \(Yum\)", repo2_name + " \(Yum\)"])
+        RHUIManagerSync.sync_repo(connection, [repo1_name, repo2_name])
 
     def test_06_generate_ent_cert(self):
         '''
            generate an entitlement certificate
         '''
         if self.rhua_os_version < 7:
-           RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", yum_repo1_name], "test_ent_cli", "/root/")
+           RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", repo1_product], "test_ent_cli", "/root/")
         else:
-           RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", yum_repo2_name], "test_ent_cli", "/root/")
+           RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", repo2_product], "test_ent_cli", "/root/")
         Expect.ping_pong(connection, "test -f /root/test_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
         Expect.ping_pong(connection, "test -f /root/test_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
 
@@ -114,9 +109,9 @@ class TestClient:
         '''
         RHUIManager.initial_run(connection)
         if self.rhua_os_version < 7:
-            RHUIManagerSync.wait_till_repo_synced(connection, [yum_repo1_name + yum_repo1_version])
+            RHUIManagerSync.wait_till_repo_synced(connection, [repo1_name])
         else:
-            RHUIManagerSync.wait_till_repo_synced(connection, [yum_repo2_name + yum_repo2_version])
+            RHUIManagerSync.wait_till_repo_synced(connection, [repo2_name])
 
     def test_12_install_rpm_from_custom_repo(self):
         '''

@@ -14,8 +14,8 @@ connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ss
 with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as file:
     doc = yaml.load(file)
 
-yum_repo_name = doc['yum_repo1']['name']
-yum_repo_version = doc['yum_repo1']['version']
+repo_name = doc['yum_repo1']['repo_name']
+repo_product= doc['yum_repo1']['product_name']
 
 def setUp():
     print "*** Running %s: *** " % basename(__file__)
@@ -64,17 +64,17 @@ def test_07_remove_3_custom_repos():
 
 def test_08_add_rh_repo_by_repository():
     '''Add a RH repo by repository'''
-    RHUIManagerRepo.add_rh_repo_by_repo(connection, [yum_repo_name + yum_repo_version + " \(Yum\)"])
+    RHUIManagerRepo.add_rh_repo_by_repo(connection, [repo_name + " \(Yum\)"])
     nose.tools.assert_not_equal(RHUIManagerRepo.list(connection), [])
 
 def test_09_delete_one_repo():
     '''Remove a RH repo'''
-    RHUIManagerRepo.delete_repo(connection, [yum_repo_name + ".*"])
+    RHUIManagerRepo.delete_repo(connection, [repo_name + ".*"])
     nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
 
 def test_10_add_rh_repo_by_product():
     '''Add a RH repo by product'''
-    RHUIManagerRepo.add_rh_repo_by_product(connection, [yum_repo_name])
+    RHUIManagerRepo.add_rh_repo_by_product(connection, [repo_product])
     #nose.tools.assert_not_equal(RHUIManagerRepo.list(connection), [])
 
 def test_11_delete_repo():

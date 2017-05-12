@@ -1,8 +1,10 @@
 yum_repo1:
-    name: "Red Hat Update Infrastructure 2 \\(RPMs\\)"
-    version: " \\(6Server-x86_64\\)"
+    repo_name: "Red Hat Update Infrastructure 2 \\(RPMs\\) \\(6Server-x86_64\\)"
+    product_name: "Red Hat Update Infrastructure 2 \\(RPMs\\)"
+    version: "Yum"
 yum_repo2:
-    name: "Red Hat Enterprise Linux for SAP \\(RHEL 7 Server\\) \\(RPMs\\) from RHUI"
-    version: " \\(7Server-x86_64\\)"
+    repo_name: "Red Hat Enterprise Linux for SAP \\(RHEL 7 Server\\) \\(RPMs\\) from RHUI \\(7Server-x86_64\\)"
+    product_name: "Red Hat Enterprise Linux for SAP \\(RHEL 7 Server\\) \\(RPMs\\) from RHUI"
+    version: "Yum"
 atomic_repo:
-    name: "Red Hat Enterprise Linux Atomic Host \\(Trees\\) from RHUI"
+    repo_name: "Red Hat Enterprise Linux Atomic Host \\(Trees\\) from RHUI"
