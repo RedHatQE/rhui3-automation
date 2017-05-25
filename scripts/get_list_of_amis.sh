@@ -4,6 +4,16 @@
 # These AMIs do not change very often, but it's still handy to get them all at once instead of copy&pasting them from Amazon UI.
 # Requires a working aws client
 #
+which aws &> /dev/null
+if [ $? -gt 0 ]; then
+  echo "The aws client is not available. Please install package awscli."
+  exit 1
+fi
+if [ ! -s ~/.aws/credentials ]; then
+  echo "The aws client is not configured. Please run \`aws configure'."
+  exit 1
+fi
+#
 # Sample output of this script:
 #
 #u'us-east-1': {u'AMI': u'ami-9df7548b'},
