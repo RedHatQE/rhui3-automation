@@ -19,13 +19,13 @@
 # Usage: you need to change the ami_description variable and run it
 
 
-regions=(us-east-1 ap-southeast-2 eu-west-1 us-west-1 ap-northeast-1 ap-southeast-1 sa-east-1 us-west-2 eu-central-1)
+regions=(ap-northeast-1 ap-northeast-2 ap-south-1 ap-southeast-1 ap-southeast-2 ca-central-1 eu-central-1 eu-west-1 eu-west-2 sa-east-1 us-east-1 us-east-2 us-west-1 us-west-2)
 
-ami_description="RHEL-6.9_HVM_GA-20170309-x86_64-1-Hourly2-GP"
+ami_description="RHEL-7.3_HVM-20170424-x86_64-1-Hourly2-GP2"
 
 for i in "${regions[@]}"
 do
-	echo "u'"$i"': {u'AMI': u'"`aws ec2 describe-images --filters "Name=name,Values=*$ami_description*" --query 'Images[*].[{ID:ImageId}]' --region=$i`"'},"
+	echo "u'"$i"': {u'AMI': u'"`aws ec2 describe-images --filters "Name=name,Values=*$ami_description*" --query 'Images[*].ImageId' --region=$i`"'}," | sed -re 's/\[.*?\"(.+?)\".*\]/\1/'
 	sleep 5
 done
 
