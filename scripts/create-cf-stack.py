@@ -62,7 +62,7 @@ argparser.add_argument('--nfs', help='NFS', action='store_const', const=True, de
 argparser.add_argument('--haproxy', help='number of HAProxies', type=int, default=1)
 argparser.add_argument('--gluster', help='Gluster', action='store_const', const=True, default=False)
 argparser.add_argument('--test', help='test machine', action='store_const', const=True, default=False)
-argparser.add_argument('--atomic-cli', help='amount of Atomic CLI machines', type=int, default=0)
+argparser.add_argument('--atomic-cli', help='number of Atomic CLI machines', type=int, default=0)
 argparser.add_argument('--input-conf', default="/etc/rhui_ec2.yaml", help='use supplied yaml config file')
 argparser.add_argument('--output-conf', help='output file')
 argparser.add_argument('--region', default="eu-west-1", help='use specified region')
@@ -461,7 +461,7 @@ if not con_cf or not con_ec2:
     logging.error("Create CF/EC2 connections: " + args.region)
     sys.exit(1)
 
-STACK_ID = "STACK" + ''.join(random.choice(string.ascii_lowercase) for x in range(10))
+STACK_ID = "STACK" + "-" + ec2_name + "-" + ''.join(random.choice(string.ascii_lowercase) for x in range(10))
 logging.info("Creating stack with ID " + STACK_ID)
 
 parameters = []
