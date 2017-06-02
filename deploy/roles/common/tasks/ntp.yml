@@ -5,15 +5,18 @@
 - name: install ntp
   package: "pkg={{ item }} state=installed"
   with_items: [ntp, ntpdate]
+  when: ansible_env.SUDO_USER != "cloud-user"
   tags: ntp
 
 - name: configure ntp
   template: src=ntp.conf.j2 dest=/etc/ntp.conf
   notify:
   - restart ntpd
+  when: ansible_env.SUDO_USER != "cloud-user"
   tags: ntp
 
 - name: enable and run ntpd
   service: name=ntpd state=started enabled=yes
+  when: ansible_env.SUDO_USER != "cloud-user"
   tags: ntp
 

@@ -51,3 +51,7 @@
 {{ hostvars[cli]['ansible_eth0']['ipv4']['address'] }} cli0{{ loop.index }} cli0{{ loop.index }}.example.com
 {% endfor %}
 {% endif %}
+
+{% if 'ATOMIC_CLI' in groups %}
+{{ hostvars[groups['ATOMIC_CLI'][0]]['ansible_eth0']['ipv4']['address'] }} atomiccli atomiccli.example.com
+{% endif %}

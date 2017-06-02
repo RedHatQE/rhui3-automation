@@ -1,0 +1,6 @@
+---
+# file: atomic_cli.yml
+# client playbook
+- hosts: ATOMIC_CLI
+  roles:
+  - atomic_cli

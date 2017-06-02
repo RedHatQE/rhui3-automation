@@ -29,7 +29,7 @@ Inbound rules:
 ### Requirements
 
 1. yaml config file with ec2 credentials - default path is `/etc/rhui_ec2.yaml` [(example)](#input-configuration-file)
-2. list of AMI in the script needs to be updated (section `json_dict['Mappings']` in the code)
+2. list of AMI in the script needs to be updated (section `json_dict['Mappings']` in the code) - the list can be created with the `scripts/get_list_of_amis.sh` script
 
 ### Usage
 
@@ -43,17 +43,20 @@ Default configuration:
 
 #### Parameters
 
-  * **--rhua [rhel_version]** - rhel version for rhui setup, `default = RHEL6`
+  * **--rhua [rhel_version]** - RHEL version for RHUI setup, `default = RHEL6`
   * **--iso [iso_date]** - iso version to title the instance (as in $user_nick_$RHELrelease_$ROLE_*$iso_date)*
   * **--dns** - if specified, a separate machine for dns, `default = the same as RHUA`
-  * **--cds [number]** - amount of CDS machines, `default = 1` (if Gluster filesystem, `default = 2`)
-  * **--haproxy [number]** - amount of HAProxies, `default = 1`
+  * **--cds [number]** - number of CDS machines, `default = 1` (if Gluster filesystem, `default = 2`)
+  * **--haproxy [number]** - number of HAProxies, `default = 1`
   * **--input-conf [name]** - the name of input conf file, `default = "/etc/rhui_ec2.yaml"`
   * **--output-conf [name]** - the name of output conf file, `default = "hosts_$RHELrelease_$iso.cfg"`
-  * **--cli5/6/7 [number]** - amount of CLI machines, `default = 0`
+  * **--cli5/6/7 [number]** - number of CLI machines, `default = 0`
+  * **--atomic-cli [number]** - number of ATOMIC CLI machines\*, `default = 0`
   * **--test** - if specified, TEST/MASTER machine, `default = 0`
   * **--region [name]** - `default = eu-west-1`
   
+\* ATOMIC CLI machines can be run only with RHEL7 RHUI setup
+
 Mutually exclusive options: 
 
   * **--nfs** - if specified, nfs filesystem with separate machine and NFS volume (100 GB) attached to this machine

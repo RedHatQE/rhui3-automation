@@ -7,10 +7,10 @@ Requirements
 Usage
 --------
 
-* Update/create your hosts.cfg file with addresses of your machines.
-* Be in deploy/ directory and run:
+* Create a copy of the `hosts.cfg` file and put the addresses of your machines to it. (See [Configuration Samples](#configuration-samples).) Do _not_ edit the `hosts.cfg` file directly as that would prevent you from updating your git clone of rhui3-automation.
+* Run:
 ```
-ansible-playbook -i ~/pathto/hosts.cfg site.yml  --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso"
+ansible-playbook -i pathto/your_hosts.cfg deploy/site.yml  --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso"
 ```
 
 Mind the mandatory extra variable `rhui_iso`
@@ -28,6 +28,7 @@ Managed roles:
 - Cdses
 - HAProxy (load balancer)
 - Nfs server
+- Cli and Atomic Cli (optional)
 - [Tests](https://github.com/RedHatQE/rhui3-automation/blob/master/tests/README.md) (optional)
 
 Supported configurations
@@ -42,53 +43,59 @@ Although all the role hostnames are properly resolvable (through /etc/hosts and 
 
 Configuration Samples
 ---------------------
-Edit `hosts.cfg` to meet your preference:
+Edit your copy of the `hosts.cfg` to meet your preferences:
 * example 1:
 ```ini
 # Rhua+Dns+Nfs, 2*Cds, 2*HAProxy
 [DNS]
-10.0.0.2
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [NFS]
-10.0.0.2
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [RHUA]
-10.0.0.2
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [CDS]
-10.0.0.3
-10.0.0.4
+ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [HAPROXY]
-10.0.0.5
-10.0.0.6
+ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+
+[CLI]
+ec2-10.0.0.6.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+
+#[ATOMIC_CLI]
+#ec2-10.0.0.7.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 #[TEST]
-#10.0.0.2
+#ec2-10.0.0.8.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 ```
 
 * example 2:
 ```ini
 # Rhua, Dns, 2*(Cds+Gluster), HAProxy
 [RHUA]
-10.0.0.1
+ec2-10.0.0.1.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [DNS]
-10.0.0.2
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [GLUSTER]
-10.0.0.3
-10.0.0.4
+ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [CDS]
-10.0.0.3
-10.0.0.4
+ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [HAPROXY]
-10.0.0.5
+ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 ```
+Replace _USER_ with the actual local user name and make sure the .pem file has this name.
 
-Check hosts.cfg file for more combinations.
+Check the [hosts.cfg](../hosts.cfg) file for more combinations.
 
 
 Configuration Limitations
@@ -97,7 +104,7 @@ Even though one can apply multiple roles to a single node, some combinations are
 - singleton roles --- only one instance per site: Rhua, Nfs, Dns, Proxy, Test
 - mutually exclusive roles --- can't be applied to the same node: Rhua, Cds, HAProxy, Proxy (all listen on port 443)
 - site-wide mutually exclusive roles --- chose either Nfs or Gluster
-- optional roles --- may be absent in one's site: Dns, HAProxy, Proxy, Cli, Test
+- optional roles --- may be absent in one's site: Dns, HAProxy, Proxy, Cli, Atomic Cli, Test
 - multi-roles --- usually multiple instances per site: CDS, Gluster, HAProxy, Cli
 
 Important Note: GlusterFS Configuration

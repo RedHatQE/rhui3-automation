@@ -16,7 +16,7 @@ class RHUIManagerEntitlements(object):
     Represents -= Entitlements Manager =- RHUI screen
     '''
     prompt = 'rhui \(entitlements\) => '
- 
+
     @staticmethod
     def list(connection):
         '''
@@ -24,24 +24,26 @@ class RHUIManagerEntitlements(object):
         '''
         RHUIManager.screen(connection, "entitlements")
         lines = RHUIManager.list_lines(connection, prompt=RHUIManagerEntitlements.prompt)
+        Expect.enter(connection, 'q')
         return lines
-    
+
     @staticmethod
     def list_rh_entitlements(connection):
         '''
         list Red Hat entitlements
         '''
-        
+
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "l")
         match = Expect.match(connection, re.compile("(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
-        
+
         matched_string = match[0].replace('l\r\n\r\nRed Hat Entitlements\r\n\r\n  \x1b[92mValid\x1b[0m\r\n    ', '', 1)
-        
+
         entitlements_list = []
         pattern = re.compile('(.*?\r\n.*?pem)', re.DOTALL)
         for entitlement in pattern.findall(matched_string):
             entitlements_list.append(entitlement.strip())
+        Expect.enter(connection, 'q')
         return entitlements_list
 
 
@@ -50,24 +52,25 @@ class RHUIManagerEntitlements(object):
         '''
         list custom entitlements
         '''
-         
+
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "c")
-        match = Expect.match(connection, re.compile("c\r\n\r\nCustom Repository Entitlements\r\n\r\n(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
-        
+        match = Expect.match(connection, re.compile("c\r\n\r\nCustom Repository Entitlements\r\n\r\n(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))[0]
+
         repo_list = []
-        
-        if match[0].find('No custom repositories exist in the RHUI') != -1:
-            return repo_list
+
+        for line in match.splitlines():
+            if "Name:" in line:
+                repo_list.append(line.replace("Name:", "").strip())
+        Expect.enter(connection, 'q')
+        return sorted(repo_list)
 
     @staticmethod
-    def upload_rh_certificate(connection):
+    def upload_rh_certificate(connection, certificate_file = '/tmp/extra_rhui_files/rhcert.pem'):
         '''
         upload a new or updated Red Hat content certificate
         '''
-        
-        certificate_file = '/tmp/extra_rhui_files/rhcert.pem'
-        
+
         if connection.recv_exit_status("ls -la %s" % certificate_file)!=0:
             raise ExpectFailed("Missing certificate file: %s" % certificate_file)
 
@@ -83,5 +86,6 @@ class RHUIManagerEntitlements(object):
         pattern = re.compile('(.*?\r\n.*?pem)', re.DOTALL)
         for entitlement in pattern.findall(matched_string):
             entitlements_list.append(entitlement.strip())
+        Expect.enter(connection, 'q')
         return entitlements_list
 

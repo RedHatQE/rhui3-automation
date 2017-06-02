@@ -12,4 +12,5 @@
 - include: haproxy.yml
 - include: cds.yml
 - include: cli.yml
+- include: atomic_cli.yml
 - include: tests.yml

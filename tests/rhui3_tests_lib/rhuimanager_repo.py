@@ -1,6 +1,7 @@
 """ RHUIManager Repo functions """
 
 import re
+from os.path import basename
 
 from stitches.expect import Expect, ExpectFailed
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -26,13 +27,13 @@ class RHUIManagerRepo(object):
             Expect.enter(connection, displayname)
             if displayname != "":
                 checklist.append("Name: " + displayname)
-            else:   
+            else:
                 checklist.append("Name: " + reponame)
             Expect.expect(connection, "Unique path at which the repository will be served.*:")
             Expect.enter(connection, path)
             if path != "":
                 path_real = path
-            else:   
+            else:
                 path_real = reponame
             checklist.append("Path: " + path_real)
             Expect.expect(connection, "Enter value.*:")
@@ -44,7 +45,7 @@ class RHUIManagerRepo(object):
                 Expect.enter(connection, entitlement_path)
                 if entitlement_path != "":
                     checklist.append("Entitlement: " + entitlement_path)
-                else:       
+                else:
                     educated_guess, replace_count = re.subn("(i386|x86_64)", "$basearch", path_real)
                     if replace_count > 1:
                         # bug 815975
@@ -58,7 +59,7 @@ class RHUIManagerRepo(object):
                 Expect.enter(connection, redhat_gpg)
                 if redhat_gpg == "y":
                     checklist.append("Red Hat GPG Key: Yes")
-                else:       
+                else:
                     checklist.append("Red Hat GPG Key: No")
                 Expect.expect(connection, "Will the repository be used to host any custom GPG signed content\? \(y/n\)")
                 if custom_gpg:
@@ -68,20 +69,19 @@ class RHUIManagerRepo(object):
                     Expect.expect(connection, "Would you like to enter another public key\? \(y/n\)")
                     Expect.enter(connection, "n")
                     checklist.append("Custom GPG Keys: '" + custom_gpg + "'")
-                else:       
+                else:
                     Expect.enter(connection, "n")
                     checklist.append("Custom GPG Keys: \(None\)")
-            else:           
+            else:
                 Expect.enter(connection, "n")
-                checklist.append("GPG Check No") 
+                checklist.append("GPG Check No")
                 checklist.append("Red Hat GPG Key: No")
-    
+
             RHUIManager.proceed_with_check(connection, "The following repository will be created:", checklist)
-            Expect.expect(connection, "Successfully created repository *")
-            Expect.enter(connection, "home")
-        else:      
+            RHUIManager.quit(connection, "Successfully created repository *")
+        else:
             Expect.enter(connection, '\x03')
-            Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
+            RHUIManager.quit(connection)
 
     @staticmethod
     def add_rh_repo_all(connection):
@@ -93,7 +93,7 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "Import Repositories:.*to abort:", 660)
         Expect.enter(connection, "1")
         RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>", 180)
+        RHUIManager.quit(connection, "", 180)
 
     @staticmethod
     def add_rh_repo_by_product(connection, productlist):
@@ -105,8 +105,8 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "Import Repositories:.*to abort:", 660)
         Expect.enter(connection, "2")
         RHUIManager.select(connection, productlist)
-        RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+        RHUIManager.proceed_with_check(connection, "The following products will be deployed:", productlist)
+        RHUIManager.quit(connection)
 
     @staticmethod
     def add_rh_repo_by_repo(connection, repolist):
@@ -118,14 +118,11 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "Import Repositories:.*to abort:", 660)
         Expect.enter(connection, "3")
         RHUIManager.select(connection, repolist)
-        repocheck = list(repolist)
+        repolist_mod = list(repolist)
         for repo in repolist:
-            #adding repo titles to check list
-            repotitle = re.sub(" \\\\\([^\(]*\\\\\)$", "", repo)
-            if not repotitle in repocheck:
-                repocheck.append(repotitle)
-        RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+            repolist_mod.append(re.sub(" \\\\\([a-zA-Z0-9_-]*\\\\\) \\\\\(Yum\\\\\)", "", repo))
+        RHUIManager.proceed_with_check(connection, "The following product repositories will be deployed:", repolist_mod)
+        RHUIManager.quit(connection)
 
     @staticmethod
     def add_docker_container(connection, containername, containerid="", displayname=""):
@@ -140,14 +137,17 @@ class RHUIManagerRepo(object):
         Expect.enter(connection, containerid)
         Expect.expect(connection, "Display name for the container.*]:")
         Expect.enter(connection, displayname)
-        RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+        RHUIManager.proceed_with_check(connection, "The following container will be added:",
+        ["Container Id: " + containername.replace("/","_").replace(".","_"),
+         "Display Name: " + displayname,
+         "Upstream Container Name: " + containername])
+        RHUIManager.quit(connection)
 
     @staticmethod
     def list(connection):
-        ''' 
+        '''
         list repositories
-        '''     
+        '''
         RHUIManager.screen(connection, "repo")
         Expect.enter(connection, "l")
         # eating prompt!!
@@ -157,17 +157,28 @@ class RHUIManagerRepo(object):
         reslist = map(lambda x: x.strip(), ret.split("\r\n"))
         repolist = []
         for line in reslist:
-            # Readling lines and searching for repos
-            if line == '':
-                continue
-            if "Custom Repositories" in line:
-                continue
-            if "Red Hat Repositories" in line:
-                continue
-            if "No repositories are currently managed by the RHUI" in line:
+            if line in ["", "Custom Repositories", "Red Hat Repositories", "OSTree", "Docker", "Yum", "No repositories are currently managed by the RHUI"]:
                 continue
             repolist.append(line)
+        Expect.enter(connection, 'q')
         return repolist
+
+    @staticmethod
+    def get_repo_version(connection, reponame):
+        '''
+        get repo version
+        '''
+        repolist = RHUIManagerRepo.list(connection)
+        # delete escape back slash from the reponame
+        reponame = reponame.replace("\\", "")
+        # get full repo name with its version from the list of all repos
+        full_reponame = next((s for s in repolist if reponame in s), None)
+        #return full_reponame
+        # get its version
+        repo_version = re.sub('^.*\((.*?)\)[^\(]*$', '\g<1>', full_reponame)
+
+        #return repo_version
+        return " \(" + repo_version + "\)"
 
     @staticmethod
     def delete_repo(connection, repolist):
@@ -178,7 +189,7 @@ class RHUIManagerRepo(object):
         Expect.enter(connection, "d")
         RHUIManager.select(connection, repolist)
         RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>")
+        RHUIManager.quit(connection)
 
     @staticmethod
     def delete_all_repos(connection):
@@ -192,17 +203,71 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "Enter value .*:")
         Expect.enter(connection, "c")
         RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, ".*rhui \(" + "repo" + "\) =>", 360)
+        # Wait until all repos are deleted
+        RHUIManager.quit(connection, "", 360)
+        while len(RHUIManagerRepo.list(connection)) != 0:
+            time.sleep(10)
 
     @staticmethod
     def upload_content(connection, repolist, path):
         '''
         upload content to a custom repository
         '''
+        # Temporarily quit rhui-manager and check whether "path" is a file or a directory.
+        # If it is a directory, get a list of *.rpm files in it.
+        Expect.enter(connection, 'q')
+        Expect.enter(connection, "stat -c %F " + path)
+        path_type = Expect.expect_list(connection, [(re.compile(".*regular file.*", re.DOTALL), 1), (re.compile(".*directory.*", re.DOTALL), 2)])
+        if path_type == 1:
+            content = [basename(path)]
+        elif path_type == 2:
+            Expect.enter(connection, "echo " + path + "/*.rpm")
+            output = Expect.match(connection, re.compile("(.*)", re.DOTALL))[0]
+            rpm_files = output.splitlines()[1]
+            content = []
+            for rpm_file in rpm_files.split():
+                content.append(basename(rpm_file))
+        else:
+            # This should not happen. Getting here means that "path" is neither a file nor a directory.
+            # Anyway, going on with no content, leaving it up to proceed_with_check() to handle this situation.
+            content = []
+        # Start rhui-manager again and continue.
+        RHUIManager.initial_run(connection)
         RHUIManager.screen(connection, "repo")
         Expect.enter(connection, "u")
         RHUIManager.select(connection, repolist)
         Expect.expect(connection, "will be uploaded:")
         Expect.enter(connection, path)
-        RHUIManager.proceed_without_check(connection)
-        Expect.expect(connection, "rhui \(" + "repo" + "\) =>")
+        RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", content)
+        RHUIManager.quit(connection)
+
+    @staticmethod
+    def check_for_package(connection, reponame, package):
+        '''
+        list packages in a repository
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "p")
+
+        RHUIManager.select_one(connection, reponame)
+        Expect.expect(connection, "\(blank line for no filter\):")
+        Expect.enter(connection, package)
+
+        pattern = re.compile('.*only\.\r\n(.*)\r\n-+\r\nrhui\s* \(repo\)\s* =>',
+                             re.DOTALL)
+        ret = Expect.match(connection, pattern, grouplist=[1])[0]
+        reslist = map(lambda x: x.strip(), ret.split("\r\n"))
+        packagelist = []
+        for line in reslist:
+            if line == '':
+                continue
+            if line == 'Packages:':
+                continue
+            if line == 'No packages found that match the given filter.':
+                continue
+            if line == 'No packages in the repository.':
+                continue
+            packagelist.append(line)
+        Expect.enter(connection, 'q')
+        return packagelist
+
