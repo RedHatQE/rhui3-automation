@@ -62,7 +62,7 @@ argparser.add_argument('--nfs', help='NFS', action='store_const', const=True, de
 argparser.add_argument('--haproxy', help='number of HAProxies', type=int, default=1)
 argparser.add_argument('--gluster', help='Gluster', action='store_const', const=True, default=False)
 argparser.add_argument('--test', help='test machine', action='store_const', const=True, default=False)
-argparser.add_argument('--atomic-cli', help='amount of Atomic CLI machines', type=int, default=0)
+argparser.add_argument('--atomic-cli', help='number of Atomic CLI machines', type=int, default=0)
 argparser.add_argument('--input-conf', default="/etc/rhui_ec2.yaml", help='use supplied yaml config file')
 argparser.add_argument('--output-conf', help='output file')
 argparser.add_argument('--region', default="eu-west-1", help='use specified region')
@@ -169,32 +169,32 @@ if fs_type_f == "rhua":
 
 json_dict['Mappings'] = \
   {u'RHEL7': {
-                u'ap-northeast-1': {u'AMI': u'ami-efa18a88'},
-				u'ap-northeast-2': {u'AMI': u'ami-5346943d'},
-				u'ap-south-1': {u'AMI': u'ami-926416fd'},
-				u'ap-southeast-1': {u'AMI': u'ami-bee358dd'},
-				u'ap-southeast-2': {u'AMI': u'ami-9c1b13ff'},
-				u'ca-central-1': {u'AMI': u'ami-55b90531'},
-				u'eu-central-1': {u'AMI': u'ami-cba478a4'},
-				u'eu-west-1': {u'AMI': u'ami-74e4e512'},
-				u'eu-west-2': {u'AMI': u'ami-c7ecf8a3'},
-				u'sa-east-1': {u'AMI': u'ami-ec9ef380'},
-				u'us-east-1': {u'AMI': u'ami-5f39a149'},
-				u'us-east-2': {u'AMI': u'ami-f857709d'},
-				u'us-west-1': {u'AMI': u'ami-2db5914d'},
-				u'us-west-2': {u'AMI': u'ami-b772edd7'},},
+        u'ap-northeast-1': {u'AMI': u'ami-efa18a88'},
+        u'ap-northeast-2': {u'AMI': u'ami-5346943d'},
+        u'ap-south-1': {u'AMI': u'ami-926416fd'},
+        u'ap-southeast-1': {u'AMI': u'ami-bee358dd'},
+        u'ap-southeast-2': {u'AMI': u'ami-9c1b13ff'},
+        u'ca-central-1': {u'AMI': u'ami-55b90531'},
+        u'eu-central-1': {u'AMI': u'ami-cba478a4'},
+        u'eu-west-1': {u'AMI': u'ami-74e4e512'},
+        u'eu-west-2': {u'AMI': u'ami-c7ecf8a3'},
+        u'sa-east-1': {u'AMI': u'ami-ec9ef380'},
+        u'us-east-1': {u'AMI': u'ami-5f39a149'},
+        u'us-east-2': {u'AMI': u'ami-f857709d'},
+        u'us-west-1': {u'AMI': u'ami-2db5914d'},
+        u'us-west-2': {u'AMI': u'ami-b772edd7'},},
     u'RHEL6': {
-                u'us-east-1': {u'AMI': u'ami-9df7548b'},
-                u'ap-southeast-2': {u'AMI': u'ami-6b6c6008'},
-                u'eu-west-1': {u'AMI': u'ami-75625713'},
-                u'us-west-1': {u'AMI': u'ami-3984dd59'},
-                u'ap-northeast-1': {u'AMI': u'ami-d4a6f6b3'},
-                u'ap-southeast-1': {u'AMI': u'ami-c770c3a4'},
-                u'sa-east-1': {u'AMI': u'ami-d24d2cbe'},
-                u'us-west-2': {u'AMI': u'ami-e8b93688'},
-                u'eu-central-1': {u'AMI': u'ami-3867b357'},},
+        u'us-east-1': {u'AMI': u'ami-9df7548b'},
+        u'ap-southeast-2': {u'AMI': u'ami-6b6c6008'},
+        u'eu-west-1': {u'AMI': u'ami-75625713'},
+        u'us-west-1': {u'AMI': u'ami-3984dd59'},
+        u'ap-northeast-1': {u'AMI': u'ami-d4a6f6b3'},
+        u'ap-southeast-1': {u'AMI': u'ami-c770c3a4'},
+        u'sa-east-1': {u'AMI': u'ami-d24d2cbe'},
+        u'us-west-2': {u'AMI': u'ami-e8b93688'},
+        u'eu-central-1': {u'AMI': u'ami-3867b357'},},
     u'ATOMIC': {
-                u'ap-northeast-1': {u'AMI': u'ami-7a037d1d'},
+        u'ap-northeast-1': {u'AMI': u'ami-7a037d1d'},
 				u'ap-northeast-2': {u'AMI': u'ami-22be6f4c'},
 				u'ap-south-1': {u'AMI': u'ami-07fe8868'},
 				u'ap-southeast-1': {u'AMI': u'ami-ad14bfce'},
@@ -461,7 +461,7 @@ if not con_cf or not con_ec2:
     logging.error("Create CF/EC2 connections: " + args.region)
     sys.exit(1)
 
-STACK_ID = "STACK" + ''.join(random.choice(string.ascii_lowercase) for x in range(10))
+STACK_ID = "STACK" + "-" + ec2_name + "-" + ''.join(random.choice(string.ascii_lowercase) for x in range(10))
 logging.info("Creating stack with ID " + STACK_ID)
 
 parameters = []
