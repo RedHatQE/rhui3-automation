@@ -201,7 +201,7 @@ json_dict['Mappings'] = \
 				u'ap-southeast-2': {u'AMI': u'ami-f2deda91'},
 				u'ca-central-1': {u'AMI': u'[]'},
 				u'eu-central-1': {u'AMI': u'ami-1b66aa74'},
-				u'eu-west-1': {u'AMI': u'ami-5825112b'},
+				u'eu-west-1': {u'AMI': u'ami-8a53b6f3'},
 				u'eu-west-2': {u'AMI': u'[]'},
 				u'sa-east-1': {u'AMI': u'ami-582ab034'},
 				u'us-east-1': {u'AMI': u'ami-dbb45dcd'},
