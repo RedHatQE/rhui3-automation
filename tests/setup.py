@@ -20,7 +20,7 @@ setup(name='rhui3_tests_lib',
         'rhui3_tests_lib'
         ],
     data_files=datafiles,
-    install_requires=['nose>=1.3.0', 'stitches>=0.10'],
+    install_requires=['nose>=1.3.0', 'stitches>=0.10', 'setuptools>=36.3.0'],
     zip_safe=False,
     classifiers=[
             'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
