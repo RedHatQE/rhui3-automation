@@ -44,12 +44,13 @@
   package: name=python-devel state=present
   tags: tests
 
-- name: install distribution setuptools
+- name: install python-setuptools
   package: name=python-setuptools state=present
   tags: tests
 
-- name: update to upstream setuptools
+- name: update setuptools to the latest upstream version if RHEL 6
   command: easy_install -U setuptools
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
   tags: tests
 
 - name: install libffi-devel
