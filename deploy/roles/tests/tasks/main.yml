@@ -49,6 +49,7 @@
   tags: tests
 
 - name: update setuptools to the latest upstream version if RHEL 6
+  # workaround for https://github.com/pyca/pynacl/issues/336
   command: easy_install -U setuptools
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
   tags: tests
