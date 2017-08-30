@@ -48,6 +48,12 @@
   package: name=python-setuptools state=present
   tags: tests
 
+- name: update setuptools to the latest upstream version if RHEL 6
+  # workaround for https://github.com/pyca/pynacl/issues/336
+  command: easy_install -U setuptools
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+  tags: tests
+
 - name: install libffi-devel
   package: name=libffi-devel state=present enablerepo=*
   tags: tests
@@ -56,15 +62,8 @@
   package: name=openssl-devel state=present enablerepo=*
   tags: tests
 
-- name: install tests if RHEL 6 (install pynacl, issue 336)
-  # https://github.com/pyca/pynacl/issues/336
-  shell: cd /tmp/rhui3-tests/tests && easy_install pip && pip install pynacl && python setup.py install
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
-  tags: tests
-
-- name: install tests if RHEL 7
+- name: install tests
   shell: cd /tmp/rhui3-tests/tests && python setup.py install
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7
   tags: tests
 
 - name: generate ssh keys
