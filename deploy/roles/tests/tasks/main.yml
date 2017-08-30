@@ -44,8 +44,12 @@
   package: name=python-devel state=present
   tags: tests
 
-- name: install python-setuptools
+- name: install distribution setuptools
   package: name=python-setuptools state=present
+  tags: tests
+
+- name: update to upstream setuptools
+  command: easy_install -U setuptools
   tags: tests
 
 - name: install libffi-devel
