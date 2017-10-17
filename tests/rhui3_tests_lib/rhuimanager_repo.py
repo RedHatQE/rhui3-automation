@@ -2,6 +2,7 @@
 
 import re
 from os.path import basename
+import time
 
 from stitches.expect import Expect, ExpectFailed
 from rhui3_tests_lib.rhuimanager import RHUIManager
