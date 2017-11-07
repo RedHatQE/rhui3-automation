@@ -43,7 +43,7 @@ def test_04_create_custom_repo():
 
 def test_05_upload_entitlement_certificate():
     '''Upload the Atomic (the small) entitlement certificate'''
-    RHUIManagerCLI.cert_upload(connection, "/tmp/extra_rhui_files/rhcert_atomic.pem")
+    RHUIManagerCLI.cert_upload(connection, "/tmp/extra_rhui_files/rhcert_atomic.pem", "Atomic")
 
 def test_06_check_certificate_info():
     '''Check certificate info for validity'''

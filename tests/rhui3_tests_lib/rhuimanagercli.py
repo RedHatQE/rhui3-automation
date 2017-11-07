@@ -10,11 +10,11 @@ class RHUIManagerCLI(object):
     The RHUI manager command-line interface (shell commands to control the RHUA).
     '''
     @staticmethod
-    def cert_upload(connection, certificate_file):
+    def cert_upload(connection, certificate_file, test_string):
         '''
         upload a new or updated Red Hat content certificate
         '''
-        Expect.ping_pong(connection, "rhui-manager cert upload --cert " + certificate_file, "Atomic")
+        Expect.ping_pong(connection, "rhui-manager cert upload --cert " + certificate_file, test_string)
 
     @staticmethod
     def cert_info(connection):
