@@ -56,6 +56,15 @@
   package: name=openssl-devel state=present enablerepo=*
   tags: tests
 
+- name: use HTTPS in the pypi URL in setuptools if RHEL 6
+  lineinfile:
+    path: /usr/lib/python2.6/site-packages/setuptools/command/easy_install.py
+    regexp: '^(.*)http://pypi.python.org(.*)$'
+    line: '\1https://pypi.python.org\2'
+    backrefs: yes
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+  tags: tests
+
 - name: install pip
   shell: easy_install pip
   tags: tests
