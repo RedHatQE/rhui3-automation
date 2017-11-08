@@ -20,8 +20,10 @@ In addition, you need a ZIP file with the following files in the root of the arc
 * `rhcert.pem` — This must be a valid Red Hat content certificate allowing access to the following products:
   * _Red Hat Update Infrastructure 2 (RPMs)_
   * _Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI_
-* `rhcert_atomic.pem` — This must be a valid Red Hat content certificate allowing access to the following product:
+* `rhcert_atomic.pem` — This must be a valid Red Hat content certificate allowing access to the following products:
   * _Red Hat Enterprise Linux Atomic Host (Trees) from RHUI_
+  * _Red Hat Enterprise Linux Atomic Host (Debug RPMs) from RHUI_
+  * _Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI_
 * `rhui-rpm-upload-test-1-1.noarch.rpm` — This package will be uploaded to a custom repository.
 * `rhui-rpm-upload-trial-1-1.noarch.rpm` — This package will also be uploaded to a custom repository.
 
