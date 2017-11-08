@@ -103,8 +103,8 @@ class RHUIManagerCLI(object):
         Expect.ping_pong(connection, "rhui-manager client cert --repo_label " + ",".join(repo_labels) + " --name " + name + " --days " + str(days) + " --dir " + dir, "Entitlement certificate created at " + dir + "/" + name + ".crt")
 
     @staticmethod
-    def client_rpm(connection, private_key, entitlement_cert, rpm_version, rpm_name, dir, unprotected_repos):
+    def client_rpm(connection, private_key, entitlement_cert, rpm_version, rpm_name, dir, unprotected_repos=[]):
         '''
-        generate an entitlement certificate
+        generate a client configuration RPM
         '''
-        Expect.ping_pong(connection, "rhui-manager client rpm --private_key " + private_key + " --entitlement_cert " + entitlement_cert + " --rpm_version " + rpm_version + " --rpm_name " + rpm_name + " --dir " + dir + " --unprotected_repos " + ",".join(unprotected_repos), "RPMs can be found at " + dir)
+        Expect.ping_pong(connection, "rhui-manager client rpm --private_key " + private_key + " --entitlement_cert " + entitlement_cert + " --rpm_version " + rpm_version + " --rpm_name " + rpm_name + " --dir " + dir + "%s" %(" --unprotected_repos " + ",".join(unprotected_repos) if len(unprotected_repos) > 0 else ""), "RPMs can be found at " + dir)
