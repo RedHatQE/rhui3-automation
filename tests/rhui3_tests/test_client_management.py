@@ -1,6 +1,6 @@
 import nose, stitches, logging, yaml
 
-from rhui3_tests_lib.rhuimanager_cli import *
+from rhui3_tests_lib.rhuimanager_client import *
 from rhui3_tests_lib.rhuimanager_entitlement import *
 from rhui3_tests_lib.rhuimanager_repo import *
 from rhui3_tests_lib.rhuimanager_sync import *

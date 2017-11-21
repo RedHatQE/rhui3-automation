@@ -6,3 +6,9 @@ yum_repo2:
     version: " \\(7Server-x86_64\\)"
 atomic_repo:
     name: "Red Hat Enterprise Linux Atomic Host \\(Trees\\) from RHUI"
+CLI_repo1:
+    name: "Red Hat Enterprise Linux Atomic Host (Debug RPMs) from RHUI"
+    id: "rhel-atomic-host-rhui-debug-rpms-x86_64"
+CLI_repo2:
+    name: "Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI (x86_64)"
+    id: "rhel-atomic-host-rhui-rpms-x86_64"
