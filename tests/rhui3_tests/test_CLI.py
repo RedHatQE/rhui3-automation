@@ -114,7 +114,7 @@ def test_21_create_client_configuration_rpm():
     RHUIManagerCLI.client_rpm(connection, "/tmp/atomic_and_my.key", "/tmp/atomic_and_my.crt", "1.0", "atomic_and_my", "/tmp", [custom_repo_name])
 
 def test_22_cleanup():
-    '''Clanup: Delete all repositories from RHUI (interactively; not currently supported by the CLI), remove certs and other files'''
+    '''Cleanup: Delete all repositories from RHUI (interactively; not currently supported by the CLI), remove certs and other files'''
     RHUIManagerRepo.delete_all_repos(connection)
     nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
     RHUIManager.remove_rh_certs(connection)
