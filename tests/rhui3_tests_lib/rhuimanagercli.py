@@ -56,7 +56,15 @@ class RHUIManagerCLI(object):
         '''
         check if the given repo ID and name are listed
         '''
-        Expect.ping_pong(connection, "rhui-manager repo list", repo_id + " :: " + Util.esc_parentheses(repo_name))
+        Expect.ping_pong(connection, "rhui-manager repo list", repo_id + " *:: " + Util.esc_parentheses(repo_name))
+
+    @staticmethod
+    def validate_repo_list(connection, repo_ids):
+        '''
+        check if only the given repo IDs are listed
+        '''
+        Expect.expect_retval(connection, "rhui-manager repo list | grep -v 'ID.*Repository Name$' | grep :: | cut -d ' ' -f 1 | sort > /tmp/actual_repo_list && echo \"" + "\n".join(sorted(repo_ids)) + "\" > /tmp/expected_repo_list && cmp /tmp/actual_repo_list /tmp/expected_repo_list")
+        Expect.ping_pong(connection, "rm -f /tmp/*_repo_list ; ls /tmp/*_repo_list 2>&1", "No such file or directory")
 
     @staticmethod
     def repo_sync(connection, repo_id, repo_name):

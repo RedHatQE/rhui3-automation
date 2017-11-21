@@ -143,6 +143,7 @@ class Util(object):
     @staticmethod
     def esc_parentheses(name):
         '''
-        helper method to escape parentheses so they can be safely used inside regular expressions in Expect methods
+        helper method to escape parentheses so they can be safely used inside
+        regular expressions in Expect methods
         '''
         return name.replace("(", "\(").replace(")", "\)")
