@@ -1,6 +1,7 @@
 #! /usr/bin/python -tt
 
 import nose, unittest, stitches, logging, yaml
+from nose.tools import *
 
 from rhui3_tests_lib.rhuimanager import *
 from rhui3_tests_lib.rhuimanager_entitlement import *
@@ -76,6 +77,17 @@ def test_09_list_custom_entitlements():
     '''
     list = RHUIManagerEntitlements.list_custom_entitlements(connection)
     nose.tools.assert_equal(len(list), 0)
+
+def test_10_remove_existing_entitlement_certificates():
+    '''Clean up uploaded entitlement certificates'''
+    RHUIManager.remove_rh_certs(connection)
+
+@raises(BadCertificate)
+def test_11_upload_expired_certificate():
+    '''
+       upload an expired certificate, expect a proper refusal
+    '''
+    RHUIManagerEntitlements.upload_rh_certificate(connection, "/tmp/extra_rhui_files/rhcert_expired.pem")
 
 def tearDown():
     print "*** Finished running %s. *** " % basename(__file__)

@@ -120,5 +120,12 @@ def test_22_cleanup():
     RHUIManager.remove_rh_certs(connection)
     Expect.ping_pong(connection, "rm -rf /tmp/atomic_and_my* ; ls /tmp/atomic_and_my* 2>&1", "No such file or directory")
 
+def test_23_upload_entitlement_certificate():
+    '''Bonus: Check expired certificate handling'''
+    # currently, an error occurs
+    RHUIManagerCLI.cert_upload(connection, "/tmp/extra_rhui_files/rhcert_expired.pem", "An unexpected error has occurred during the last operation")
+    # a relevant traceback is logged, though; check it
+    Expect.ping_pong(connection, "tail -1 /root/.rhui/rhui.log", "InvalidOrExpiredCertificate")
+
 def tearDown():
     print "*** Finished running %s. *** " % basename(__file__)

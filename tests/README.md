@@ -24,6 +24,7 @@ In addition, you need a ZIP file with the following files in the root of the arc
   * _Red Hat Enterprise Linux Atomic Host (Trees) from RHUI_
   * _Red Hat Enterprise Linux Atomic Host (Debug RPMs) from RHUI_
   * _Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI_
+* `rhcert_expired.pem` — This must be an expired Red Hat content certificate.
 * `rhui-rpm-upload-test-1-1.noarch.rpm` — This package will be uploaded to a custom repository.
 * `rhui-rpm-upload-trial-1-1.noarch.rpm` — This package will also be uploaded to a custom repository.
 
