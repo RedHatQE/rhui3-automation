@@ -4,6 +4,7 @@ import nose, unittest, stitches, logging, yaml
 
 from rhui3_tests_lib.rhuimanager import *
 from rhui3_tests_lib.rhuimanager_repo import *
+from rhui3_tests_lib.rhuimanager_entitlement import *
 
 from os.path import basename
 
@@ -21,8 +22,10 @@ def setUp():
     print "*** Running %s: *** " % basename(__file__)
 
 def test_01_repo_setup():
-    '''Do initial rhui-manager run'''
+    '''Do initial rhui-manager run, upload RH cert'''
     RHUIManager.initial_run(connection)
+    list = RHUIManagerEntitlements.upload_rh_certificate(connection)
+    nose.tools.assert_not_equal(len(list), 0)
 
 def test_02_check_empty_repo_list():
     '''Check if the repolist is empty'''
@@ -101,6 +104,10 @@ def test_15_delete_docker_container():
     '''Delete a docker container'''
     RHUIManagerRepo.delete_all_repos(connection)
     nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
+
+def test_16_delete_rh_cert():
+    '''Delete the RH cert'''
+    RHUIManager.remove_rh_certs(connection)
 
 def tearDown():
     print "*** Finished running %s. *** " % basename(__file__)

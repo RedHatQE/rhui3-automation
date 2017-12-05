@@ -23,7 +23,8 @@ def setUp():
 def test_01_setup():
     '''do rhui-manager login, upload RH cert, add a repo to sync '''
     RHUIManager.initial_run(connection)
-    RHUIManagerEntitlements.upload_rh_certificate(connection)
+    list = RHUIManagerEntitlements.upload_rh_certificate(connection)
+    nose.tools.assert_not_equal(len(list), 0)
     RHUIManagerRepo.add_rh_repo_by_repo(connection, [yum_repo_name + yum_repo_version + " \(Yum\)"])
 
 def test_02_sync_repo():
@@ -39,8 +40,9 @@ def test_04_wait_till_repo_synced():
     RHUIManagerSync.wait_till_repo_synced(connection, [yum_repo_name + yum_repo_version])
 
 def test_99_cleanup():
-    '''remove the RH repo '''
+    '''remove the RH repo and cert'''
     RHUIManagerRepo.delete_repo(connection, [yum_repo_name + ".*"])
+    RHUIManager.remove_rh_certs(connection)
 
 def tearDown():
     print "*** Finished running %s. *** " % basename(__file__)
