@@ -33,7 +33,6 @@ class TestClient:
     @classmethod
     def setUpClass(cls):
         cls.rhua_os_version = Util.get_rhua_version(connection)
-        print "*** Running %s: *** " % basename(__file__)
 
     def test_01_repo_setup(self):
         '''do initial rhui-manager run'''
@@ -159,7 +158,7 @@ class TestClient:
 
     def test_99_cleanup(self):
         '''
-           remove created repos, entitlements and custom cli rpms (and tar on RHEL 7+), remove rpms from cli, uninstall cds, hap
+           remove created repos, entitlements and custom cli rpms (and tar on RHEL 7+), remove rpms from cli, uninstall cds, hap, delete the RH cert
         '''
         RHUIManager.initial_run(connection)
         RHUIManagerRepo.delete_all_repos(connection)
@@ -174,6 +173,7 @@ class TestClient:
         else:
             Util.remove_rpm(cli, ["js"])
         Util.remove_rpm(cli, ["test_cli_rpm", "rhui-rpm-upload-test"])
+        RHUIManager.remove_rh_certs(connection)
 
     @classmethod
     def tearDownClass(cls):

@@ -53,7 +53,8 @@ class TestClient:
         '''
             upload atomic cert
         '''
-        RHUIManagerEntitlements.upload_rh_certificate(connection, "/tmp/extra_rhui_files/rhcert_atomic.pem")
+        list = RHUIManagerEntitlements.upload_rh_certificate(connection, "/tmp/extra_rhui_files/rhcert_atomic.pem")
+        nose.tools.assert_not_equal(len(list), 0)
 
     def test_05_add_atomic_repo(self):
         '''
@@ -106,7 +107,7 @@ class TestClient:
 
     def test_99_cleanup(self):
         '''
-           remove created repos, entitlements and custom cli rpms (and tar on RHEL 7+), remove rpms from cli, uninstall cds, hap
+           remove created repos, entitlements and custom cli rpms (and tar on RHEL 7+), remove rpms from cli, uninstall cds, hap, delete the RH cert
         '''
         RHUIManager.initial_run(connection)
         RHUIManagerRepo.delete_all_repos(connection)
@@ -117,6 +118,7 @@ class TestClient:
         Expect.ping_pong(connection, "rm -f /root/test_atomic_pkg.tar.gz && echo SUCCESS", "[^ ]SUCCESS")
      #   Expect.ping_pong(atomic_cli, "sudo ostree remote delete rhui-rhel-rhui-atomic-7-ostree-repo \
      #                                    && echo SUCCESS", "[^ ]SUCCESS")
+        RHUIManager.remove_rh_certs(connection)
 
     @classmethod
     def tearDownClass(cls):
