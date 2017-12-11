@@ -113,19 +113,19 @@ def test_21_create_client_configuration_rpm():
     '''Create a client configuration RPM'''
     RHUIManagerCLI.client_rpm(connection, "/tmp/atomic_and_my.key", "/tmp/atomic_and_my.crt", "1.0", "atomic_and_my", "/tmp", [custom_repo_name])
 
-def test_22_cleanup():
-    '''Cleanup: Delete all repositories from RHUI (interactively; not currently supported by the CLI), remove certs and other files'''
-    RHUIManagerRepo.delete_all_repos(connection)
-    nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
-    RHUIManager.remove_rh_certs(connection)
-    Expect.ping_pong(connection, "rm -rf /tmp/atomic_and_my* ; ls /tmp/atomic_and_my* 2>&1", "No such file or directory")
-
-def test_23_upload_entitlement_certificate():
+def test_22_upload_expired_entitlement_certificate():
     '''Bonus: Check expired certificate handling'''
     # currently, an error occurs
     RHUIManagerCLI.cert_upload(connection, "/tmp/extra_rhui_files/rhcert_expired.pem", "An unexpected error has occurred during the last operation")
     # a relevant traceback is logged, though; check it
     Expect.ping_pong(connection, "tail -1 /root/.rhui/rhui.log", "InvalidOrExpiredCertificate")
+
+def test_99_cleanup():
+    '''Cleanup: Delete all repositories from RHUI (interactively; not currently supported by the CLI), remove certs and other files'''
+    RHUIManagerRepo.delete_all_repos(connection)
+    nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
+    RHUIManager.remove_rh_certs(connection)
+    Expect.ping_pong(connection, "rm -rf /tmp/atomic_and_my* ; ls /tmp/atomic_and_my* 2>&1", "No such file or directory")
 
 def tearDown():
     print "*** Finished running %s. *** " % basename(__file__)
