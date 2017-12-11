@@ -89,25 +89,31 @@ class TestClient:
         RHUIManagerClient.create_conf_rpm(connection, "/root", "/root/test_ent_cli.crt", "/root/test_ent_cli.key", "test_cli_rpm", "3.0")
         Expect.ping_pong(connection, "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
 
-    def test_08_remove_amazon_rhui_conf_rpm(self):
+    def test_08_ensure_gpgcheck_in_cli_conf_(self):
+        '''
+           ensure that GPG checking is enabled in the client configuration
+        '''
+        Expect.expect_retval(connection, "grep -q '^gpgcheck\s*=\s*1$' /root/test_cli_rpm-3.0/build/BUILD/test_cli_rpm-3.0/rh-cloud.repo")
+
+    def test_09_remove_amazon_rhui_conf_rpm(self):
         '''
            remove amazon rhui configuration rpm from client
         '''
         Util.remove_amazon_rhui_conf_rpm(cli)
 
-    def test_09_install_conf_rpm(self):
+    def test_10_install_conf_rpm(self):
         '''
            install configuration rpm to client
         '''
         Util.install_pkg_from_rhua(connection, cli, "/root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm")
 
-    def test_10_check_cli_conf_rpm_version(self):
+    def test_11_check_cli_conf_rpm_version(self):
         '''
            check client configuration rpm version
         '''
         Expect.ping_pong(cli, "[ `rpm -q --queryformat \"%{VERSION}\" test_cli_rpm` = '3.0' ] && echo SUCCESS", "[^ ]SUCCESS")
 
-    def test_11_check_repo_sync_status(self):
+    def test_12_check_repo_sync_status(self):
         '''
            check if RH repos were synced to install rpm
         '''
@@ -117,13 +123,13 @@ class TestClient:
         else:
             RHUIManagerSync.wait_till_repo_synced(connection, [yum_repo2_name + yum_repo2_version])
 
-    def test_12_install_rpm_from_custom_repo(self):
+    def test_13_install_rpm_from_custom_repo(self):
         '''
            install rpm from a custom repo
         '''
         Expect.ping_pong(cli, "yum install -y rhui-rpm-upload-test --nogpgcheck && echo SUCCESS", "[^ ]SUCCESS", 60)
 
-    def test_13_install_rpm_from_rh_repo(self):
+    def test_14_install_rpm_from_rh_repo(self):
         '''
            install rpm from a RH repo
         '''
@@ -132,7 +138,7 @@ class TestClient:
         else:
            Expect.ping_pong(cli, "yum install -y vm-dump-metrics && echo SUCCESS", "[^ ]SUCCESS", 60)
 
-    def test_14_create_docker_cli_rpm(self):
+    def test_15_create_docker_cli_rpm(self):
         '''
            create a docker client configuration RPM
         '''
@@ -140,7 +146,7 @@ class TestClient:
         RHUIManagerClient.create_docker_conf_rpm(connection, "/root", "test_docker_cli_rpm", "4.0")
         Expect.ping_pong(connection, "test -f /root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
 
-    def test_15_install_docker_rpm(self):
+    def test_16_install_docker_rpm(self):
         '''
            install a docker client configuration RPM to client
         '''
@@ -148,7 +154,7 @@ class TestClient:
             raise nose.exc.SkipTest('Not supported on RHEL6')
         Util.install_pkg_from_rhua(connection, cli, "/root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm")
 
-    def test_16_check_docker_rpm_version(self):
+    def test_17_check_docker_rpm_version(self):
         '''
            check docker rpm version
         '''

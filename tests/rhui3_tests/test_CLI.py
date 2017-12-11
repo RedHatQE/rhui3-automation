@@ -113,7 +113,12 @@ def test_21_create_client_configuration_rpm():
     '''Create a client configuration RPM'''
     RHUIManagerCLI.client_rpm(connection, "/tmp/atomic_and_my.key", "/tmp/atomic_and_my.crt", "1.0", "atomic_and_my", "/tmp", [custom_repo_name])
 
-def test_22_upload_expired_entitlement_certificate():
+def test_22_ensure_gpgcheck_in_client_configuration():
+    '''Ensure that GPG checking is enabled in the client configuration'''
+    raise nose.exc.SkipTest('currently not enabled (RHBZ#1428756)')
+    Expect.expect_retval(connection, "grep -q '^gpgcheck\s*=\s*1$' /tmp/atomic_and_my-1.0/build/BUILD/atomic_and_my-1.0/rh-cloud.repo")
+
+def test_23_upload_expired_entitlement_certificate():
     '''Bonus: Check expired certificate handling'''
     # currently, an error occurs
     RHUIManagerCLI.cert_upload(connection, "/tmp/extra_rhui_files/rhcert_expired.pem", "An unexpected error has occurred during the last operation")
