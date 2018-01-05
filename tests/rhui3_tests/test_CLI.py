@@ -1,3 +1,5 @@
+'''RHUI CLI tests'''
+
 #! /usr/bin/python -tt
 
 import nose, stitches, logging, yaml

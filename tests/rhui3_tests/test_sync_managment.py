@@ -1,3 +1,5 @@
+'''Repo syncing and scheduling tests'''
+
 import nose, stitches, yaml, time
 
 from rhui3_tests_lib.rhuimanager import *

@@ -1,3 +1,5 @@
+'''Repo management tests'''
+
 #! /usr/bin/python -tt
 
 import nose, unittest, stitches, logging, yaml

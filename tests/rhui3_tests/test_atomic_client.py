@@ -1,3 +1,5 @@
+'''Atomic Client tests'''
+
 import nose, stitches, logging, yaml
 
 from rhui3_tests_lib.rhuimanager_client import *
