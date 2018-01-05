@@ -87,7 +87,7 @@ def test_15_no_unexpected_repos():
     RHUIManagerCLI.validate_repo_list(connection, [yum_repo_id_1, yum_repo_id_2, custom_repo_name])
 
 def test_16_start_syncing_repo():
-    '''Start syncing one of the repos'''
+    '''Sync one of the repos'''
     RHUIManagerCLI.repo_sync(connection, yum_repo_id_2, yum_repo_name_2)
 
 def test_17_repo_info():
