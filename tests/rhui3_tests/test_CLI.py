@@ -125,6 +125,11 @@ def test_23_upload_expired_entitlement_certificate():
     # a relevant traceback is logged, though; check it
     Expect.ping_pong(connection, "tail -1 /root/.rhui/rhui.log", "InvalidOrExpiredCertificate")
 
+def test_24_upload_incompatible_entitlement_certificate():
+    '''Bonus #2: Check incompatible certificate handling'''
+    # an error message is printed right away
+    RHUIManagerCLI.cert_upload(connection, "/tmp/extra_rhui_files/rhcert_incompatible.pem", "not compatible with the RHUI")
+
 def test_99_cleanup():
     '''Cleanup: Delete all repositories from RHUI (interactively; not currently supported by the CLI), remove certs and other files'''
     RHUIManagerRepo.delete_all_repos(connection)
