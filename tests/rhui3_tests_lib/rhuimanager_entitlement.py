@@ -18,6 +18,13 @@ class BadCertificate(Exception):
     def __init__(self):
         Exception.__init__(self)
 
+class IncompatibleCertificate(Exception):
+    """
+    Raised when a certificate is incompatible with RHUI
+    """
+    def __init__(self):
+        Exception.__init__(self)
+
 class RHUIManagerEntitlements(object):
     '''
     Represents -= Entitlements Manager =- RHUI screen
@@ -82,6 +89,7 @@ class RHUIManagerEntitlements(object):
             raise ExpectFailed("Missing certificate file: %s" % certificate_file)
 
         bad_cert_msg = "The provided certificate is expired or invalid"
+        incompatible_cert_msg = "not compatible with the RHUI"
 
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "u")
@@ -92,7 +100,11 @@ class RHUIManagerEntitlements(object):
         match = Expect.match(connection, re.compile("(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
         matched_string = match[0].replace('l\r\n\r\nRed Hat Entitlements\r\n\r\n  \x1b[92mValid\x1b[0m\r\n    ', '', 1)
         if bad_cert_msg in matched_string:
+            Expect.enter(connection, 'q')
             raise BadCertificate()
+        if incompatible_cert_msg in matched_string:
+            Expect.enter(connection, 'q')
+            raise IncompatibleCertificate()
         entitlements_list = []
         pattern = re.compile('(.*?\r\n.*?pem)', re.DOTALL)
         for entitlement in pattern.findall(matched_string):

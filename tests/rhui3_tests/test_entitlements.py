@@ -91,5 +91,12 @@ def test_11_upload_expired_certificate():
     '''
     RHUIManagerEntitlements.upload_rh_certificate(connection, "/tmp/extra_rhui_files/rhcert_expired.pem")
 
+@raises(IncompatibleCertificate)
+def test_12_upload_incompatible_certificate():
+    '''
+       upload an incompatible certificate, expect a proper refusal
+    '''
+    RHUIManagerEntitlements.upload_rh_certificate(connection, "/tmp/extra_rhui_files/rhcert_incompatible.pem")
+
 def tearDown():
     print "*** Finished running %s. *** " % basename(__file__)
