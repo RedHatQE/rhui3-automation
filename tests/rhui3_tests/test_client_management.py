@@ -18,23 +18,20 @@ connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ss
 cli=stitches.connection.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
 atomic_cli=stitches.connection.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
 
-with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as file:
-    doc = yaml.load(file)
-
-yum_repo1_name = doc['yum_repo1']['name']
-yum_repo1_version = doc['yum_repo1']['version']
-yum_repo2_name = doc['yum_repo2']['name']
-yum_repo2_version = doc['yum_repo2']['version']
-atomic_repo_name = doc['atomic_repo']['name']
-
-def setUp():
-    print "*** Running %s: *** " % basename(__file__)
-
 class TestClient:
 
-    @classmethod
-    def setUpClass(cls):
-        cls.rhua_os_version = Util.get_rhua_version(connection)
+    def setUp(self):
+        print "*** Running %s: *** " % basename(__file__)
+        self.rhua_os_version = Util.get_rhua_version(connection)
+
+        with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as file:
+            doc = yaml.load(file)
+
+        self.yum_repo1_name = doc['yum_repo1']['name']
+        self.yum_repo1_version = doc['yum_repo1']['version']
+        self.yum_repo2_name = doc['yum_repo2']['name']
+        self.yum_repo2_version = doc['yum_repo2']['version']
+        atomic_repo_name = doc['atomic_repo']['name']
 
     def test_01_repo_setup(self):
         '''do initial rhui-manager run'''
@@ -69,17 +66,17 @@ class TestClient:
         '''
         RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
         RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
-        RHUIManagerRepo.add_rh_repo_by_repo(connection, [yum_repo1_name + yum_repo1_version + " \(Yum\)", yum_repo2_name + yum_repo2_version + " \(Yum\)"])
-        RHUIManagerSync.sync_repo(connection, [yum_repo1_name + yum_repo1_version, yum_repo2_name + yum_repo2_version])
+        RHUIManagerRepo.add_rh_repo_by_repo(connection, [self.yum_repo1_name + self.yum_repo1_version + " \(Yum\)", self.yum_repo2_name + self.yum_repo2_version + " \(Yum\)"])
+        RHUIManagerSync.sync_repo(connection, [self.yum_repo1_name + self.yum_repo1_version, self.yum_repo2_name + self.yum_repo2_version])
 
     def test_06_generate_ent_cert(self):
         '''
            generate an entitlement certificate
         '''
         if self.rhua_os_version < 7:
-           RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", yum_repo1_name], "test_ent_cli", "/root/")
+           RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", self.yum_repo1_name], "test_ent_cli", "/root/")
         else:
-           RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", yum_repo2_name], "test_ent_cli", "/root/")
+           RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", self.yum_repo2_name], "test_ent_cli", "/root/")
         Expect.ping_pong(connection, "test -f /root/test_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
         Expect.ping_pong(connection, "test -f /root/test_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
 
@@ -121,9 +118,9 @@ class TestClient:
         '''
         RHUIManager.initial_run(connection)
         if self.rhua_os_version < 7:
-            RHUIManagerSync.wait_till_repo_synced(connection, [yum_repo1_name + yum_repo1_version])
+            RHUIManagerSync.wait_till_repo_synced(connection, [self.yum_repo1_name + self.yum_repo1_version])
         else:
-            RHUIManagerSync.wait_till_repo_synced(connection, [yum_repo2_name + yum_repo2_version])
+            RHUIManagerSync.wait_till_repo_synced(connection, [self.yum_repo2_name + self.yum_repo2_version])
 
     def test_13_install_rpm_from_custom_repo(self):
         '''
@@ -183,6 +180,5 @@ class TestClient:
         Util.remove_rpm(cli, ["test_cli_rpm", "rhui-rpm-upload-test"])
         RHUIManager.remove_rh_certs(connection)
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         print "*** Finished running %s. *** " % basename(__file__)
