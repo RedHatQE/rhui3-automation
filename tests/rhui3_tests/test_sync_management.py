@@ -13,15 +13,24 @@ logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
-class TestSync():
+class TestSync(object):
+    '''
+       class for repository synchronization tests
+    '''
 
-    def setUp(self):
-        print "*** Running %s: *** " % basename(__file__)
+    def __init__(self):
         with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as file:
             doc = yaml.load(file)
 
         self.yum_repo_name = doc['yum_repo1']['name']
         self.yum_repo_version = doc['yum_repo1']['version']
+
+    @staticmethod
+    def setup_class():
+        '''
+           announce the beginning of the test run
+        '''
+        print "*** Running %s: *** " % basename(__file__)
 
     def test_01_setup(self):
         '''do rhui-manager login, upload RH cert, add a repo to sync '''
@@ -47,5 +56,9 @@ class TestSync():
         RHUIManagerRepo.delete_repo(connection, [self.yum_repo_name + ".*"])
         RHUIManager.remove_rh_certs(connection)
 
-    def tearDown(self):
+    @staticmethod
+    def teardown_class():
+        '''
+           announce the end of the test run
+        '''
         print "*** Finished running %s. *** " % basename(__file__)
