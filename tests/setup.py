@@ -5,7 +5,7 @@ import glob
 import os
 import sys
 
-requirements=['nose>=1.3.0', 'stitches>=0.10']
+requirements=['nose>=1.3.0', 'stitches>=0.12']
 
 # Workaround for https://github.com/paramiko/paramiko/issues/1123
 python_version=sys.version_info[0] + sys.version_info[1] / 10.0

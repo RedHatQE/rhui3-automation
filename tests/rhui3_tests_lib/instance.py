@@ -1,7 +1,7 @@
 """ Cds container """
 import re
-import screenitem
-import lineparser
+from rhui3_tests_lib import screenitem
+from rhui3_tests_lib import lineparser
 
 class Instance(screenitem.ScreenItem):
     """A CDS and HAProxy attributes container"""
@@ -33,9 +33,14 @@ class Instance(screenitem.ScreenItem):
         ret &= self.ssh_key_path == other.ssh_key_path
         return ret
 
-    def __cmp__(self, other):
-        """for comparison of sorted lists to work as expected"""
-        if self == other:
-            return 0
-        # hack that in other cases
-        return cmp(repr(self), repr(other))
+# looks unused
+#    def __cmp__(self, other):
+#        """for comparison of sorted lists to work as expected"""
+#        if self == other:
+#            return 0
+#        # hack that in other cases
+#        #return cmp(repr(self), repr(other))
+#        return (repr(self) > repr(other)) - (repr(self) < repr(other))
+#
+# just in case we need to compare instances in the future
+#    __lt__ = __cmp__

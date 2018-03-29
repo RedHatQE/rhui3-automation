@@ -2,8 +2,8 @@
 Screen item module
 """
 
-import lineparser
-import rhuimanager
+from rhui3_tests_lib import lineparser
+from rhui3_tests_lib import rhuimanager
 
 class NoSuchItem(ValueError):
     """

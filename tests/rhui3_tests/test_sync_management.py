@@ -30,7 +30,7 @@ class TestSync(object):
         '''
            announce the beginning of the test run
         '''
-        print "*** Running %s: *** " % basename(__file__)
+        print("*** Running %s: *** " % basename(__file__))
 
     def test_01_setup(self):
         '''do rhui-manager login, upload RH cert, add a repo to sync '''
@@ -61,4 +61,4 @@ class TestSync(object):
         '''
            announce the end of the test run
         '''
-        print "*** Finished running %s. *** " % basename(__file__)
+        print("*** Finished running %s. *** " % basename(__file__))
