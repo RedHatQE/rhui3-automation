@@ -18,7 +18,7 @@ def setup():
     '''
        announce the beginning of the test run
     '''
-    print "*** Running %s: *** " % basename(__file__)
+    print("*** Running %s: *** " % basename(__file__))
 
 def test_01_initial_run():
     '''
@@ -77,4 +77,4 @@ def teardown():
     '''
        announce the end of the test run
     '''
-    print "*** Finished running %s. *** " % basename(__file__)
+    print("*** Finished running %s. *** " % basename(__file__))

@@ -60,7 +60,7 @@ class RHUIManager(object):
         for item in itemslist:
             for line in lines:
                 if item in line:
-                     index = filter(str.isdigit, lines[lines.index(line)-1])
+                     index = list(filter(str.isdigit, str(lines[lines.index(line)-1])))[0]
                      Expect.enter(connection, index)
                      break
         Expect.enter(connection, "c")

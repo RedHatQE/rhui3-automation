@@ -48,7 +48,7 @@ class Util(object):
         Expect.expect(connection, "root@")
 
         Expect.enter(connection, "gpg --gen-key --no-random-seed-file --batch /tmp/gpgkey")
-        for _ in xrange(1, 200):
+        for _ in range(1, 200):
             Expect.enter(connection, ''.join(random.choice(string.ascii_lowercase) for x in range(200)))
             time.sleep(1)
             try:

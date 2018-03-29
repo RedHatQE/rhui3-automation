@@ -39,7 +39,7 @@ class TestClient(object):
         '''
            announce the beginning of the test run
         '''
-        print "*** Running %s: *** " % basename(__file__)
+        print("*** Running %s: *** " % basename(__file__))
 
     @staticmethod
     def test_01_repo_setup():
@@ -204,4 +204,4 @@ class TestClient(object):
         '''
            announce the end of the test run
         '''
-        print "*** Finished running %s. *** " % basename(__file__)
+        print("*** Finished running %s. *** " % basename(__file__))
