@@ -14,13 +14,15 @@ logging.basicConfig(level=logging.DEBUG)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
-def setUp():
+def setup():
+    '''
+       announce the beginning of the test run
+    '''
     print "*** Running %s: *** " % basename(__file__)
 
 def test_01_initial_run():
     '''
         log in to RHUI
-        see roles/tests/tasks/main.yml
     '''
     RHUIManager.initial_run(connection)
 
@@ -70,5 +72,8 @@ def test_08_list_hap():
     hap_list = RHUIManagerInstance.list(connection, "loadbalancers")
     nose.tools.assert_equal(hap_list, [])
 
-def tearDown():
+def teardown():
+    '''
+       announce the end of the test run
+    '''
     print "*** Finished running %s. *** " % basename(__file__)

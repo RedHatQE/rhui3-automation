@@ -18,10 +18,12 @@ connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ss
 cli=stitches.connection.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
 atomic_cli=stitches.connection.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
 
-class TestClient:
+class TestClient(object):
+    '''
+       class for client tests
+    '''
 
-    def setUp(self):
-        print "*** Running %s: *** " % basename(__file__)
+    def __init__(self):
         self.rhua_os_version = Util.get_rhua_version(connection)
 
         with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as file:
@@ -31,20 +33,29 @@ class TestClient:
         self.yum_repo1_version = doc['yum_repo1']['version']
         self.yum_repo2_name = doc['yum_repo2']['name']
         self.yum_repo2_version = doc['yum_repo2']['version']
-        atomic_repo_name = doc['atomic_repo']['name']
 
-    def test_01_repo_setup(self):
+    @staticmethod
+    def setup_class():
+        '''
+           announce the beginning of the test run
+        '''
+        print "*** Running %s: *** " % basename(__file__)
+
+    @staticmethod
+    def test_01_repo_setup():
         '''do initial rhui-manager run'''
         RHUIManager.initial_run(connection)
 
-    def test_02_upload_rh_certificate(self):
+    @staticmethod
+    def test_02_upload_rh_certificate():
         '''
            upload a new or updated Red Hat content certificate
         '''
         list = RHUIManagerEntitlements.upload_rh_certificate(connection)
         nose.tools.assert_not_equal(len(list), 0)
 
-    def test_03_add_cds(self):
+    @staticmethod
+    def test_03_add_cds():
         '''
             add a CDS
         '''
@@ -52,7 +63,8 @@ class TestClient:
         nose.tools.assert_equal(cds_list, [])
         RHUIManagerInstance.add_instance(connection, "cds", "cds01.example.com")
 
-    def test_04_add_hap(self):
+    @staticmethod
+    def test_04_add_hap():
         '''
             add an HAProxy Load-balancer
         '''
@@ -80,7 +92,8 @@ class TestClient:
         Expect.ping_pong(connection, "test -f /root/test_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
         Expect.ping_pong(connection, "test -f /root/test_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
 
-    def test_07_create_cli_rpm(self):
+    @staticmethod
+    def test_07_create_cli_rpm():
         '''
            create a client configuration RPM from an entitlement certificate
         '''
@@ -88,25 +101,29 @@ class TestClient:
         RHUIManagerClient.create_conf_rpm(connection, "/root", "/root/test_ent_cli.crt", "/root/test_ent_cli.key", "test_cli_rpm", "3.0")
         Expect.ping_pong(connection, "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
 
-    def test_08_ensure_gpgcheck_in_cli_conf_(self):
+    @staticmethod
+    def test_08_ensure_gpgcheck_in_cli_conf():
         '''
            ensure that GPG checking is enabled in the client configuration
         '''
         Expect.expect_retval(connection, "grep -q '^gpgcheck\s*=\s*1$' /root/test_cli_rpm-3.0/build/BUILD/test_cli_rpm-3.0/rh-cloud.repo")
 
-    def test_09_remove_amazon_rhui_conf_rpm(self):
+    @staticmethod
+    def test_09_remove_amazon_rhui_conf_rpm():
         '''
            remove amazon rhui configuration rpm from client
         '''
         Util.remove_amazon_rhui_conf_rpm(cli)
 
-    def test_10_install_conf_rpm(self):
+    @staticmethod
+    def test_10_install_conf_rpm():
         '''
            install configuration rpm to client
         '''
         Util.install_pkg_from_rhua(connection, cli, "/root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm")
 
-    def test_11_check_cli_conf_rpm_version(self):
+    @staticmethod
+    def test_11_check_cli_conf_rpm_version():
         '''
            check client configuration rpm version
         '''
@@ -122,7 +139,8 @@ class TestClient:
         else:
             RHUIManagerSync.wait_till_repo_synced(connection, [self.yum_repo2_name + self.yum_repo2_version])
 
-    def test_13_install_rpm_from_custom_repo(self):
+    @staticmethod
+    def test_13_install_rpm_from_custom_repo():
         '''
            install rpm from a custom repo
         '''
@@ -137,7 +155,8 @@ class TestClient:
         else:
            Expect.ping_pong(cli, "yum install -y vm-dump-metrics && echo SUCCESS", "[^ ]SUCCESS", 60)
 
-    def test_15_create_docker_cli_rpm(self):
+    @staticmethod
+    def test_15_create_docker_cli_rpm():
         '''
            create a docker client configuration RPM
         '''
@@ -150,7 +169,7 @@ class TestClient:
            install a docker client configuration RPM to client
         '''
         if self.rhua_os_version < 7:
-            raise nose.exc.SkipTest('Not supported on RHEL6')
+            raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
         Util.install_pkg_from_rhua(connection, cli, "/root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm")
 
     def test_17_check_docker_rpm_version(self):
@@ -158,12 +177,12 @@ class TestClient:
            check docker rpm version
         '''
         if self.rhua_os_version < 7:
-            raise nose.exc.SkipTest('Not supported on RHEL6')
+            raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
         Expect.ping_pong(cli, "[ `rpm -q --queryformat \"%{VERSION}\" test_docker_cli_rpm` = '4.0' ] && echo SUCCESS", "[^ ]SUCCESS")
 
     def test_99_cleanup(self):
         '''
-           remove created repos, entitlements and custom cli rpms (and tar on RHEL 7+), remove rpms from cli, uninstall cds, hap, delete the RH cert
+           remove created repos, entitlements and custom cli rpms, remove rpms from cli, uninstall cds, hap, delete the RH cert
         '''
         RHUIManager.initial_run(connection)
         RHUIManagerRepo.delete_all_repos(connection)
@@ -180,5 +199,9 @@ class TestClient:
         Util.remove_rpm(cli, ["test_cli_rpm", "rhui-rpm-upload-test"])
         RHUIManager.remove_rh_certs(connection)
 
-    def tearDown(self):
+    @staticmethod
+    def teardown_class():
+        '''
+           announce the end of the test run
+        '''
         print "*** Finished running %s. *** " % basename(__file__)
