@@ -4,6 +4,8 @@ Setup of the RHUI 3 Test Framework
 
 Requirements
 ---------------
+Python 2 or 3. Tested on Python 2.6, 2.7, and 3.6.
+
 RHUI deployment with the following hosts:
 
 * one RHUA instance
