@@ -28,7 +28,7 @@ def test_01_register_system():
         register with RHSM
     '''
     Expect.expect_retval(CONNECTION, "source /tmp/extra_rhui_files/rhaccount.sh && " +
-                         "subscription-manager register --type=rhui "+
+                         "subscription-manager register --type=rhui " +
                          "--username=$SM_USERNAME --password=$SM_PASSWORD",
                          timeout=40)
 
