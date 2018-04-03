@@ -50,11 +50,11 @@ You can include the test stage in a RHUI 3 deployment by providing the address o
 
 To install _and run the whole test suite_ as part of the initial deployment or after a completed deployment, use either the following command if you would like to enter the encryption password by hand:
 
-`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip" rhaccount=~/Path/To/rhaccount.sh --ask-vault-pass`
+`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip rhaccount=~/Path/To/rhaccount.sh" --ask-vault-pass`
 
 Or the following command if you have stored the encryption password in a separate file:
 
-`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip" rhaccount=~/Path/To/rhaccount.sh --vault-password-file ~/Path/To/The/File/With/The/password`
+`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip rhaccount=~/Path/To/rhaccount.sh" --vault-password-file ~/Path/To/The/File/With/The/password`
 
 Beware, regardless of the command you use, the credentials file will be stored on the RHUA node, _unencrypted_, as `/tmp/extra_rhui_files/rhaccount.sh`.
 
