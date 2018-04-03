@@ -31,17 +31,36 @@ In addition, you need a ZIP file with the following files in the root of the arc
 * `rhui-rpm-upload-test-1-1.noarch.rpm` — This package will be uploaded to a custom repository.
 * `rhui-rpm-upload-trial-1-1.noarch.rpm` — This package will also be uploaded to a custom repository.
 
+Lastly, in order for the subscription test to be able to run, you need a file with valid Red Hat credentials allowing access to RHUI. The file must look like this:
+
+```
+SM_USERNAME=login
+SM_PASSWORD=password
+```
+
+Replace `login` with your Red Hat login and `password` with your Red Hat password. Save the file in an appropriate location and give it an appropriate name; for example, `rhaccount.sh`. You can then keep the file this way if you are not worried that someone else could read it, or you can encrypt it using Ansible. To encrypt the file, use the following command in the directory holding the file:
+
+`ansible-vault encrypt rhaccount.sh`
+
+Enter an appropriate encryption password when prompted.
+
 Usage
 --------
-You can include the test stage in a RHUI 3 deployment by providing the address of your test instance in the `[TEST]` section and the address of your client instances in the `[CLI]` and `[ATOMIC_CLI]` sections of the `hosts.cfg` file. Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the required ZIP file as a parameter of the `--extra-vars` option.
+You can include the test stage in a RHUI 3 deployment by providing the address of your test instance in the `[TEST]` section and the address of your client instances in the `[CLI]` and `[ATOMIC_CLI]` sections of the `hosts.cfg` file. Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the `--extra-vars` switch with the required ZIP file as a parameter of the `extra-files` option and also the required credentials file as a parameter of the `rhaccount` option. If the credentials file is encrypted, you will have to either provide the encryption password interactively or store it in a separate file (however, if someone reads that file, they will be able to read your Red Hat credentials, too, so be careful where you store the file).
 
-To install _and run the whole test suite_ as part of the initial deployment or after a completed deployment, use the following command:
+To install _and run the whole test suite_ as part of the initial deployment or after a completed deployment, use either the following command if you would like to enter the encryption password by hand:
 
-`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip"`
+`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip" rhaccount=~/Path/To/rhaccount.sh --ask-vault-pass`
+
+Or the following command if you have stored the encryption password in a separate file:
+
+`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip" rhaccount=~/Path/To/rhaccount.sh --vault-password-file ~/Path/To/The/File/With/The/password`
+
+Beware, regardless of the command you use, the credentials file will be stored on the RHUA node, _unencrypted_, as `/tmp/extra_rhui_files/rhaccount.sh`.
 
 Provide any other optional variables described in the RHUI deployment Readme as needed.
 
-Note that it can take 30 to 60 minutes for all the test cases to run. If you only want to install the test machine, add `--skip-tags run_tests` on the command line.
+Note that it can take a few hours for all the test cases to run. If you only want to install the test machine, add `--skip-tags run_tests` on the command line.
 
 The framework will be installed in the `/tmp/rhui3-tests` directory on the TEST machine. The output of the tests will be stored in `/tmp/rhui3test.log` on the TEST machine.
 
@@ -53,7 +72,7 @@ Or log in to the TEST machine, become root, enter the `/tmp/rhui3-tests/` direct
 
 `nosetests -vs tests/rhui3_tests`
 
-To run only a single test case, or a subset of the available test cases, speficy the test case(s) as the corresponding `test_XYZ.py` file name(s) on the `nosetests -vs` command line instead of `tests/rhui3_tests`, which is the directory containing all the test cases. For example:
+To run only a single test case, or a subset of the available test cases, specify the test case(s) as the corresponding `test_XYZ.py` file name(s) on the `nosetests -vs` command line instead of `tests/rhui3_tests`, which is the directory containing all the test cases. For example:
 
 `nosetests -vs tests/rhui3_tests/test_client_management.py`
 
