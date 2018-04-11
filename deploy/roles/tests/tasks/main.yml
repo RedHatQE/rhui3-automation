@@ -88,12 +88,12 @@
 - name: slurp the test pub key
   slurp: src=/root/.ssh/id_rsa_test.pub
   register: slurp_id_rsa_test
-  when: generated_ssh_test_keys|success
+  when: generated_ssh_test_keys is success
   tags: tests
 
 - name: set the pub_key as a global fact
   set_fact: id_rsa_test_pub="{{ slurp_id_rsa_test.content|b64decode|trim + ' ' + 'test.example.com' }}"
-  when: slurp_id_rsa_test|success
+  when: slurp_id_rsa_test is success
   tags: tests
 
 - name: set authorized keys on all roles except TEST itself to allow root connection with the key
@@ -102,7 +102,7 @@
                   state=present
   delegate_to: "{{ item }}"
   with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) + groups['CLI']|default([]) + groups['ATOMIC_CLI']|default([]) }}"
-  when: slurp_id_rsa_test|success
+  when: slurp_id_rsa_test is success
   tags: tests
   
 - name: upload files containing auxiliary files that might be needed for some tests (e.g. entitlement certificate, RPMs for custom repos) 
@@ -117,7 +117,7 @@
   shell: 'cd /tmp/extra_rhui_files/ && find . -type f -iname "*\.zip" -exec unzip -o {} \;'
   delegate_to: "{{ item }}"
   with_items: "{{ groups['RHUA']|default([]) }}"
-  when: (extra_files is defined) and (upload_extra_files|success)
+  when: (extra_files is defined) and (upload_extra_files is success)
   tags: tests
 
 - name: upload Red Hat credentials
