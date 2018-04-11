@@ -65,8 +65,14 @@
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
   tags: tests
 
+- name: install pip 9.0.3 if RHEL 6 (the last compatible version)
+  shell: easy_install pip==9.0.3
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+  tags: tests
+
 - name: install pip
   shell: easy_install pip
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
   tags: tests
 
 - name: install tests
@@ -112,6 +118,13 @@
   delegate_to: "{{ item }}"
   with_items: "{{ groups['RHUA']|default([]) }}"
   when: (extra_files is defined) and (upload_extra_files|success)
+  tags: tests
+
+- name: upload Red Hat credentials
+  copy: src="{{ rhaccount }}" dest=/tmp/extra_rhui_files/rhaccount.sh
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['RHUA']|default([]) }}"
+  when: rhaccount is defined
   tags: tests
 
 - name: run tests suite
