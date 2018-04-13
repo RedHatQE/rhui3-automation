@@ -16,7 +16,7 @@
 
 - name: install common custom rpm
   package: name='/tmp/{{common_custom_rpm|basename}}' state=present
-  when: common_custom_rpm is defined and copy_remote_rpm_result|success
+  when: common_custom_rpm is defined and copy_remote_rpm_result is success
   tags: gluster
 
 - name: checking glusterfs-server install
