@@ -43,12 +43,16 @@
 
 
 - name: perform repolist
-  shell: "yum repolist --disableplugin=* --disablerepo=* --enablerepo=local-rhui3 -v | grep 'Repo-pkgs' | cut -d: -f 2"
+  yum:
+    disable_plugin: '*'
+    disablerepo: '*'
+    enablerepo: local-rhui3
+    list: available
   register: yum_repolist_result
   when: setup_package_repos_result is success
   tags: rhui_nodes
 
 - name: assert rhui repo present in yum repolist
-  assert: { that: "{{yum_repolist_result.stdout|int > 0 }}" }
+  assert: { that: "{{yum_repolist_result.results|length > 0}}" }
   when: yum_repolist_result is success
   tags: rhui_nodes
