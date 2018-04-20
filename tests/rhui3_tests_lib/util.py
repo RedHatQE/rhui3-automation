@@ -62,20 +62,16 @@ class Util(object):
         '''
         Remove Amazon RHUI configuration rpm from instance (which owns /etc/yum/pluginconf.d/rhui-lb.conf file)
         '''
-        Expect.enter(connection, "")
-        Expect.expect(connection, "root@")
-        Expect.enter(connection, "([ ! -f /etc/yum/pluginconf.d/rhui-lb.conf ] && echo SUCCESS ) || (rpm -e `rpm -qf --queryformat '%{NAME}\n' /etc/yum/pluginconf.d/rhui-lb.conf` && echo SUCCESS)")
-        Expect.expect(connection, "[^ ]SUCCESS.*root@", 60)
+        Expect.expect_retval(connection, "if [ -f /etc/yum/pluginconf.d/rhui-lb.conf ]; " +
+                             "then rpm -e `rpm -qf --queryformat '%{NAME}\n' " +
+                             "/etc/yum/pluginconf.d/rhui-lb.conf`; fi")
 
     @staticmethod
     def remove_rpm(connection, rpmlist):
         '''
         Remove installed rpms from cli
         '''
-        Expect.enter(connection, "")
-        Expect.expect(connection, "root@")
-        Expect.enter(connection, "rpm -e " + ' '.join(rpmlist) + " && echo SUCCESS")
-        Expect.expect(connection, "[^ ]SUCCESS.*root@", 60)
+        Expect.expect_retval(connection, "rpm -e " + ' '.join(rpmlist))
 
     @staticmethod
     def install_pkg_from_rhua(rhua_connection, connection, pkgpath):
@@ -90,11 +86,11 @@ class Util(object):
         if file_extension == '.rpm':
             connection.sftp.put(tfile.name, tfile.name + file_extension)
             os.unlink(tfile.name)
-            Expect.ping_pong(connection, "rpm -i " + tfile.name + file_extension + " && echo SUCCESS", "[^ ]SUCCESS", 60)
+            Expect.expect_retval(connection, "rpm -i " + tfile.name + file_extension)
         else:
             connection.sftp.put(tfile.name, tfile.name + '.tar.gz')
             os.unlink(tfile.name)
-            Expect.ping_pong(connection,  "tar -xzf" + tfile.name + ".tar.gz" + " && ./install.sh && echo SUCCESS", "[^ ]SUCCESS", 60)
+            Expect.expect_retval(connection, "tar -xzf" + tfile.name + ".tar.gz && ./install.sh")
 
     @staticmethod
     def get_initial_password(connection, pwdfile="/etc/rhui-installer/answers.yaml"):

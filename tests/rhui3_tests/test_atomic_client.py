@@ -89,8 +89,8 @@ class TestClient(object):
            generate an entitlement certificate for the Atomic repo
         '''
         RHUIManagerClient.generate_ent_cert(connection, [self.atomic_repo_name], "test_atomic_ent_cli", "/root/")
-        Expect.ping_pong(connection, "test -f /root/test_atomic_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
-        Expect.ping_pong(connection, "test -f /root/test_atomic_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
+        Expect.expect_retval(connection, "test -f /root/test_atomic_ent_cli.crt")
+        Expect.expect_retval(connection, "test -f /root/test_atomic_ent_cli.key")
 
     @staticmethod
     def test_08_create_atomic_pkg():
@@ -99,7 +99,7 @@ class TestClient(object):
         '''
         RHUIManager.initial_run(connection)
         RHUIManagerClient.create_atomic_conf_pkg(connection, "/root", "test_atomic_pkg", "/root/test_atomic_ent_cli.crt", "/root/test_atomic_ent_cli.key")
-        Expect.ping_pong(connection, "test -f /root/test_atomic_pkg.tar.gz && echo SUCCESS", "[^ ]SUCCESS")
+        Expect.expect_retval(connection, "test -f /root/test_atomic_pkg.tar.gz")
 
     #def test_09_check_sync_status_of_atomic_repo(self):
     #    '''
@@ -121,7 +121,7 @@ class TestClient(object):
     #    '''
     #       pull atomic content
     #    '''
-    #    Expect.ping_pong(atomic_cli, "sudo ostree pull rhui-rhel-rhui-atomic-7-ostree-repo:rhel-atomic-host/7/x86_64/standard && echo SUCCESS", "[^ ]SUCCESS")
+    #    Expect.expect_retval(atomic_cli, "sudo ostree pull rhui-rhel-rhui-atomic-7-ostree-repo:rhel-atomic-host/7/x86_64/standard")
 
     @staticmethod
     def test_99_cleanup():
@@ -133,10 +133,9 @@ class TestClient(object):
         nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
         RHUIManagerInstance.delete(connection, "loadbalancers", ["hap01.example.com"])
         RHUIManagerInstance.delete(connection, "cds", ["cds01.example.com"])
-        Expect.ping_pong(connection, "rm -f /root/test_atomic_ent_cli* && echo SUCCESS", "[^ ]SUCCESS")
-        Expect.ping_pong(connection, "rm -f /root/test_atomic_pkg.tar.gz && echo SUCCESS", "[^ ]SUCCESS")
-     #   Expect.ping_pong(atomic_cli, "sudo ostree remote delete rhui-rhel-rhui-atomic-7-ostree-repo \
-     #                                    && echo SUCCESS", "[^ ]SUCCESS")
+        Expect.expect_retval(connection, "rm -f /root/test_atomic_ent_cli*")
+        Expect.expect_retval(connection, "rm -f /root/test_atomic_pkg.tar.gz")
+     #   Expect.expect_retval(atomic_cli, "sudo ostree remote delete rhui-rhel-rhui-atomic-7-ostree-repo")
         RHUIManager.remove_rh_certs(connection)
 
     @staticmethod

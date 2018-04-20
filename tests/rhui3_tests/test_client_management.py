@@ -89,8 +89,8 @@ class TestClient(object):
            RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", self.yum_repo1_name], "test_ent_cli", "/root/")
         else:
            RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", self.yum_repo2_name], "test_ent_cli", "/root/")
-        Expect.ping_pong(connection, "test -f /root/test_ent_cli.crt && echo SUCCESS", "[^ ]SUCCESS")
-        Expect.ping_pong(connection, "test -f /root/test_ent_cli.key && echo SUCCESS", "[^ ]SUCCESS")
+        Expect.expect_retval(connection, "test -f /root/test_ent_cli.crt")
+        Expect.expect_retval(connection, "test -f /root/test_ent_cli.key")
 
     @staticmethod
     def test_07_create_cli_rpm():
@@ -99,7 +99,8 @@ class TestClient(object):
         '''
         RHUIManager.initial_run(connection)
         RHUIManagerClient.create_conf_rpm(connection, "/root", "/root/test_ent_cli.crt", "/root/test_ent_cli.key", "test_cli_rpm", "3.0")
-        Expect.ping_pong(connection, "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
+        Expect.expect_retval(connection, "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/" +
+                             "test_cli_rpm-3.0-1.noarch.rpm")
 
     @staticmethod
     def test_08_ensure_gpgcheck_in_cli_conf():
@@ -127,7 +128,7 @@ class TestClient(object):
         '''
            check client configuration rpm version
         '''
-        Expect.ping_pong(cli, "[ `rpm -q --queryformat \"%{VERSION}\" test_cli_rpm` = '3.0' ] && echo SUCCESS", "[^ ]SUCCESS")
+        Expect.expect_retval(cli, "[ `rpm -q --queryformat \"%{VERSION}\" test_cli_rpm` = '3.0' ]")
 
     def test_12_check_repo_sync_status(self):
         '''
@@ -144,16 +145,16 @@ class TestClient(object):
         '''
            install rpm from a custom repo
         '''
-        Expect.ping_pong(cli, "yum install -y rhui-rpm-upload-test --nogpgcheck && echo SUCCESS", "[^ ]SUCCESS", 60)
+        Expect.expect_retval(cli, "yum install -y rhui-rpm-upload-test --nogpgcheck", timeout=20)
 
     def test_14_install_rpm_from_rh_repo(self):
         '''
            install rpm from a RH repo
         '''
         if self.rhua_os_version < 7:
-           Expect.ping_pong(cli, "yum install -y js && echo SUCCESS", "[^ ]SUCCESS", 60)
+           Expect.expect_retval(cli, "yum install -y js", timeout=20)
         else:
-           Expect.ping_pong(cli, "yum install -y vm-dump-metrics && echo SUCCESS", "[^ ]SUCCESS", 60)
+           Expect.expect_retval(cli, "yum install -y vm-dump-metrics", timeout=20)
 
     @staticmethod
     def test_15_create_docker_cli_rpm():
@@ -162,7 +163,8 @@ class TestClient(object):
         '''
         RHUIManager.initial_run(connection)
         RHUIManagerClient.create_docker_conf_rpm(connection, "/root", "test_docker_cli_rpm", "4.0")
-        Expect.ping_pong(connection, "test -f /root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm && echo SUCCESS", "[^ ]SUCCESS")
+        Expect.expect_retval(connection, "test -f /root/test_docker_cli_rpm-4.0/" +
+                             "build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm")
 
     def test_16_install_docker_rpm(self):
         '''
@@ -178,7 +180,8 @@ class TestClient(object):
         '''
         if self.rhua_os_version < 7:
             raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
-        Expect.ping_pong(cli, "[ `rpm -q --queryformat \"%{VERSION}\" test_docker_cli_rpm` = '4.0' ] && echo SUCCESS", "[^ ]SUCCESS")
+        Expect.expect_retval(cli, "[ `rpm "+
+                             "-q --queryformat \"%{VERSION}\" test_docker_cli_rpm` = '4.0' ]")
 
     def test_99_cleanup(self):
         '''
@@ -189,9 +192,9 @@ class TestClient(object):
         nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
         RHUIManagerInstance.delete(connection, "loadbalancers", ["hap01.example.com"])
         RHUIManagerInstance.delete(connection, "cds", ["cds01.example.com"])
-        Expect.ping_pong(connection, "rm -f /root/test_ent_cli* && echo SUCCESS", "[^ ]SUCCESS")
-        Expect.ping_pong(connection, "rm -rf /root/test_cli_rpm-3.0/ && echo SUCCESS", "[^ ]SUCCESS")
-        Expect.ping_pong(connection, "rm -rf /root/test_docker_cli_rpm-4.0/ && echo SUCCESS", "[^ ]SUCCESS")
+        Expect.expect_retval(connection, "rm -f /root/test_ent_cli*")
+        Expect.expect_retval(connection, "rm -rf /root/test_cli_rpm-3.0/")
+        Expect.expect_retval(connection, "rm -rf /root/test_docker_cli_rpm-4.0/")
         if self.rhua_os_version >=7:
             Util.remove_rpm(cli, ["vm-dump-metrics", "test_docker_cli_rpm"])
         else:
