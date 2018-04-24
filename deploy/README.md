@@ -1,6 +1,6 @@
 Requirements
 ---------------
-* [Ansible](http://docs.ansible.com/ansible/intro_installation.html#latest-release-via-yum) version 2.2.0 and higher. (It's possible that you will get older version using standard distro repositories. Try using "pip install -U ansible" instead. You might need to install easy_install first.)
+* [Ansible](http://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#latest-release-via-dnf-or-yum) version 2.5.0 and later.
 * Have enough machines ready - check the rest of Read Me for details on various RHUI setups.
 * Have RHUI3 ISO.
 
