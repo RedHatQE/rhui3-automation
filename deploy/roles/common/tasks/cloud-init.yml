@@ -1,0 +1,17 @@
+---
+# file: roles/common/tasks/cloud-init.yml
+# prevent cloud-init from running as it breaks our custom resolv.conf after rebooting
+
+- name: remove cloud-init on RHEL 6-
+  package:
+    name: cloud-init
+    state: absent
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 6
+  tags: tame_cloud_init
+
+- name: keep cloud-init from starting on RHEL 7+
+  file:
+    path: /etc/cloud/cloud-init.disabled
+    state: touch
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+  tags: tame_cloud_init
