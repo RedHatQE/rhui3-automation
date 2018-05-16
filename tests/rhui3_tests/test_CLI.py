@@ -138,7 +138,6 @@ class TestCLI(object):
     @staticmethod
     def test_22_ensure_gpgcheck_in_client_configuration():
         '''Ensure that GPG checking is enabled in the client configuration'''
-        raise nose.exc.SkipTest('currently not enabled (RHBZ#1428756)')
         Expect.expect_retval(connection, "grep -q '^gpgcheck\s*=\s*1$' /tmp/atomic_and_my-1.0/build/BUILD/atomic_and_my-1.0/rh-cloud.repo")
 
     @staticmethod
