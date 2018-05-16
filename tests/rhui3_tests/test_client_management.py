@@ -1,5 +1,8 @@
 '''Client management tests'''
 
+import requests
+import urllib3
+
 import nose, stitches, logging, yaml
 
 from rhui3_tests_lib.rhuimanager_client import *
@@ -13,6 +16,7 @@ from rhui3_tests_lib.util import Util
 from os.path import basename
 
 logging.basicConfig(level=logging.DEBUG)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 cli=stitches.connection.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
@@ -31,8 +35,10 @@ class TestClient(object):
 
         self.yum_repo1_name = doc['yum_repo1']['name']
         self.yum_repo1_version = doc['yum_repo1']['version']
+        self.yum_repo1_path = doc['yum_repo1']['path']
         self.yum_repo2_name = doc['yum_repo2']['name']
         self.yum_repo2_version = doc['yum_repo2']['version']
+        self.yum_repo2_path = doc['yum_repo2']['path']
 
     @staticmethod
     def setup_class():
@@ -182,6 +188,26 @@ class TestClient(object):
             raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
         Expect.expect_retval(cli, "[ `rpm "+
                              "-q --queryformat \"%{VERSION}\" test_docker_cli_rpm` = '4.0' ]")
+
+    def test_18_unauthorized_access(self):
+        '''
+           verify that RHUI repo content cannot be fetched without an entitlement certificate
+        '''
+        # re-use the already added repos
+        repo_paths = [self.yum_repo1_path, self.yum_repo2_path]
+        # try HEADing the repodata file for each repo
+        # the HTTP request must not complete (not even with HTTP 403);
+        # it is supposed to raise an SSLError instead
+        for repo_path in repo_paths:
+            nose.tools.assert_raises(requests.exceptions.SSLError, requests.head,
+                                     "https://cds.example.com/pulp/repos/" +
+                                     repo_path + "/repodata/repomd.xml",
+                                     verify=False)
+        # also check the protected custom repo
+        nose.tools.assert_raises(requests.exceptions.SSLError, requests.head,
+                                 "https://cds.example.com/pulp/repos/" +
+                                 "protected/custom-i386-x86_64/repodata/repomd.xml",
+                                 verify=False)
 
     def test_99_cleanup(self):
         '''
