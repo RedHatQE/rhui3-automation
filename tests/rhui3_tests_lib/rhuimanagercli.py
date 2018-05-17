@@ -128,3 +128,35 @@ class RHUIManagerCLI(object):
         generate a client configuration RPM
         '''
         Expect.ping_pong(connection, "rhui-manager client rpm --private_key " + private_key + " --entitlement_cert " + entitlement_cert + " --rpm_version " + rpm_version + " --rpm_name " + rpm_name + " --dir " + dir + "%s" %(" --unprotected_repos " + ",".join(unprotected_repos) if len(unprotected_repos) > 0 else ""), "RPMs can be found at " + dir)
+
+    @staticmethod
+    def subscriptions_list(connection, what="registered", poolonly=False):
+        '''
+        list registered or available subscriptions, complete information or the pool ID only
+        '''
+        if what not in ["registered", "available"]:
+            raise ValueError("Unsupported list: " + what)
+        if poolonly:
+            poolswitch = " --pool-only"
+        else:
+            poolswitch = ""
+        _, stdout, _ = connection.exec_command("rhui-manager subscriptions list --" + what +
+                                               poolswitch)
+        with stdout as output:
+            sub_list = output.read()
+        # uncolorify to work around RHBZ#1577052
+        return Util.uncolorify(sub_list).strip()
+
+    @staticmethod
+    def subscriptions_register(connection, pool):
+        '''
+        register the subscription to RHUI
+        '''
+        Expect.expect_retval(connection, "rhui-manager subscriptions register --pool " + pool)
+
+    @staticmethod
+    def subscriptions_unregister(connection, pool):
+        '''
+        remove the subscription from RHUI
+        '''
+        Expect.expect_retval(connection, "rhui-manager subscriptions unregister --pool " + pool)

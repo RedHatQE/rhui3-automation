@@ -140,14 +140,18 @@ class RHUIManager(object):
         '''
         Open specified rhui-manager screen
         '''
-        Expect.enter(connection, "rhui-manager")
-        Expect.expect(connection, "rhui \(home\) =>")
         if screen_name in ["repo", "cds", "loadbalancers", "sync", "identity", "users"]:
             key = screen_name[:1]
         elif screen_name == "client":
             key = "e"
         elif screen_name == "entitlements":
             key = "n"
+        elif screen_name == "subscriptions":
+            key = "sm"
+        else:
+            raise ValueError("Unsupported screen name: " + screen_name)
+        Expect.enter(connection, "rhui-manager")
+        Expect.expect(connection, "rhui \(home\) =>")
         Expect.enter(connection, key)
         Expect.expect(connection, "rhui \(" + screen_name + "\) =>")
 
