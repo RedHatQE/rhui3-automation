@@ -17,6 +17,7 @@ from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
 from rhui3_tests_lib.rhuimanagercli import RHUIManagerCLI
 from rhui3_tests_lib.subscription import RHSMRHUI
+from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -169,6 +170,10 @@ class TestCLI(object):
     @staticmethod
     def test_25_register_system():
         '''Register the system in RHSM, attach RHUI SKU'''
+        # update subscription-manager first (due to RHBZ#1554482)
+        rhua_os_version = Util.get_rhua_version(CONNECTION)
+        if rhua_os_version == 7:
+            Expect.expect_retval(CONNECTION, "yum -y update subscription-manager", timeout=30)
         RHSMRHUI.register_system(CONNECTION)
         RHSMRHUI.attach_rhui_sku(CONNECTION)
 
@@ -224,13 +229,51 @@ class TestCLI(object):
         '''Unregister the system from RHSM'''
         RHSMRHUI.unregister_system(CONNECTION)
 
+    def test_33_resync_repo(self):
+        '''Sync the repo again'''
+        RHUIManagerCLI.repo_sync(CONNECTION, self.yum_repo_id_2, self.yum_repo_name_2)
+
+    @staticmethod
+    def test_34_resync_no_warning():
+        '''Check if the syncs did not cause known unnecessary warnings'''
+        # for RHBZ#1506872
+        Expect.expect_retval(CONNECTION, "grep -q 'pulp.*metadata:WARNING' /var/log/messages", 1)
+        # for RHBZ#1579294
+        #uncomment when the bug is fixed
+        #Expect.expect_retval(CONNECTION, "grep -q 'pulp.*publish:WARNING' /var/log/messages", 1)
+
+    @staticmethod
+    def test_35_list_repos():
+        '''Get a list of available repos for further examination'''
+        Expect.expect_retval(CONNECTION,
+                             "rhui-manager repo unused > /tmp/repos.stdout 2> /tmp/repos.stderr",
+                             timeout=1200)
+
+    @staticmethod
+    def test_36_check_iso_repos():
+        '''Check if non-RPM repos were ignored'''
+        # for RHBZ#1199426
+        Expect.expect_retval(CONNECTION,
+                             "egrep -q 'Containers|Images|ISOs|Kickstart' /tmp/repos.stdout", 1)
+
+    @staticmethod
+    def test_37_check_pygiwarning():
+        '''Check if PyGIWarning was not issued'''
+        # for RHBZ#1450430
+        Expect.expect_retval(CONNECTION, "grep -q PyGIWarning /tmp/repos.stderr", 1)
+
     @staticmethod
     def test_99_cleanup():
         '''Cleanup: Delete all repositories from RHUI (interactively; not currently supported by the CLI), remove certs and other files'''
         RHUIManagerRepo.delete_all_repos(CONNECTION)
         nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
         RHUIManager.remove_rh_certs(CONNECTION)
-        Expect.ping_pong(CONNECTION, "rm -rf /tmp/atomic_and_my* ; ls /tmp/atomic_and_my* 2>&1", "No such file or directory")
+        Expect.ping_pong(CONNECTION, "rm -rf /tmp/atomic_and_my* ; " +
+                         "ls /tmp/atomic_and_my* 2>&1",
+                         "No such file or directory")
+        Expect.ping_pong(CONNECTION, "rm -f /tmp/repos.std{out,err} ; " +
+                         "ls /tmp/repos.std{out,err} 2>&1",
+                         "No such file or directory")
         rmtree(TMPDIR)
 
     @staticmethod
