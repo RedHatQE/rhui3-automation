@@ -125,9 +125,13 @@ class Util(object):
         '''
         get RHUA os version
         '''
-        stdin, stdout, stderr = connection.exec_command('grep -E -o "[0-9]" /etc/redhat-release | head -1')
-        for line in  stdout:
-            return int(line)
+        _, stdout, _ = connection.exec_command(r"egrep -o '[0-9]+\.[0-9]+' /etc/redhat-release")
+        with stdout as output:
+            version = output.read()
+        try:
+            return float(version)
+        except ValueError:
+            return None
 
     @staticmethod
     def wildcard(hostname):

@@ -10,6 +10,7 @@ import yaml
 
 from rhui3_tests_lib.rhuimanager_subman import RHUIManagerSubMan
 from rhui3_tests_lib.subscription import RHSMRHUI
+from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -33,17 +34,14 @@ class TestSubscription(object):
         print("*** Running %s: *** " % basename(__file__))
 
     @staticmethod
-    def test_00_update_subman():
-        '''
-            make sure subscription-manager is up to date
-        '''
-        Expect.expect_retval(CONNECTION, "yum -y update subscription-manager", timeout=30)
-
-    @staticmethod
     def test_01_register_system():
         '''
             register with RHSM
         '''
+        # update subscription-manager first (due to RHBZ#1554482)
+        rhua_os_version = Util.get_rhua_version(CONNECTION)
+        if rhua_os_version == 7.5:
+            Expect.expect_retval(CONNECTION, "yum -y update subscription-manager", timeout=30)
         RHSMRHUI.register_system(CONNECTION)
 
     @staticmethod
