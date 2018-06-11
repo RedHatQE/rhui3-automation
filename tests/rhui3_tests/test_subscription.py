@@ -8,6 +8,7 @@ import stitches
 from stitches.expect import Expect
 import yaml
 
+from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_subman import RHUIManagerSubMan
 from rhui3_tests_lib.subscription import RHSMRHUI
 from rhui3_tests_lib.util import Util
@@ -32,6 +33,11 @@ class TestSubscription(object):
             announce the beginning of the test run
         '''
         print("*** Running %s: *** " % basename(__file__))
+
+    @staticmethod
+    def test_00_initial_run():
+        '''Do an initial rhui-manager run to make sure we are logged in'''
+        RHUIManager.initial_run(CONNECTION)
 
     @staticmethod
     def test_01_register_system():
