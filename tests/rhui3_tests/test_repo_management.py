@@ -87,7 +87,9 @@ class TestRepo(object):
 
     def test_08_add_rh_repo_by_repository(self):
         '''Add a RH repo by repository'''
-        RHUIManagerRepo.add_rh_repo_by_repo(connection, [self.yum_repo_name + self.yum_repo_version + " \(Yum\)"])
+        RHUIManagerRepo.add_rh_repo_by_repo(connection,
+                                            [self.yum_repo_name +
+                                             " (" + self.yum_repo_version + ") (Yum)"])
         nose.tools.assert_not_equal(RHUIManagerRepo.list(connection), [])
 
     def test_09_delete_one_repo(self):

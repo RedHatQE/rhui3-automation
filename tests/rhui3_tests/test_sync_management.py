@@ -37,19 +37,26 @@ class TestSync(object):
         RHUIManager.initial_run(connection)
         list = RHUIManagerEntitlements.upload_rh_certificate(connection)
         nose.tools.assert_not_equal(len(list), 0)
-        RHUIManagerRepo.add_rh_repo_by_repo(connection, [self.yum_repo_name + self.yum_repo_version + " \(Yum\)"])
+        RHUIManagerRepo.add_rh_repo_by_repo(connection,
+                                            [self.yum_repo_name +
+                                             " (" + self.yum_repo_version + ") (Yum)"])
 
     def test_02_sync_repo(self):
         '''sync a RH repo '''
-        RHUIManagerSync.sync_repo(connection, [self.yum_repo_name + self.yum_repo_version])
+        RHUIManagerSync.sync_repo(connection, [self.yum_repo_name +
+                                               " (" + self.yum_repo_version + ")"])
 
     def test_03_check_sync_started(self):
         '''ensure that sync started'''
-        RHUIManagerSync.check_sync_started(connection, [self.yum_repo_name + self.yum_repo_version])
+        RHUIManagerSync.check_sync_started(connection,
+                                           [self.yum_repo_name +
+                                            " (" + self.yum_repo_version + ")"])
 
     def test_04_wait_till_repo_synced(self):
         '''wait until repo is synced'''
-        RHUIManagerSync.wait_till_repo_synced(connection, [self.yum_repo_name + self.yum_repo_version])
+        RHUIManagerSync.wait_till_repo_synced(connection,
+                                              [self.yum_repo_name +
+                                               " (" + self.yum_repo_version + ")"])
 
     def test_99_cleanup(self):
         '''remove the RH repo and cert'''
