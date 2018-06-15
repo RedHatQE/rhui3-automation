@@ -121,7 +121,7 @@ class RHUIManagerRepo(object):
         RHUIManager.select(connection, repolist)
         repolist_mod = list(repolist)
         for repo in repolist:
-            repolist_mod.append(re.sub(" \([a-zA-Z0-9_-]*\) \(Yum\)", "", repo))
+            repolist_mod.append(re.sub(" \([a-zA-Z0-9_-]*\) \([a-zA-Z]*\)", "", repo))
         RHUIManager.proceed_with_check(connection, "The following product repositories will be deployed:", repolist_mod)
         RHUIManager.quit(connection)
 

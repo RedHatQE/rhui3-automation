@@ -1,13 +1,16 @@
 yum_repo1:
     name: "Red Hat Update Infrastructure 2 (RPMs)"
     version: "6Server-x86_64"
+    kind: "Yum"
     path: "content/dist/rhel/rhui/server/6/6Server/x86_64/rhui/2/os"
 yum_repo2:
     name: "Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI"
     version: "7Server-x86_64"
+    kind: "Yum"
     path: "content/dist/rhel/rhui/server/7/7Server/x86_64/sap/os"
 atomic_repo:
     name: "Red Hat Enterprise Linux Atomic Host (Trees) from RHUI"
+    kind: "Atomic"
 CLI_repo1:
     name: "Red Hat Enterprise Linux Atomic Host (Debug RPMs) from RHUI"
     id: "rhel-atomic-host-rhui-debug-rpms-x86_64"

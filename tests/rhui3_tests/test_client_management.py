@@ -35,9 +35,11 @@ class TestClient(object):
 
         self.yum_repo1_name = doc['yum_repo1']['name']
         self.yum_repo1_version = doc['yum_repo1']['version']
+        self.yum_repo1_kind = doc['yum_repo1']['kind']
         self.yum_repo1_path = doc['yum_repo1']['path']
         self.yum_repo2_name = doc['yum_repo2']['name']
         self.yum_repo2_version = doc['yum_repo2']['version']
+        self.yum_repo2_kind = doc['yum_repo2']['kind']
         self.yum_repo2_path = doc['yum_repo2']['path']
 
     @staticmethod
@@ -85,15 +87,15 @@ class TestClient(object):
         RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
         RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
         RHUIManagerRepo.add_rh_repo_by_repo(connection,
-                                            [self.yum_repo1_name +
-                                             " (" + self.yum_repo1_version + ") (Yum)",
-                                             self.yum_repo2_name +
-                                             " (" + self.yum_repo2_version + ") (Yum)"])
+                                            [Util.format_repo(self.yum_repo1_name,
+                                                              self.yum_repo1_version,
+                                                              self.yum_repo1_kind),
+                                             Util.format_repo(self.yum_repo2_name,
+                                                              self.yum_repo2_version,
+                                                              self.yum_repo1_kind)])
         RHUIManagerSync.sync_repo(connection,
-                                  [self.yum_repo1_name +
-                                   " (" + self.yum_repo1_version + ")",
-                                   self.yum_repo2_name +
-                                   " (" + self.yum_repo2_version + ")"])
+                                  [Util.format_repo(self.yum_repo1_name, self.yum_repo1_version),
+                                   Util.format_repo(self.yum_repo2_name, self.yum_repo2_version)])
 
     def test_06_generate_ent_cert(self):
         '''
@@ -151,12 +153,12 @@ class TestClient(object):
         RHUIManager.initial_run(connection)
         if self.rhua_os_version < 7:
             RHUIManagerSync.wait_till_repo_synced(connection,
-                                                  [self.yum_repo1_name +
-                                                   " (" + self.yum_repo1_version + ")"])
+                                                  [Util.format_repo(self.yum_repo1_name,
+                                                                    self.yum_repo1_version)])
         else:
             RHUIManagerSync.wait_till_repo_synced(connection,
-                                                  [self.yum_repo2_name +
-                                                   " (" + self.yum_repo2_version + ")"])
+                                                  [Util.format_repo(self.yum_repo2_name,
+                                                                    self.yum_repo2_version)])
 
     @staticmethod
     def test_13_install_rpm_from_custom_repo():
