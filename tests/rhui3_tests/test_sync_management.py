@@ -6,6 +6,7 @@ from rhui3_tests_lib.rhuimanager import *
 from rhui3_tests_lib.rhuimanager_repo import *
 from rhui3_tests_lib.rhuimanager_sync import *
 from rhui3_tests_lib.rhuimanager_entitlement import *
+from rhui3_tests_lib.util import Util
 
 from os.path import basename
 
@@ -24,6 +25,7 @@ class TestSync(object):
 
         self.yum_repo_name = doc['yum_repo1']['name']
         self.yum_repo_version = doc['yum_repo1']['version']
+        self.yum_repo_kind = doc['yum_repo1']['kind']
 
     @staticmethod
     def setup_class():
@@ -37,19 +39,24 @@ class TestSync(object):
         RHUIManager.initial_run(connection)
         list = RHUIManagerEntitlements.upload_rh_certificate(connection)
         nose.tools.assert_not_equal(len(list), 0)
-        RHUIManagerRepo.add_rh_repo_by_repo(connection, [self.yum_repo_name + self.yum_repo_version + " \(Yum\)"])
+        RHUIManagerRepo.add_rh_repo_by_repo(connection, [Util.format_repo(self.yum_repo_name,
+                                                                          self.yum_repo_version,
+                                                                          self.yum_repo_kind)])
 
     def test_02_sync_repo(self):
         '''sync a RH repo '''
-        RHUIManagerSync.sync_repo(connection, [self.yum_repo_name + self.yum_repo_version])
+        RHUIManagerSync.sync_repo(connection, [Util.format_repo(self.yum_repo_name,
+                                                                self.yum_repo_version)])
 
     def test_03_check_sync_started(self):
         '''ensure that sync started'''
-        RHUIManagerSync.check_sync_started(connection, [self.yum_repo_name + self.yum_repo_version])
+        RHUIManagerSync.check_sync_started(connection, [Util.format_repo(self.yum_repo_name,
+                                                                         self.yum_repo_version)])
 
     def test_04_wait_till_repo_synced(self):
         '''wait until repo is synced'''
-        RHUIManagerSync.wait_till_repo_synced(connection, [self.yum_repo_name + self.yum_repo_version])
+        RHUIManagerSync.wait_till_repo_synced(connection, [Util.format_repo(self.yum_repo_name,
+                                                                            self.yum_repo_version)])
 
     def test_99_cleanup(self):
         '''remove the RH repo and cert'''

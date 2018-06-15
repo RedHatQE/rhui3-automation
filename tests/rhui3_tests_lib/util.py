@@ -147,3 +147,14 @@ class Util(object):
         regular expressions in Expect methods
         '''
         return name.replace("(", "\(").replace(")", "\)")
+
+    @staticmethod
+    def format_repo(name, version, kind=""):
+        '''
+        helper method to put together a repo name, version, and optionally kind
+        the way RHUI repos are called in rhui-manager
+        '''
+        repo = "{0} ({1})".format(name, version)
+        if kind:
+            repo += " ({0})".format(kind)
+        return repo

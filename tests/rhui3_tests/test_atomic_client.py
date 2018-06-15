@@ -82,7 +82,7 @@ class TestClient(object):
     #       sync the RHEL RHUI Atomic 7 Ostree Repo
     #    '''
     #    atomic_repo_version = RHUIManagerRepo.get_repo_version(connection, self.atomic_repo_name)
-    #    RHUIManagerSync.sync_repo(connection, [self.atomic_repo_name + atomic_repo_version])
+    #    RHUIManagerSync.sync_repo(connection, [Util.format_repo(self.atomic_repo_name, atomic_repo_version))
 
     def test_07_generate_atomic_ent_cert(self):
         '''
@@ -107,7 +107,7 @@ class TestClient(object):
     #    '''
     #    RHUIManager.initial_run(connection)
     #    atomic_repo_version = RHUIManagerRepo.get_repo_version(connection, self.atomic_repo_name)
-    #    RHUIManagerSync.wait_till_repo_synced(connection, self.atomic_repo_name + atomic_repo_version)
+    #    RHUIManagerSync.wait_till_repo_synced(connection, Util.format_repo(self.atomic_repo_name, atomic_repo_version))
 
     @staticmethod
     def test_10_install_atomic_pkg():

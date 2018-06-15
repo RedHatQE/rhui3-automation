@@ -6,6 +6,7 @@ import nose, unittest, stitches, logging, yaml
 from rhui3_tests_lib.rhuimanager import *
 from rhui3_tests_lib.rhuimanager_repo import *
 from rhui3_tests_lib.rhuimanager_entitlement import *
+from rhui3_tests_lib.util import Util
 
 from os.path import basename
 
@@ -24,6 +25,7 @@ class TestRepo(object):
 
         self.yum_repo_name = doc['yum_repo1']['name']
         self.yum_repo_version = doc['yum_repo1']['version']
+        self.yum_repo_kind = doc['yum_repo1']['kind']
 
     @staticmethod
     def setup_class():
@@ -87,7 +89,9 @@ class TestRepo(object):
 
     def test_08_add_rh_repo_by_repository(self):
         '''Add a RH repo by repository'''
-        RHUIManagerRepo.add_rh_repo_by_repo(connection, [self.yum_repo_name + self.yum_repo_version + " \(Yum\)"])
+        RHUIManagerRepo.add_rh_repo_by_repo(connection, [Util.format_repo(self.yum_repo_name,
+                                                                          self.yum_repo_version,
+                                                                          self.yum_repo_kind)])
         nose.tools.assert_not_equal(RHUIManagerRepo.list(connection), [])
 
     def test_09_delete_one_repo(self):
