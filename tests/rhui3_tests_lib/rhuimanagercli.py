@@ -143,7 +143,7 @@ class RHUIManagerCLI(object):
         _, stdout, _ = connection.exec_command("rhui-manager subscriptions list --" + what +
                                                poolswitch)
         with stdout as output:
-            sub_list = output.read()
+            sub_list = output.read().decode()
         # uncolorify to work around RHBZ#1577052
         return Util.uncolorify(sub_list).strip()
 
