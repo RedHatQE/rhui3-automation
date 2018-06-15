@@ -172,7 +172,7 @@ class TestCLI(object):
         '''Register the system in RHSM, attach RHUI SKU'''
         # update subscription-manager first (due to RHBZ#1554482)
         rhua_os_version = Util.get_rhua_version(CONNECTION)
-        if rhua_os_version == 7.5:
+        if rhua_os_version["major"] == 7 and rhua_os_version["minor"] == 5:
             Expect.expect_retval(CONNECTION, "yum -y update subscription-manager", timeout=30)
         RHSMRHUI.register_system(CONNECTION)
         RHSMRHUI.attach_rhui_sku(CONNECTION)
