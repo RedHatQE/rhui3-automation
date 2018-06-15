@@ -127,9 +127,10 @@ class Util(object):
         '''
         _, stdout, _ = connection.exec_command(r"egrep -o '[0-9]+\.[0-9]+' /etc/redhat-release")
         with stdout as output:
-            version = output.read()
+            version = output.read().strip().split(".")
         try:
-            return float(version)
+            version_dict = {"major": int(version[0]), "minor": int(version[1])}
+            return version_dict
         except ValueError:
             return None
 

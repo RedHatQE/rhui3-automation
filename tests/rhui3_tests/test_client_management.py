@@ -28,7 +28,7 @@ class TestClient(object):
     '''
 
     def __init__(self):
-        self.rhua_os_version = Util.get_rhua_version(connection)
+        self.rhua_os_version = Util.get_rhua_version(connection)["major"]
 
         with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as file:
             doc = yaml.load(file)
