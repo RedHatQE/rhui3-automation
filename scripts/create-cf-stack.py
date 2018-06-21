@@ -166,50 +166,29 @@ fs_type_f = fs_type
 if fs_type_f == "rhua":
     fs_type_f = "nfs"
 
+try:
+    with open("RHEL7mapping.json") as a:
+        rhel7mapping = json.load(a)
+    
+    with open("RHEL6mapping.json") as b:
+        rhel6mapping = json.load(b)
+
+    with open("ATOMICmapping.json") as c:
+        atomicmapping = json.load(c)
+
+except Exception as e:
+    sys.stderr.write("Got '%s' error \n" % e)
+    sys.exit(1)
 
 json_dict['Mappings'] = \
-  {u'RHEL7': {
-        u'ap-northeast-1': {u'AMI': u'ami-efa18a88'},
-        u'ap-northeast-2': {u'AMI': u'ami-5346943d'},
-        u'ap-south-1': {u'AMI': u'ami-926416fd'},
-        u'ap-southeast-1': {u'AMI': u'ami-bee358dd'},
-        u'ap-southeast-2': {u'AMI': u'ami-9c1b13ff'},
-        u'ca-central-1': {u'AMI': u'ami-55b90531'},
-        u'eu-central-1': {u'AMI': u'ami-cba478a4'},
-        u'eu-west-1': {u'AMI': u'ami-74e4e512'},
-        u'eu-west-2': {u'AMI': u'ami-c7ecf8a3'},
-        u'sa-east-1': {u'AMI': u'ami-ec9ef380'},
-        u'us-east-1': {u'AMI': u'ami-5f39a149'},
-        u'us-east-2': {u'AMI': u'ami-f857709d'},
-        u'us-west-1': {u'AMI': u'ami-2db5914d'},
-        u'us-west-2': {u'AMI': u'ami-b772edd7'},},
-    u'RHEL6': {
-        u'us-east-1': {u'AMI': u'ami-9df7548b'},
-        u'ap-southeast-2': {u'AMI': u'ami-6b6c6008'},
-        u'eu-west-1': {u'AMI': u'ami-75625713'},
-        u'us-west-1': {u'AMI': u'ami-3984dd59'},
-        u'ap-northeast-1': {u'AMI': u'ami-d4a6f6b3'},
-        u'ap-southeast-1': {u'AMI': u'ami-c770c3a4'},
-        u'sa-east-1': {u'AMI': u'ami-d24d2cbe'},
-        u'us-west-2': {u'AMI': u'ami-e8b93688'},
-        u'eu-central-1': {u'AMI': u'ami-3867b357'},},
-    u'ATOMIC': {
-        u'ap-northeast-1': {u'AMI': u'ami-7a037d1d'},
-				u'ap-northeast-2': {u'AMI': u'ami-22be6f4c'},
-				u'ap-south-1': {u'AMI': u'ami-07fe8868'},
-				u'ap-southeast-1': {u'AMI': u'ami-ad14bfce'},
-				u'ap-southeast-2': {u'AMI': u'ami-f2deda91'},
-				u'ca-central-1': {u'AMI': u'[]'},
-				u'eu-central-1': {u'AMI': u'ami-1b66aa74'},
-				u'eu-west-1': {u'AMI': u'ami-5825112b'},
-				u'eu-west-2': {u'AMI': u'[]'},
-				u'sa-east-1': {u'AMI': u'ami-582ab034'},
-				u'us-east-1': {u'AMI': u'ami-dbb45dcd'},
-				u'us-east-2': {u'AMI': u'ami-1a7a5f7f'},
-				u'us-west-1': {u'AMI': u'ami-5af4a73a'},
-				u'us-west-2': {u'AMI': u'[]'},},
-
-   }
+  {u'RHEL7': {},
+   u'RHEL6': {},
+   u'ATOMIC': {}
+  }
+  
+json_dict['Mappings']['RHEL7'] = rhel7mapping
+json_dict['Mappings']['RHEL6'] = rhel6mapping
+json_dict['Mappings']['ATOMIC'] = atomicmapping
 
 json_dict['Parameters'] = \
 {u'KeyName': {u'Description': u'Name of an existing EC2 KeyPair to enable SSH access to the instances',
