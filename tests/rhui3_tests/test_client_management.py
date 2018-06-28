@@ -22,6 +22,8 @@ connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ss
 cli=stitches.connection.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
 atomic_cli=stitches.connection.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
 
+TEST_PACKAGE = "vm-dump-metrics"
+
 class TestClient(object):
     '''
        class for client tests
@@ -171,10 +173,7 @@ class TestClient(object):
         '''
            install rpm from a RH repo
         '''
-        if self.rhua_os_version < 7:
-           Expect.expect_retval(cli, "yum install -y js", timeout=20)
-        else:
-           Expect.expect_retval(cli, "yum install -y vm-dump-metrics", timeout=20)
+        Expect.expect_retval(cli, "yum install -y " + TEST_PACKAGE, timeout=20)
 
     @staticmethod
     def test_15_create_docker_cli_rpm():
@@ -236,10 +235,8 @@ class TestClient(object):
         Expect.expect_retval(connection, "rm -rf /root/test_cli_rpm-3.0/")
         Expect.expect_retval(connection, "rm -rf /root/test_docker_cli_rpm-4.0/")
         if self.rhua_os_version >=7:
-            Util.remove_rpm(cli, ["vm-dump-metrics", "test_docker_cli_rpm"])
-        else:
-            Util.remove_rpm(cli, ["js"])
-        Util.remove_rpm(cli, ["test_cli_rpm", "rhui-rpm-upload-test"])
+            Util.remove_rpm(cli, ["test_docker_cli_rpm"])
+        Util.remove_rpm(cli, [TEST_PACKAGE, "test_cli_rpm", "rhui-rpm-upload-test"])
         RHUIManager.remove_rh_certs(connection)
 
     @staticmethod

@@ -1,8 +1,8 @@
 yum_repo1:
-    name: "Red Hat Update Infrastructure 2 (RPMs)"
+    name: "Red Hat Enterprise Linux for SAP (RHEL 6 Server) (RPMs) from RHUI"
     version: "6Server-x86_64"
     kind: "Yum"
-    path: "content/dist/rhel/rhui/server/6/6Server/x86_64/rhui/2/os"
+    path: "content/dist/rhel/rhui/server/6/6Server/x86_64/sap/os"
 yum_repo2:
     name: "Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI"
     version: "7Server-x86_64"

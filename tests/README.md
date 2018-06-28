@@ -22,7 +22,7 @@ See the [RHUI deployment readme file ](https://github.com/RedHatQE/rhui3-automat
 In addition, you need a ZIP file with the following files in the root of the archive:
 
 * `rhcert.pem` — This must be a valid Red Hat content certificate allowing access to the following products:
-  * _Red Hat Update Infrastructure 2 (RPMs)_
+  * _Red Hat Enterprise Linux for SAP (RHEL 6 Server) (RPMs) from RHUI_
   * _Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI_
 * `rhcert_atomic.pem` — This must be a valid Red Hat content certificate allowing access to the following products:
   * _Red Hat Enterprise Linux Atomic Host (Trees) from RHUI_
