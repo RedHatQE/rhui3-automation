@@ -89,7 +89,7 @@ class RHUIManagerEntitlements(object):
             raise ExpectFailed("Missing certificate file: %s" % certificate_file)
 
         bad_cert_msg = "The provided certificate is expired or invalid"
-        incompatible_cert_msg = "not compatible with the RHUI"
+        incompatible_cert_msg = "does not contain any entitlements"
 
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "u")

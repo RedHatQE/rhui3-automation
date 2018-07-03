@@ -26,11 +26,10 @@ def test_01_initial_run():
 
 def test_02_change_password():
     '''
-        change a user's password and log out
+        change a user's password (will log the user out automatically)
     '''
     RHUIManager.screen(connection, "users")
     RHUIManager.change_user_password(connection, password = "new_rhui_pass")
-    RHUIManager.logout(connection, "Password successfully updated")
 
 def test_03_login_with_new_pass():
     '''
@@ -40,11 +39,10 @@ def test_03_login_with_new_pass():
 
 def test_04():
     '''
-        change a user's password back to the default one and log out
+        change a user's password back to the default one
     '''
     RHUIManager.screen(connection, "users")
     RHUIManager.change_user_password(connection)
-    RHUIManager.logout(connection, "Password successfully updated")
 
 def test_05_login_with_wrong_password():
     '''

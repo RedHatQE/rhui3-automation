@@ -222,6 +222,39 @@ class TestClient(object):
                                  "protected/custom-i386-x86_64/repodata/repomd.xml",
                                  verify=False)
 
+    @staticmethod
+    def test_19_check_cli_plugins():
+        '''
+           check if irrelevant Yum plug-ins are not enabled on the client with the config RPM
+        '''
+        # for RHBZ#1415681
+        Expect.expect_retval(cli,
+                             "yum repolist enabled 2> /dev/null | " +
+                             "egrep '^Loaded plugins.*(rhnplugin|subscription-manager)'", 1)
+
+    @staticmethod
+    def test_20_release_handling():
+        '''
+           check EUS release handling (working with /etc/yum/vars/releasever on the client)
+        '''
+        # for RHBZ#1504229
+        Expect.expect_retval(cli, "rhui-set-release --set 7.5")
+        Expect.expect_retval(cli, "[[ $(</etc/yum/vars/releasever) == 7.5 ]]")
+        Expect.expect_retval(cli, "[[ $(rhui-set-release) == 7.5 ]]")
+        Expect.expect_retval(cli, "rhui-set-release -s 6.5")
+        Expect.expect_retval(cli, "[[ $(</etc/yum/vars/releasever) == 6.5 ]]")
+        Expect.expect_retval(cli, "[[ $(rhui-set-release) == 6.5 ]]")
+        Expect.expect_retval(cli, "rhui-set-release -u")
+        Expect.expect_retval(cli, "test -f /etc/yum/vars/releasever", 1)
+        Expect.expect_retval(cli, "rhui-set-release -s 7.1")
+        Expect.expect_retval(cli, "[[ $(</etc/yum/vars/releasever) == 7.1 ]]")
+        Expect.expect_retval(cli, "[[ $(rhui-set-release) == 7.1 ]]")
+        Expect.expect_retval(cli, "rhui-set-release --unset")
+        Expect.expect_retval(cli, "test -f /etc/yum/vars/releasever", 1)
+        Expect.expect_retval(cli, "rhui-set-release foo", 1)
+        Expect.ping_pong(cli, "rhui-set-release --help", "Usage:")
+        Expect.ping_pong(cli, "rhui-set-release -h", "Usage:")
+
     def test_99_cleanup(self):
         '''
            remove created repos, entitlements and custom cli rpms, remove rpms from cli, uninstall cds, hap, delete the RH cert
