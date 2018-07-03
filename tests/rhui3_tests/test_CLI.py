@@ -155,17 +155,15 @@ class TestCLI(object):
 
     @staticmethod
     def test_23_upload_expired_entitlement_certificate():
-        '''Bonus: Check expired certificate handling'''
-        # currently, an error occurs
-        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_expired.pem", "An unexpected error has occurred during the last operation")
-        # a relevant traceback is logged, though; check it
-        Expect.ping_pong(CONNECTION, "tail -1 /root/.rhui/rhui.log", "InvalidOrExpiredCertificate")
+        '''Check expired certificate handling'''
+        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_expired.pem",
+                                   "The provided certificate is expired or invalid")
 
     @staticmethod
     def test_24_upload_incompatible_entitlement_certificate():
-        '''Bonus #2: Check incompatible certificate handling'''
-        # an error message is printed right away
-        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_incompatible.pem", "not compatible with the RHUI")
+        '''Check incompatible certificate handling'''
+        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_incompatible.pem",
+                                   "does not contain any entitlements")
 
     @staticmethod
     def test_25_register_system():
@@ -239,8 +237,7 @@ class TestCLI(object):
         # for RHBZ#1506872
         Expect.expect_retval(CONNECTION, "grep -q 'pulp.*metadata:WARNING' /var/log/messages", 1)
         # for RHBZ#1579294
-        #uncomment when the bug is fixed
-        #Expect.expect_retval(CONNECTION, "grep -q 'pulp.*publish:WARNING' /var/log/messages", 1)
+        Expect.expect_retval(CONNECTION, "grep -q 'pulp.*publish:WARNING' /var/log/messages", 1)
 
     @staticmethod
     def test_35_list_repos():
@@ -263,10 +260,22 @@ class TestCLI(object):
         Expect.expect_retval(CONNECTION, "grep -q PyGIWarning /tmp/repos.stderr", 1)
 
     @staticmethod
-    def test_99_cleanup():
-        '''Cleanup: Delete all repositories from RHUI (interactively; not currently supported by the CLI), remove certs and other files'''
+    def test_38_upload_semi_bad_cert():
+        '''Check that a partially invalid certificate can still be accepted'''
+        # for RHBZ#1588931 & RHBZ#1584527
+        # delete currently used certificates and repos first
+        RHUIManager.remove_rh_certs(CONNECTION)
         RHUIManagerRepo.delete_all_repos(CONNECTION)
         nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
+        RHUIManagerCLI.cert_upload(CONNECTION,
+                                   "/tmp/extra_rhui_files/rhcert_partially_invalid.pem",
+                                   "Red Hat Enterprise Linux 7 Server from RHUI")
+        # the RHUI log must contain the fact that an invalid path was found in the cert
+        Expect.ping_pong(CONNECTION, "tail /root/.rhui/rhui.log", "Invalid entitlement path")
+
+    @staticmethod
+    def test_99_cleanup():
+        '''Cleanup: remove certs and other files'''
         RHUIManager.remove_rh_certs(CONNECTION)
         Expect.ping_pong(CONNECTION, "rm -rf /tmp/atomic_and_my* ; " +
                          "ls /tmp/atomic_and_my* 2>&1",

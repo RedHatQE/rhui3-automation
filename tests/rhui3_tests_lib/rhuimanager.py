@@ -197,6 +197,9 @@ class RHUIManager(object):
         Expect.enter(connection, password)
         Expect.expect(connection, "Re-enter Password:")
         Expect.enter(connection, password)
+        Expect.expect(connection, "Password successfully updated")
+        # this action is supposed to log the admin out and thus delete the user cert
+        Expect.expect_retval(connection, "test -f /root/.rhui/rhua.example.com/user.crt", 1)
 
     @staticmethod
     def remove_rh_certs(connection):

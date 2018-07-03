@@ -18,6 +18,7 @@ Welcome to RHUI3 Test Plan!
    entitlements
    hap
    repo_management
+   sosreport
    subscription
    sync_management
    user_management

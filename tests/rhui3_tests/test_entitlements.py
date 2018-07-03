@@ -119,6 +119,23 @@ class TestEntitlement(object):
         assert_raises(IncompatibleCertificate, RHUIManagerEntitlements.upload_rh_certificate, connection, "/tmp/extra_rhui_files/rhcert_incompatible.pem")
 
     @staticmethod
+    def test_13_upload_semi_bad_cert():
+        '''
+           upload a certificate containing a mix of valid and invalid repos
+        '''
+        # for RHBZ#1588931 & RHBZ#1584527
+        RHUIManagerEntitlements.upload_rh_certificate(connection,
+                                                      "/tmp/extra_rhui_files/" +
+                                                      "rhcert_partially_invalid.pem")
+
+    @staticmethod
+    def test_14_remove_semi_bad_cert():
+        '''
+            remove the certificate
+        '''
+        RHUIManager.remove_rh_certs(connection)
+
+    @staticmethod
     def teardown_class():
         '''
            announce the end of the test run

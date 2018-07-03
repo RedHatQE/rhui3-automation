@@ -143,9 +143,10 @@ class RHUIManagerCLI(object):
         _, stdout, _ = connection.exec_command("rhui-manager subscriptions list --" + what +
                                                poolswitch)
         with stdout as output:
-            sub_list = output.read().decode()
-        # uncolorify to work around RHBZ#1577052
-        return Util.uncolorify(sub_list).strip()
+            sub_list = output.read().decode().strip()
+        # return the (decoded and stripped) output as is;
+        # if "ESC" and some control characters are included, then RHBZ#1577052 has regressed
+        return sub_list
 
     @staticmethod
     def subscriptions_register(connection, pool):
