@@ -14,8 +14,10 @@ atomic_repo:
 CLI_repo1:
     name: "Red Hat Enterprise Linux Atomic Host (Debug RPMs) from RHUI"
     id: "rhel-atomic-host-rhui-debug-rpms-x86_64"
+    label: "rhel-atomic-host-rhui-debug-rpms"
 CLI_repo2:
     name: "Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI (x86_64)"
     id: "rhel-atomic-host-rhui-rpms-x86_64"
+    label: "rhel-atomic-host-rhui-rpms"
 subscription1:
     name: "Red Hat Update Infrastructure and RHEL Add-Ons for Providers"

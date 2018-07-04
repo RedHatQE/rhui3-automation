@@ -38,8 +38,10 @@ class TestCLI(object):
 
         self.yum_repo_name_1 = doc['CLI_repo1']['name']
         self.yum_repo_id_1 = doc['CLI_repo1']['id']
+        self.yum_repo_label_1 = doc['CLI_repo1']['label']
         self.yum_repo_name_2 = doc['CLI_repo2']['name']
         self.yum_repo_id_2 = doc['CLI_repo2']['id']
+        self.yum_repo_label_2 = doc['CLI_repo2']['label']
         self.subscription_name_1 = doc['subscription1']['name']
 
     @staticmethod
@@ -134,14 +136,15 @@ class TestCLI(object):
 
     def test_19_list_labels(self):
         '''Check repo labels'''
-        repo_label = self.yum_repo_id_1.replace("-x86_64", "")
-        RHUIManagerCLI.repo_labels(CONNECTION, repo_label)
+        RHUIManagerCLI.repo_labels(CONNECTION, self.yum_repo_label_1)
 
     def test_20_generate_entitlement_certificate(self):
         '''Generate an entitlement certificate'''
-        repo_label_1 = self.yum_repo_id_1.replace("-x86_64", "")
-        repo_label_2 = self.yum_repo_id_2.replace("-x86_64", "")
-        RHUIManagerCLI.client_cert(CONNECTION, [repo_label_1, repo_label_2], "atomic_and_my", 365, "/tmp")
+        RHUIManagerCLI.client_cert(CONNECTION,
+                                   [self.yum_repo_label_1, self.yum_repo_label_2],
+                                   "atomic_and_my",
+                                   365,
+                                   "/tmp")
 
     @staticmethod
     def test_21_create_client_configuration_rpm():
