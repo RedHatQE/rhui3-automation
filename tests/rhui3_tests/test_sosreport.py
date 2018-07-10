@@ -63,8 +63,7 @@ def test_03_rhua_sosreport_check():
     '''
     with open(SOSREPORT_FILELIST) as filelist:
         sosreport_filelist = filelist.read()
-    for wanted_file in WANTED_FILES_RHUA:
-        Sos.check_file_in_archive(wanted_file, sosreport_filelist)
+    Sos.check_files_in_archive(WANTED_FILES_RHUA, sosreport_filelist)
 
 def test_99_cleanup():
     '''

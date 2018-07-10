@@ -33,8 +33,13 @@ class Sos(object):
         return filelist
 
     @staticmethod
-    def check_file_in_archive(wanted_file, archive):
+    def check_files_in_archive(filelist, archive):
         '''
-            check if the given file is collected in the given archive
+            check if the files in the given filelist are collected in the given archive
         '''
-        nose.tools.ok_(wanted_file + "\n" in archive, msg=wanted_file + " was not collected")
+        missing_files = []
+        for wanted_file in filelist:
+            if wanted_file + "\n" not in archive:
+                missing_files.append(wanted_file)
+        nose.tools.ok_(not missing_files,
+                       msg="Not found in the archive: " + ", ".join(missing_files))
