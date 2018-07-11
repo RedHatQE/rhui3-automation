@@ -21,3 +21,6 @@ CLI_repo2:
     label: "rhel-atomic-host-rhui-rpms"
 subscription1:
     name: "Red Hat Update Infrastructure and RHEL Add-Ons for Providers"
+docker_container1:
+    name: "rhcertification/redhat-certification"
+    displayname: "RH Certification Docker"

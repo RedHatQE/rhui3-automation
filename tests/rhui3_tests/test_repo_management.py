@@ -26,6 +26,8 @@ class TestRepo(object):
         self.yum_repo_name = doc['yum_repo1']['name']
         self.yum_repo_version = doc['yum_repo1']['version']
         self.yum_repo_kind = doc['yum_repo1']['kind']
+        self.docker_container_name = doc['docker_container1']['name']
+        self.docker_container_displayname = doc['docker_container1']['displayname']
 
     @staticmethod
     def setup_class():
@@ -122,10 +124,12 @@ class TestRepo(object):
         RHUIManagerRepo.delete_all_repos(connection)
         nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
 
-    @staticmethod
-    def test_14_add_docker_container():
+    def test_14_add_docker_container(self):
         '''Add a RH docker container'''
-        RHUIManagerRepo.add_docker_container(connection, "rhcertification/redhat-certification", "", "RH Certification Docker")
+        RHUIManagerRepo.add_docker_container(connection,
+                                             self.docker_container_name,
+                                             "",
+                                             self.docker_container_displayname)
         nose.tools.assert_not_equal(RHUIManagerRepo.list(connection), [])
 
     @staticmethod
