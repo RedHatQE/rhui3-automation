@@ -5,6 +5,14 @@ import subprocess
 import json
 import argparse
 
+if subprocess.call("which aws &> /dev/null", shell=True):
+    sys.stderr.write("The aws client is not available. Please install package awscli.\n")
+    sys.exit(1)
+
+if subprocess.call("aws configure get aws_access_key_id &> /dev/null", shell=True):
+    sys.stderr.write("The aws client is not configured. Please run `aws configure'.\n")
+    sys.exit(1)
+
 argparser = argparse.ArgumentParser(description='Get list of AMIs')
 argparser.add_argument('--rhel', help='Description of the ami (f.e. RHEL-7.5_HVM_GA-20180322-x86_64-1-Hourly2-GP2)', default="RHEL-7.5_HVM_GA-20180322-x86_64-1-Hourly2-GP2")
 
