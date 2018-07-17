@@ -29,7 +29,7 @@ Inbound rules:
 ### Requirements
 
 1. yaml config file with ec2 credentials - default path is `/etc/rhui_ec2.yaml` [(example)](#input-configuration-file)
-2. list of AMI in the script needs to be updated (section `json_dict['Mappings']` in the code) - the list can be created with the `scripts/get_list_of_amis.sh` script
+2. up-to-date lists of AMIs in `*mapping.json` files - the files should be up to date in Git, but you can regenerate them locally with the `scripts/get_amis_list.py` script
 
 ### Usage
 
