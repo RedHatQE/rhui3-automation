@@ -2,6 +2,7 @@
 
 import re
 from os.path import basename
+import time
 
 from stitches.expect import Expect, ExpectFailed
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -71,7 +72,7 @@ class RHUIManagerRepo(object):
                     checklist.append("Custom GPG Keys: '" + custom_gpg + "'")
                 else:
                     Expect.enter(connection, "n")
-                    checklist.append("Custom GPG Keys: \(None\)")
+                    checklist.append("Custom GPG Keys: (None)")
             else:
                 Expect.enter(connection, "n")
                 checklist.append("GPG Check No")
@@ -120,7 +121,7 @@ class RHUIManagerRepo(object):
         RHUIManager.select(connection, repolist)
         repolist_mod = list(repolist)
         for repo in repolist:
-            repolist_mod.append(re.sub(" \\\\\([a-zA-Z0-9_-]*\\\\\) \\\\\(Yum\\\\\)", "", repo))
+            repolist_mod.append(re.sub(" \([a-zA-Z0-9_-]*\) \([a-zA-Z]*\)", "", repo))
         RHUIManager.proceed_with_check(connection, "The following product repositories will be deployed:", repolist_mod)
         RHUIManager.quit(connection)
 
@@ -177,8 +178,7 @@ class RHUIManagerRepo(object):
         # get its version
         repo_version = re.sub('^.*\((.*?)\)[^\(]*$', '\g<1>', full_reponame)
 
-        #return repo_version
-        return " \(" + repo_version + "\)"
+        return repo_version
 
     @staticmethod
     def delete_repo(connection, repolist):

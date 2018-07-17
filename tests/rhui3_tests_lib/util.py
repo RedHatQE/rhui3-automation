@@ -48,7 +48,7 @@ class Util(object):
         Expect.expect(connection, "root@")
 
         Expect.enter(connection, "gpg --gen-key --no-random-seed-file --batch /tmp/gpgkey")
-        for _ in xrange(1, 200):
+        for _ in range(1, 200):
             Expect.enter(connection, ''.join(random.choice(string.ascii_lowercase) for x in range(200)))
             time.sleep(1)
             try:
@@ -62,20 +62,16 @@ class Util(object):
         '''
         Remove Amazon RHUI configuration rpm from instance (which owns /etc/yum/pluginconf.d/rhui-lb.conf file)
         '''
-        Expect.enter(connection, "")
-        Expect.expect(connection, "root@")
-        Expect.enter(connection, "([ ! -f /etc/yum/pluginconf.d/rhui-lb.conf ] && echo SUCCESS ) || (rpm -e `rpm -qf --queryformat '%{NAME}\n' /etc/yum/pluginconf.d/rhui-lb.conf` && echo SUCCESS)")
-        Expect.expect(connection, "[^ ]SUCCESS.*root@", 60)
+        Expect.expect_retval(connection, "if [ -f /etc/yum/pluginconf.d/rhui-lb.conf ]; " +
+                             "then rpm -e `rpm -qf --queryformat '%{NAME}\n' " +
+                             "/etc/yum/pluginconf.d/rhui-lb.conf`; fi")
 
     @staticmethod
     def remove_rpm(connection, rpmlist):
         '''
         Remove installed rpms from cli
         '''
-        Expect.enter(connection, "")
-        Expect.expect(connection, "root@")
-        Expect.enter(connection, "rpm -e " + ' '.join(rpmlist) + " && echo SUCCESS")
-        Expect.expect(connection, "[^ ]SUCCESS.*root@", 60)
+        Expect.expect_retval(connection, "rpm -e " + ' '.join(rpmlist))
 
     @staticmethod
     def install_pkg_from_rhua(rhua_connection, connection, pkgpath):
@@ -90,11 +86,11 @@ class Util(object):
         if file_extension == '.rpm':
             connection.sftp.put(tfile.name, tfile.name + file_extension)
             os.unlink(tfile.name)
-            Expect.ping_pong(connection, "rpm -i " + tfile.name + file_extension + " && echo SUCCESS", "[^ ]SUCCESS", 60)
+            Expect.expect_retval(connection, "rpm -i " + tfile.name + file_extension)
         else:
             connection.sftp.put(tfile.name, tfile.name + '.tar.gz')
             os.unlink(tfile.name)
-            Expect.ping_pong(connection,  "tar -xzf" + tfile.name + ".tar.gz" + " && ./install.sh && echo SUCCESS", "[^ ]SUCCESS", 60)
+            Expect.expect_retval(connection, "tar -xzf" + tfile.name + ".tar.gz && ./install.sh")
 
     @staticmethod
     def get_initial_password(connection, pwdfile="/etc/rhui-installer/answers.yaml"):
@@ -129,9 +125,14 @@ class Util(object):
         '''
         get RHUA os version
         '''
-        stdin, stdout, stderr = connection.exec_command('grep -E -o "[0-9]" /etc/redhat-release | head -1')
-        for line in  stdout:
-            return int(line)
+        _, stdout, _ = connection.exec_command(r"egrep -o '[0-9]+\.[0-9]+' /etc/redhat-release")
+        with stdout as output:
+            version = output.read().decode().strip().split(".")
+        try:
+            version_dict = {"major": int(version[0]), "minor": int(version[1])}
+            return version_dict
+        except ValueError:
+            return None
 
     @staticmethod
     def wildcard(hostname):
@@ -140,3 +141,21 @@ class Util(object):
         hostname_particles[0] = "*"
         return ".".join(hostname_particles)
 
+    @staticmethod
+    def esc_parentheses(name):
+        '''
+        helper method to escape parentheses so they can be safely used inside
+        regular expressions in Expect methods
+        '''
+        return name.replace("(", "\(").replace(")", "\)")
+
+    @staticmethod
+    def format_repo(name, version, kind=""):
+        '''
+        helper method to put together a repo name, version, and optionally kind
+        the way RHUI repos are called in rhui-manager
+        '''
+        repo = "{0} ({1})".format(name, version)
+        if kind:
+            repo += " ({0})".format(kind)
+        return repo

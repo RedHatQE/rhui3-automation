@@ -12,12 +12,12 @@
 - name: slurp the cds pub key
   slurp: src=/root/.ssh/id_rsa_rhua.pub
   register: slurp_id_rsa_rhua
-  when: generated_ssh_keys|success
+  when: generated_ssh_keys is success
   tags: rhua
 
 - name: set the pub_key as a global fact
   set_fact: id_rsa_rhua_pub="{{ slurp_id_rsa_rhua.content|b64decode|trim + ' ' + 'rhua.example.com' }}"
-  when: slurp_id_rsa_rhua|success
+  when: slurp_id_rsa_rhua is success
   tags: rhua
 
 - name: set authorized keys on cdses and haproxy to allow root connection with the key
@@ -26,5 +26,5 @@
                   state=present
   delegate_to: "{{ item }}"
   with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) }}"
-  when: slurp_id_rsa_rhua|success
+  when: slurp_id_rsa_rhua is success
   tags: rhua

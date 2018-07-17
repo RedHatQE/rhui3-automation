@@ -56,8 +56,27 @@
   package: name=openssl-devel state=present enablerepo=*
   tags: tests
 
+- name: use HTTPS in the pypi URL in setuptools if RHEL 6
+  lineinfile:
+    path: /usr/lib/python2.6/site-packages/setuptools/command/easy_install.py
+    regexp: '^(.*)http://pypi.python.org(.*)$'
+    line: '\1https://pypi.python.org\2'
+    backrefs: yes
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+  tags: tests
+
+- name: install pip 9.0.3 if RHEL 6 (the last compatible version)
+  shell: easy_install pip==9.0.3
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
+  tags: tests
+
+- name: install pip
+  shell: easy_install pip
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+  tags: tests
+
 - name: install tests
-  shell: cd /tmp/rhui3-tests/tests && python setup.py install
+  shell: cd /tmp/rhui3-tests/tests && pip install .
   tags: tests
 
 - name: generate ssh keys
@@ -69,12 +88,12 @@
 - name: slurp the test pub key
   slurp: src=/root/.ssh/id_rsa_test.pub
   register: slurp_id_rsa_test
-  when: generated_ssh_test_keys|success
+  when: generated_ssh_test_keys is success
   tags: tests
 
 - name: set the pub_key as a global fact
   set_fact: id_rsa_test_pub="{{ slurp_id_rsa_test.content|b64decode|trim + ' ' + 'test.example.com' }}"
-  when: slurp_id_rsa_test|success
+  when: slurp_id_rsa_test is success
   tags: tests
 
 - name: set authorized keys on all roles except TEST itself to allow root connection with the key
@@ -83,7 +102,7 @@
                   state=present
   delegate_to: "{{ item }}"
   with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) + groups['RHUA']|default([]) + groups['DNS']|default([]) + groups['NFS']|default([]) + groups['GLUSTER']|default([]) + groups['CLI']|default([]) + groups['ATOMIC_CLI']|default([]) }}"
-  when: slurp_id_rsa_test|success
+  when: slurp_id_rsa_test is success
   tags: tests
   
 - name: upload files containing auxiliary files that might be needed for some tests (e.g. entitlement certificate, RPMs for custom repos) 
@@ -98,7 +117,14 @@
   shell: 'cd /tmp/extra_rhui_files/ && find . -type f -iname "*\.zip" -exec unzip -o {} \;'
   delegate_to: "{{ item }}"
   with_items: "{{ groups['RHUA']|default([]) }}"
-  when: (extra_files is defined) and (upload_extra_files|success)
+  when: (extra_files is defined) and (upload_extra_files is success)
+  tags: tests
+
+- name: upload Red Hat credentials
+  copy: src="{{ rhaccount }}" dest=/tmp/extra_rhui_files/rhaccount.sh
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['RHUA']|default([]) }}"
+  when: rhaccount is defined
   tags: tests
 
 - name: run tests suite

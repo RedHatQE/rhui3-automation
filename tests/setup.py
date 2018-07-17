@@ -3,6 +3,14 @@
 from setuptools import setup
 import glob
 import os
+import sys
+
+requirements=['nose>=1.3.0', 'requests', 'stitches>=0.12']
+
+# Workaround for https://github.com/paramiko/paramiko/issues/1123
+python_version=sys.version_info[0] + sys.version_info[1] / 10.0
+if python_version <= 2.6:
+    requirements.append('paramiko==2.3.1')
 
 datafiles = []
 for topdir in ['rhui3_tests']:
@@ -20,9 +28,7 @@ setup(name='rhui3_tests_lib',
         'rhui3_tests_lib'
         ],
     data_files=datafiles,
-#    install_requires=['nose>=1.3.0', 'stitches>=0.10'],
-#    setuptools==30.1.0 is a workaround for https://github.com/pypa/pip/issues/4104
-    install_requires=['nose>=1.3.0', 'stitches>=0.10', 'setuptools==30.1.0'],
+    install_requires=requirements,
     zip_safe=False,
     classifiers=[
             'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
@@ -30,7 +36,7 @@ setup(name='rhui3_tests_lib',
             'Topic :: Software Development :: Libraries :: Python Modules',
             'Operating System :: POSIX',
             'Intended Audience :: Developers',
-            'Development Status :: 4 - Beta'
+            'Development Status :: 5 - Production/Stable'
     ],
     scripts=glob.glob('scripts/*.py') + glob.glob('scripts/*.sh')
 )

@@ -5,12 +5,12 @@
   roles:
   - common
 
-- include: dns.yml
-- include: filesystem.yml
-- include: gluster.yml
-- include: rhua.yml
-- include: haproxy.yml
-- include: cds.yml
-- include: cli.yml
-- include: atomic_cli.yml
-- include: tests.yml
+- import_playbook: dns.yml
+- import_playbook: filesystem.yml
+- import_playbook: gluster.yml
+- import_playbook: rhua.yml
+- import_playbook: haproxy.yml
+- import_playbook: cds.yml
+- import_playbook: cli.yml
+- import_playbook: atomic_cli.yml
+- import_playbook: tests.yml

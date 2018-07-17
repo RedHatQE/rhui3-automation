@@ -23,5 +23,5 @@
     ansible_os_family == "RedHat" and
     ansible_distribution_major_version|int == 6 and
     haproxy_rpm is defined and
-    copy_haproxy_rpm_result|success
+    copy_haproxy_rpm_result is success
   tags: haproxy

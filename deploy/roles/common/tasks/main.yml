@@ -2,7 +2,9 @@
 # file roles/common/tasks/main.yml
 # set up & configure ntp on all the hosts
 # set up custom DNS if requested
+# disable (or remove) cloud-init
 - include: upgrade_all_pkg.yml
 - include: ntp.yml
 - include: hosts.yml
 - include: dns_override.yml
+- include: cloud-init.yml

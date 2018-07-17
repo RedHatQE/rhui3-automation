@@ -45,9 +45,13 @@ class RHUIManager(object):
         Select list of items (multiple choice)
         '''
         for value in value_list:
-            match = Expect.match(connection, re.compile(".*-\s+([0-9]+)\s*:[^\n]*\s+" + value + "\s*\n.*for more commands:.*", re.DOTALL))
+            match = Expect.match(connection, re.compile(".*-\s+([0-9]+)\s*:[^\n]*\s+" +
+                                                        Util.esc_parentheses(value) +
+                                                        "\s*\n.*for more commands:.*", re.DOTALL))
             Expect.enter(connection, match[0])
-            match = Expect.match(connection, re.compile(".*x\s+([0-9]+)\s*:[^\n]*\s+" + value + "\s*\n.*for more commands:.*", re.DOTALL))
+            match = Expect.match(connection, re.compile(".*x\s+([0-9]+)\s*:[^\n]*\s+" +
+                                                        Util.esc_parentheses(value) +
+                                                        "\s*\n.*for more commands:.*", re.DOTALL))
             Expect.enter(connection, "l")
         Expect.enter(connection, "c")
 
@@ -60,7 +64,7 @@ class RHUIManager(object):
         for item in itemslist:
             for line in lines:
                 if item in line:
-                     index = filter(str.isdigit, lines[lines.index(line)-1])
+                     index = list(filter(str.isdigit, str(lines[lines.index(line)-1])))[0]
                      Expect.enter(connection, index)
                      break
         Expect.enter(connection, "c")
@@ -125,8 +129,6 @@ class RHUIManager(object):
             val = val.strip()
             val = val.replace("\t", " ")
             val = ' '.join(val.split())
-            val = val.replace("(", "\(")
-            val = val.replace(")", "\)")
             if val != "" and not val in skip_list:
                 selected_clean.append(val)
         if sorted(selected_clean) != sorted(value_list):
@@ -140,14 +142,18 @@ class RHUIManager(object):
         '''
         Open specified rhui-manager screen
         '''
-        Expect.enter(connection, "rhui-manager")
-        Expect.expect(connection, "rhui \(home\) =>")
         if screen_name in ["repo", "cds", "loadbalancers", "sync", "identity", "users"]:
             key = screen_name[:1]
         elif screen_name == "client":
             key = "e"
         elif screen_name == "entitlements":
             key = "n"
+        elif screen_name == "subscriptions":
+            key = "sm"
+        else:
+            raise ValueError("Unsupported screen name: " + screen_name)
+        Expect.enter(connection, "rhui-manager")
+        Expect.expect(connection, "rhui \(home\) =>")
         Expect.enter(connection, key)
         Expect.expect(connection, "rhui \(" + screen_name + "\) =>")
 
@@ -191,6 +197,9 @@ class RHUIManager(object):
         Expect.enter(connection, password)
         Expect.expect(connection, "Re-enter Password:")
         Expect.enter(connection, password)
+        Expect.expect(connection, "Password successfully updated")
+        # this action is supposed to log the admin out and thus delete the user cert
+        Expect.expect_retval(connection, "test -f /root/.rhui/rhua.example.com/user.crt", 1)
 
     @staticmethod
     def remove_rh_certs(connection):

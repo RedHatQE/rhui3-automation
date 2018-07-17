@@ -4,6 +4,16 @@
 # These AMIs do not change very often, but it's still handy to get them all at once instead of copy&pasting them from Amazon UI.
 # Requires a working aws client
 #
+which aws &> /dev/null
+if [ $? -gt 0 ]; then
+  echo "The aws client is not available. Please install package awscli."
+  exit 1
+fi
+if [ ! -s ~/.aws/credentials ]; then
+  echo "The aws client is not configured. Please run \`aws configure'."
+  exit 1
+fi
+#
 # Sample output of this script:
 #
 #u'us-east-1': {u'AMI': u'ami-9df7548b'},
@@ -19,9 +29,9 @@
 # Usage: you need to change the ami_description variable and run it
 
 
-regions=(ap-northeast-1 ap-northeast-2 ap-south-1 ap-southeast-1 ap-southeast-2 ca-central-1 eu-central-1 eu-west-1 eu-west-2 sa-east-1 us-east-1 us-east-2 us-west-1 us-west-2)
+regions=(ap-northeast-1 ap-northeast-2 ap-south-1 ap-southeast-1 ap-southeast-2 ca-central-1 eu-central-1 eu-west-1 eu-west-2 eu-west-3 sa-east-1 us-east-1 us-east-2 us-west-1 us-west-2)
 
-ami_description="RHEL-7.3_HVM-20170424-x86_64-1-Hourly2-GP2"
+ami_description="RHEL-7.5_HVM_GA-20180322-x86_64-1-Hourly2-GP2"
 
 for i in "${regions[@]}"
 do

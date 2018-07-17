@@ -14,7 +14,7 @@
 
 - name: install common custom rpm
   package: name='/tmp/{{common_custom_rpm|basename}}' state=present
-  when: common_custom_rpm is defined and copy_remote_rpm_result|success
+  when: common_custom_rpm is defined and copy_remote_rpm_result is success
   tags: rhui_nodes
 
 - name: upload the rhui iso
@@ -25,7 +25,7 @@
 - name: mount rhui iso
   mount: name=/tmp/iso fstype=iso9660 opts=loop,ro src=/tmp/rhui.iso state=mounted
   register: iso_mount
-  when: iso_sync|success
+  when: iso_sync is success
   tags: rhui_nodes
 
 - name: call setup_package_repos
@@ -33,22 +33,26 @@
            chdir=/tmp/iso 
            creates=/etc/yum.repos.d/rhui-local.repo
   register: setup_package_repos_result
-  when: iso_mount|success
+  when: iso_mount is success
   tags: rhui_nodes
 
 - name: umount rhui iso
   mount: name=/tmp/iso fstype=iso9660 opts=loop,ro src=/tmp/rhui.iso state=unmounted
-  when: iso_mount|success
+  when: iso_mount is success
   tags: rhui_nodes
 
 
 - name: perform repolist
-  shell: "yum repolist --disableplugin=* --disablerepo=* --enablerepo=local-rhui3 -v | grep 'Repo-pkgs' | cut -d: -f 2"
+  yum:
+    disable_plugin: '*'
+    disablerepo: '*'
+    enablerepo: local-rhui3
+    list: available
   register: yum_repolist_result
-  when: setup_package_repos_result|success
+  when: setup_package_repos_result is success
   tags: rhui_nodes
 
 - name: assert rhui repo present in yum repolist
-  assert: { that: "{{yum_repolist_result.stdout|int > 0 }}" }
-  when: yum_repolist_result|success
+  assert: { that: "{{yum_repolist_result.results|length > 0}}" }
+  when: yum_repolist_result is success
   tags: rhui_nodes

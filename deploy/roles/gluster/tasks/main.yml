@@ -16,7 +16,7 @@
 
 - name: install common custom rpm
   package: name='/tmp/{{common_custom_rpm|basename}}' state=present
-  when: common_custom_rpm is defined and copy_remote_rpm_result|success
+  when: common_custom_rpm is defined and copy_remote_rpm_result is success
   tags: gluster
 
 - name: checking glusterfs-server install
@@ -31,8 +31,16 @@
   package: name=glusterfs-cli state=present
   tags: gluster
 
+- name: create volume group
+  lvg: vg=vg_gluster pvs=/dev/xvdf
+  tags: gluster
+
+- name: create logical volume
+  lvol: vg=vg_gluster lv=lv_brick1 size=100%VG
+  tags: gluster
+
 - name: format the device as xfs
-  filesystem: fstype=xfs dev={{gluster_xfs_device|default("/dev/xvdf")}}
+  filesystem: fstype=xfs dev={{gluster_xfs_device|default("/dev/mapper/vg_gluster-lv_brick1")}}
 # opts='-f,-i size=512'
   tags: gluster
 
@@ -41,7 +49,7 @@
   tags: gluster
 
 - name: mount volume
-  mount: name=/export/volume src={{gluster_xfs_device|default("/dev/xvdf")}} state=mounted fstype=xfs
+  mount: name=/export/volume src={{gluster_xfs_device|default("/dev/mapper/vg_gluster-lv_brick1")}} state=mounted fstype=xfs
   tags: gluster
 
 - name: random name for gluster volume
