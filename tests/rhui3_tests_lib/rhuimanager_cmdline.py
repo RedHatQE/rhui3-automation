@@ -151,8 +151,8 @@ class RHUIManagerCLI(object):
         generate an entitlement certificate
         '''
         Expect.ping_pong(connection,
-                         "rhui-manager client cert --repo_label " + ",".join(repo_labels) + " " +
-                         "--name " + name + " --days " + str(days) + " --dir " + directory,
+                         "rhui-manager client cert --repo_label %s " % ",".join(repo_labels) +
+                         "--name %s --days %s --dir %s" % (name, str(days), directory),
                          "Entitlement certificate created at %s/%s.crt" % (directory, name))
 
     @staticmethod
