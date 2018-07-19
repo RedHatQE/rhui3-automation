@@ -1,18 +1,17 @@
 '''CDS management tests'''
 
-#! /usr/bin/python -tt
-
-import nose, unittest, stitches, logging, yaml
-
-from rhui3_tests_lib.rhuimanager import *
-from rhui3_tests_lib.rhuimanager_instance import *
-from rhui3_tests_lib.instance import *
-
 from os.path import basename
+
+import logging
+import nose
+import stitches
+
+from rhui3_tests_lib.rhuimanager import RHUIManager
+from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
 
 logging.basicConfig(level=logging.DEBUG)
 
-connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
 def setup():
     '''
@@ -24,53 +23,53 @@ def test_01_initial_run():
     '''
         log in to RHUI
     '''
-    RHUIManager.initial_run(connection)
+    RHUIManager.initial_run(CONNECTION)
 
 def test_02_list_empty_cds():
     '''
         check if there are no CDSs
     '''
-    cds_list = RHUIManagerInstance.list(connection, "cds")
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
     nose.tools.assert_equal(cds_list, [])
 
 def test_03_add_cds():
     '''
         add two CDSs
     '''
-    RHUIManagerInstance.add_instance(connection, "cds", "cds01.example.com")
-    RHUIManagerInstance.add_instance(connection, "cds", "cds02.example.com")
+    RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds01.example.com")
+    RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds02.example.com")
 
 def test_04_list_cds():
     '''
         list CDSs, expect two
     '''
-    cds_list = RHUIManagerInstance.list(connection, "cds")
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
     nose.tools.assert_equal(len(cds_list), 2)
 
 def test_05_readd_cds():
     '''
         add the CDS again (reapply the configuration)
     '''
-    RHUIManagerInstance.add_instance(connection, "cds", "cds01.example.com", update=True)
+    RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds01.example.com", update=True)
 
 def test_06_list_cds():
     '''
         check if the CDSs are still tracked
     '''
-    cds_list = RHUIManagerInstance.list(connection, "cds")
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
     nose.tools.assert_equal(len(cds_list), 2)
 
 def test_07_delete_cds():
     '''
         delete both CDSs
     '''
-    RHUIManagerInstance.delete(connection, "cds", ["cds01.example.com", "cds02.example.com"])
+    RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com", "cds02.example.com"])
 
 def test_08_list_cds():
     '''
         list CDSs, expect none
     '''
-    cds_list = RHUIManagerInstance.list(connection, "cds")
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
     nose.tools.assert_equal(cds_list, [])
 
 def teardown():
