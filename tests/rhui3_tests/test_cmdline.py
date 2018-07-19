@@ -1,7 +1,5 @@
 '''RHUI CLI tests'''
 
-#! /usr/bin/python -tt
-
 import logging
 from os.path import basename, join
 import re
@@ -14,8 +12,8 @@ from stitches.expect import Expect
 import yaml
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
+from rhui3_tests_lib.rhuimanager_cmdline import RHUIManagerCLI
 from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
-from rhui3_tests_lib.rhuimanagercli import RHUIManagerCLI
 from rhui3_tests_lib.subscription import RHSMRHUI
 from rhui3_tests_lib.util import Util
 
@@ -62,13 +60,8 @@ class TestCLI(object):
         nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
 
     @staticmethod
-    def test_03_remove_existing_entitlement_certificates():
-        '''Clean up uploaded entitlement certificates'''
-        RHUIManager.remove_rh_certs(CONNECTION)
-
-    @staticmethod
     def test_04_create_custom_repo():
-        '''Create a custom repo for further testing (interactively; not currently supported by the CLI)'''
+        '''Create a custom repo for further testing (interactively; not yet supported by the CLI)'''
         RHUIManagerRepo.add_custom_repo(CONNECTION, CUSTOM_REPO_NAME, entitlement="n")
 
     @staticmethod
@@ -77,17 +70,21 @@ class TestCLI(object):
         RHUIManagerCLI.repo_list(CONNECTION, CUSTOM_REPO_NAME, CUSTOM_REPO_NAME)
 
     @staticmethod
-    def test_06_upload_rpm_to_custom_repo():
+    def test_06_upload_rpm():
         '''Upload content to the custom repo'''
-        RHUIManagerCLI.packages_upload(CONNECTION, CUSTOM_REPO_NAME, "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
+        RHUIManagerCLI.packages_upload(CONNECTION,
+                                       CUSTOM_REPO_NAME,
+                                       "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
 
     @staticmethod
-    def test_07_check_package_in_custom_repo():
+    def test_07_check_package():
         '''Check that the uploaded package is now in the repo'''
-        RHUIManagerCLI.packages_list(CONNECTION, CUSTOM_REPO_NAME, "rhui-rpm-upload-test-1-1.noarch.rpm")
+        RHUIManagerCLI.packages_list(CONNECTION,
+                                     CUSTOM_REPO_NAME,
+                                     "rhui-rpm-upload-test-1-1.noarch.rpm")
 
     @staticmethod
-    def test_08_upload_entitlement_certificate():
+    def test_08_upload_certificate():
         '''Upload the Atomic (the small) entitlement certificate'''
         RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_atomic.pem", "Atomic")
 
@@ -97,7 +94,7 @@ class TestCLI(object):
         RHUIManagerCLI.cert_info(CONNECTION)
 
     @staticmethod
-    def test_10_check_certificate_expiration():
+    def test_10_check_certificate_exp():
         '''Check if the certificate expiration date is OK'''
         RHUIManagerCLI.cert_expiration(CONNECTION)
 
@@ -120,7 +117,10 @@ class TestCLI(object):
 
     def test_15_no_unexpected_repos(self):
         '''Check if no stray repo was added'''
-        RHUIManagerCLI.validate_repo_list(CONNECTION, [self.yum_repo_id_1, self.yum_repo_id_2, CUSTOM_REPO_NAME])
+        RHUIManagerCLI.validate_repo_list(CONNECTION,
+                                          [self.yum_repo_id_1,
+                                           self.yum_repo_id_2,
+                                           CUSTOM_REPO_NAME])
 
     def test_16_start_syncing_repo(self):
         '''Sync one of the repos'''
@@ -138,7 +138,7 @@ class TestCLI(object):
         '''Check repo labels'''
         RHUIManagerCLI.repo_labels(CONNECTION, self.yum_repo_label_1)
 
-    def test_20_generate_entitlement_certificate(self):
+    def test_20_generate_certificate(self):
         '''Generate an entitlement certificate'''
         RHUIManagerCLI.client_cert(CONNECTION,
                                    [self.yum_repo_label_1, self.yum_repo_label_2],
@@ -147,23 +147,29 @@ class TestCLI(object):
                                    "/tmp")
 
     @staticmethod
-    def test_21_create_client_configuration_rpm():
+    def test_21_create_cli_config_rpm():
         '''Create a client configuration RPM'''
-        RHUIManagerCLI.client_rpm(CONNECTION, "/tmp/atomic_and_my.key", "/tmp/atomic_and_my.crt", "1.0", "atomic_and_my", "/tmp", [CUSTOM_REPO_NAME])
+        RHUIManagerCLI.client_rpm(CONNECTION,
+                                  ["/tmp/atomic_and_my.key", "/tmp/atomic_and_my.crt"],
+                                  ["1.0", "atomic_and_my"],
+                                  "/tmp",
+                                  [CUSTOM_REPO_NAME])
 
     @staticmethod
-    def test_22_ensure_gpgcheck_in_client_configuration():
+    def test_22_ensure_gpgcheck_config():
         '''Ensure that GPG checking is enabled in the client configuration'''
-        Expect.expect_retval(CONNECTION, r"grep -q '^gpgcheck\s*=\s*1$' /tmp/atomic_and_my-1.0/build/BUILD/atomic_and_my-1.0/rh-cloud.repo")
+        Expect.expect_retval(CONNECTION,
+                             r"grep -q '^gpgcheck\s*=\s*1$' " +
+                             "/tmp/atomic_and_my-1.0/build/BUILD/atomic_and_my-1.0/rh-cloud.repo")
 
     @staticmethod
-    def test_23_upload_expired_entitlement_certificate():
+    def test_23_upload_expired_cert():
         '''Check expired certificate handling'''
         RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_expired.pem",
                                    "The provided certificate is expired or invalid")
 
     @staticmethod
-    def test_24_upload_incompatible_entitlement_certificate():
+    def test_24_upload_incompat_cert():
         '''Check incompatible certificate handling'''
         RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_incompatible.pem",
                                    "does not contain any entitlements")

@@ -11,10 +11,10 @@ Welcome to RHUI3 Test Plan!
    :maxdepth: 2
    :caption: Contents:
    
-   CLI
    atomic_client
    cds
    client_management
+   cmdline
    entitlements
    hap
    repo_management
