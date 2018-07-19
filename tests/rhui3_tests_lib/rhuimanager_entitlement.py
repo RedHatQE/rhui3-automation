@@ -1,10 +1,9 @@
 """ Red Hat entitlement certificates """
 
 import re
-import nose
 
-from stitches.expect import Expect, ExpectFailed, CTRL_C
-from rhui3_tests_lib.rhuimanager import RHUIManager, PROCEED_PATTERN
+from stitches.expect import Expect, ExpectFailed
+from rhui3_tests_lib.rhuimanager import RHUIManager
 
 class MissingCertificate(ExpectFailed):
     """
@@ -29,7 +28,7 @@ class RHUIManagerEntitlements(object):
     '''
     Represents -= Entitlements Manager =- RHUI screen
     '''
-    prompt = 'rhui \(entitlements\) => '
+    prompt = r'rhui \(entitlements\) => '
 
     @staticmethod
     def list(connection):
@@ -49,9 +48,11 @@ class RHUIManagerEntitlements(object):
 
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "l")
-        match = Expect.match(connection, re.compile("(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
+        match = Expect.match(connection,
+                             re.compile("(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
 
-        matched_string = match[0].replace('l\r\n\r\nRed Hat Entitlements\r\n\r\n  \x1b[92mValid\x1b[0m\r\n    ', '', 1)
+        matched_string = match[0].replace('l\r\n\r\nRed Hat Entitlements\r\n\r\n  ' +
+                                          '\x1b[92mValid\x1b[0m\r\n    ', '', 1)
 
         entitlements_list = []
         pattern = re.compile('(.*?\r\n.*?pem)', re.DOTALL)
@@ -69,7 +70,9 @@ class RHUIManagerEntitlements(object):
 
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "c")
-        match = Expect.match(connection, re.compile("c\r\n\r\nCustom Repository Entitlements\r\n\r\n(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))[0]
+        match = Expect.match(connection,
+                             re.compile("c\r\n\r\nCustom Repository Entitlements\r\n\r\n(.*)" +
+                                        RHUIManagerEntitlements.prompt, re.DOTALL))[0]
 
         repo_list = []
 
@@ -80,12 +83,12 @@ class RHUIManagerEntitlements(object):
         return sorted(repo_list)
 
     @staticmethod
-    def upload_rh_certificate(connection, certificate_file = '/tmp/extra_rhui_files/rhcert.pem'):
+    def upload_rh_certificate(connection, certificate_file="/tmp/extra_rhui_files/rhcert.pem"):
         '''
         upload a new or updated Red Hat content certificate
         '''
 
-        if connection.recv_exit_status("ls -la %s" % certificate_file)!=0:
+        if connection.recv_exit_status("test -f %s" % certificate_file):
             raise ExpectFailed("Missing certificate file: %s" % certificate_file)
 
         bad_cert_msg = "The provided certificate is expired or invalid"
@@ -97,8 +100,10 @@ class RHUIManagerEntitlements(object):
         Expect.enter(connection, certificate_file)
         Expect.expect(connection, "The RHUI will be updated with the following certificate:")
         Expect.enter(connection, "y")
-        match = Expect.match(connection, re.compile("(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
-        matched_string = match[0].replace('l\r\n\r\nRed Hat Entitlements\r\n\r\n  \x1b[92mValid\x1b[0m\r\n    ', '', 1)
+        match = Expect.match(connection,
+                             re.compile("(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
+        matched_string = match[0].replace('l\r\n\r\nRed Hat Entitlements\r\n\r\n  ' +
+                                          '\x1b[92mValid\x1b[0m\r\n    ', '', 1)
         if bad_cert_msg in matched_string:
             Expect.enter(connection, 'q')
             raise BadCertificate()
@@ -111,4 +116,3 @@ class RHUIManagerEntitlements(object):
             entitlements_list.append(entitlement.strip())
         Expect.enter(connection, 'q')
         return entitlements_list
-

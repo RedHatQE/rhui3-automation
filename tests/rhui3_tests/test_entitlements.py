@@ -1,19 +1,20 @@
 '''Entitlement management tests'''
 
-#! /usr/bin/python -tt
-
-import nose, unittest, stitches, logging, yaml
-from nose.tools import *
-
-from rhui3_tests_lib.rhuimanager import *
-from rhui3_tests_lib.rhuimanager_entitlement import *
-from rhui3_tests_lib.rhuimanager_repo import *
-
 from os.path import basename
+
+import logging
+import nose
+import stitches
+
+from rhui3_tests_lib.rhuimanager import RHUIManager
+from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements, \
+                                                    BadCertificate, \
+                                                    IncompatibleCertificate
+from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
 
 logging.basicConfig(level=logging.DEBUG)
 
-connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
 class TestEntitlement(object):
     '''
@@ -32,38 +33,38 @@ class TestEntitlement(object):
         '''
             log in to RHUI
         '''
-        RHUIManager.initial_run(connection)
+        RHUIManager.initial_run(CONNECTION)
 
     @staticmethod
     def test_02_list_rh_entitlements():
         '''
            list Red Hat content certificate entitlements
         '''
-        entitlements = RHUIManagerEntitlements.list_rh_entitlements(connection)
+        entitlements = RHUIManagerEntitlements.list_rh_entitlements(CONNECTION)
         nose.tools.eq_(isinstance(entitlements, list), True)
 
     @staticmethod
-    def test_03_list_custom_entitlements():
+    def test_03_list_cus_entitlements():
         '''
            list custom content certificate entitlements, expect none
         '''
-        list = RHUIManagerEntitlements.list_custom_entitlements(connection)
-        nose.tools.assert_equal(len(list), 0)
+        entlist = RHUIManagerEntitlements.list_custom_entitlements(CONNECTION)
+        nose.tools.assert_equal(len(entlist), 0)
 
     @staticmethod
     def test_04_upload_rh_certificate():
         '''
            upload a new or updated Red Hat content certificate
         '''
-        list = RHUIManagerEntitlements.upload_rh_certificate(connection)
-        nose.tools.assert_not_equal(len(list), 0)
+        entlist = RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
+        nose.tools.assert_not_equal(len(entlist), 0)
 
     @staticmethod
     def test_05_list_rh_entitlements():
         '''
            list Red Hat content certificate entitlements
         '''
-        entitlements = RHUIManagerEntitlements.list_rh_entitlements(connection)
+        entitlements = RHUIManagerEntitlements.list_rh_entitlements(CONNECTION)
         nose.tools.eq_(isinstance(entitlements, list), True)
 
     @staticmethod
@@ -71,52 +72,58 @@ class TestEntitlement(object):
         '''
            add a custom repo to protect by a client entitlement certificate
         '''
-        RHUIManagerRepo.add_custom_repo(connection, "custom-enttest", "", "", "1", "y")
+        RHUIManagerRepo.add_custom_repo(CONNECTION, "custom-enttest", "", "", "1", "y")
 
     @staticmethod
-    def test_07_list_custom_entitlements():
+    def test_07_list_cust_entitlements():
         '''
            list custom content certificate entitlements, expect one
         '''
-        list = RHUIManagerEntitlements.list_custom_entitlements(connection)
-        nose.tools.assert_equal(len(list), 1)
+        entlist = RHUIManagerEntitlements.list_custom_entitlements(CONNECTION)
+        nose.tools.assert_equal(len(entlist), 1)
 
     @staticmethod
     def test_08_remove_custom_repo():
         '''
            remove the custom repo
         '''
-        RHUIManagerRepo.delete_repo(connection, ["custom-enttest"])
-        nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
+        RHUIManagerRepo.delete_repo(CONNECTION, ["custom-enttest"])
+        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
 
     @staticmethod
-    def test_09_list_custom_entitlements():
+    def test_09_list_cust_entitlements():
         '''
            list custom content certificate entitlements, expect none
         '''
-        list = RHUIManagerEntitlements.list_custom_entitlements(connection)
-        nose.tools.assert_equal(len(list), 0)
+        entlist = RHUIManagerEntitlements.list_custom_entitlements(CONNECTION)
+        nose.tools.assert_equal(len(entlist), 0)
 
     @staticmethod
-    def test_10_remove_existing_entitlement_certificates():
+    def test_10_remove_certificates():
         '''
             clean up uploaded entitlement certificates
         '''
-        RHUIManager.remove_rh_certs(connection)
+        RHUIManager.remove_rh_certs(CONNECTION)
 
     @staticmethod
-    def test_11_upload_expired_certificate():
+    def test_11_upload_exp_cert():
         '''
            upload an expired certificate, expect a proper refusal
         '''
-        assert_raises(BadCertificate, RHUIManagerEntitlements.upload_rh_certificate, connection, "/tmp/extra_rhui_files/rhcert_expired.pem")
+        nose.tools.assert_raises(BadCertificate,
+                                 RHUIManagerEntitlements.upload_rh_certificate,
+                                 CONNECTION,
+                                 "/tmp/extra_rhui_files/rhcert_expired.pem")
 
     @staticmethod
-    def test_12_upload_incompatible_certificate():
+    def test_12_upload_incompat_cert():
         '''
            upload an incompatible certificate, expect a proper refusal
         '''
-        assert_raises(IncompatibleCertificate, RHUIManagerEntitlements.upload_rh_certificate, connection, "/tmp/extra_rhui_files/rhcert_incompatible.pem")
+        nose.tools.assert_raises(IncompatibleCertificate,
+                                 RHUIManagerEntitlements.upload_rh_certificate,
+                                 CONNECTION,
+                                 "/tmp/extra_rhui_files/rhcert_incompatible.pem")
 
     @staticmethod
     def test_13_upload_semi_bad_cert():
@@ -124,7 +131,7 @@ class TestEntitlement(object):
            upload a certificate containing a mix of valid and invalid repos
         '''
         # for RHBZ#1588931 & RHBZ#1584527
-        RHUIManagerEntitlements.upload_rh_certificate(connection,
+        RHUIManagerEntitlements.upload_rh_certificate(CONNECTION,
                                                       "/tmp/extra_rhui_files/" +
                                                       "rhcert_partially_invalid.pem")
 
@@ -133,7 +140,7 @@ class TestEntitlement(object):
         '''
             remove the certificate
         '''
-        RHUIManager.remove_rh_certs(connection)
+        RHUIManager.remove_rh_certs(CONNECTION)
 
     @staticmethod
     def teardown_class():
