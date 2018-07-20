@@ -1,6 +1,9 @@
 """ RHUIManager Sync functions """
 
-import re, nose, time
+import re
+import time
+
+import nose
 
 from stitches.expect import Expect
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -21,7 +24,10 @@ class RHUIManagerSync(object):
         Expect.expect(connection, "Select one or more repositories.*for more commands:", 60)
         Expect.enter(connection, "l")
         RHUIManager.select(connection, repolist)
-        RHUIManager.proceed_with_check(connection, "The following repositories will be scheduled for synchronization:", repolist)
+        RHUIManager.proceed_with_check(connection,
+                                       "The following repositories will be scheduled " +
+                                       "for synchronization:",
+                                       repolist)
         RHUIManager.quit(connection)
 
     @staticmethod
@@ -32,11 +38,13 @@ class RHUIManagerSync(object):
         RHUIManager.screen(connection, "sync")
         Expect.enter(connection, "dr")
         reponame_quoted = Util.esc_parentheses(reponame)
-        res = Expect.match(connection, re.compile(".*" + reponame_quoted + "\s*\r\n([^\n]*)\r\n.*", re.DOTALL), [1], 60)[0]
+        res = Expect.match(connection,
+                           re.compile(".*" + reponame_quoted + r"\s*\r\n([^\n]*)\r\n.*",
+                                      re.DOTALL), [1], 60)[0]
         connection.cli.exec_command("killall -s SIGINT rhui-manager")
         res = Util.uncolorify(res)
         ret_list = res.split("             ")
-        for i in range(len(ret_list)):
+        for i, _ in enumerate(ret_list):
             ret_list[i] = ret_list[i].strip()
 
         Expect.enter(connection, '\x03')
