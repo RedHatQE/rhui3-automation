@@ -1,11 +1,10 @@
 """ Utility functions """
 
-
 import os
-import tempfile
-import time
 import random
 import string
+import tempfile
+import time
 import yaml
 
 from stitches.expect import Expect, ExpectFailed
@@ -26,7 +25,13 @@ class Util(object):
         return res
 
     @staticmethod
-    def generate_gpg_key(connection, keytype="DSA", keysize="1024", keyvalid="0", realname="Key Owner", email="kowner@example.com", comment="comment"):
+    def generate_gpg_key(connection,
+                         keytype="DSA",
+                         keysize="1024",
+                         keyvalid="0",
+                         realname="Key Owner",
+                         email="kowner@example.com",
+                         comment="comment"):
         '''
         Generate GPG keypair
 
@@ -49,7 +54,8 @@ class Util(object):
 
         Expect.enter(connection, "gpg --gen-key --no-random-seed-file --batch /tmp/gpgkey")
         for _ in range(1, 200):
-            Expect.enter(connection, ''.join(random.choice(string.ascii_lowercase) for x in range(200)))
+            Expect.enter(connection,
+                         ''.join(random.choice(string.ascii_lowercase) for x in range(200)))
             time.sleep(1)
             try:
                 Expect.expect(connection, "gpg: done")
@@ -60,7 +66,7 @@ class Util(object):
     @staticmethod
     def remove_amazon_rhui_conf_rpm(connection):
         '''
-        Remove Amazon RHUI configuration rpm from instance (which owns /etc/yum/pluginconf.d/rhui-lb.conf file)
+        Remove Amazon RHUI config rpm (owning /etc/yum/pluginconf.d/rhui-lb.conf) from instance
         '''
         Expect.expect_retval(connection, "if [ -f /etc/yum/pluginconf.d/rhui-lb.conf ]; " +
                              "then rpm -e `rpm -qf --queryformat '%{NAME}\n' " +
@@ -82,7 +88,7 @@ class Util(object):
         tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.close()
         rhua_connection.sftp.get(pkgpath, tfile.name)
-        file_extension=os.path.splitext(pkgpath)[1]
+        file_extension = os.path.splitext(pkgpath)[1]
         if file_extension == '.rpm':
             connection.sftp.put(tfile.name, tfile.name + file_extension)
             os.unlink(tfile.name)
@@ -115,7 +121,9 @@ class Util(object):
         '''
         if rpmpath:
             rpmnvr = os.popen("basename " + rpmpath).read()[:-1]
-            rpmname = os.popen("rpm -qp --queryformat '%{NAME}\n' " + rpmpath + " 2>/dev/null").read()[:-1]
+            rpmname = os.popen("rpm -qp --queryformat '%{NAME}\n' " +
+                               rpmpath +
+                               " 2>/dev/null").read()[:-1]
             return (rpmnvr, rpmname)
         else:
             return (None, None)
@@ -147,7 +155,7 @@ class Util(object):
         helper method to escape parentheses so they can be safely used inside
         regular expressions in Expect methods
         '''
-        return name.replace("(", "\(").replace(")", "\)")
+        return name.replace("(", r"\(").replace(")", r"\)")
 
     @staticmethod
     def format_repo(name, version, kind=""):
