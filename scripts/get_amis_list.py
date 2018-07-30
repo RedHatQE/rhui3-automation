@@ -22,6 +22,8 @@ if args.rhel.startswith("RHEL-7"):
     mapping = "RHEL7mapping.json"
 elif args.rhel.startswith("RHEL-6"):
     mapping = "RHEL6mapping.json"
+elif args.rhel.startswith("RHEL-5"):
+    mapping = "RHEL5mapping.json"
 elif args.rhel.startswith("RHEL-Atomic"):
     mapping = "ATOMICmapping.json"
 else:
