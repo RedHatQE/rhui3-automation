@@ -1,21 +1,29 @@
 '''Atomic client tests (RHEL 7+ only)'''
-
-import nose, stitches, logging, yaml
-
-from rhui3_tests_lib.rhuimanager_client import *
-from rhui3_tests_lib.rhuimanager_entitlement import *
-from rhui3_tests_lib.rhuimanager_repo import *
-from rhui3_tests_lib.rhuimanager_sync import *
-from rhui3_tests_lib.rhuimanager_instance import *
-from rhui3_tests_lib.instance import *
-from rhui3_tests_lib.util import Util
+#
+# some tests are commented out because the Atomic Trees repo won't sync reliably
+# see RHBZ#1427190
+#
 
 from os.path import basename
 
+import logging
+import nose
+import stitches
+from stitches.expect import Expect
+import yaml
+
+from rhui3_tests_lib.rhuimanager import RHUIManager
+from rhui3_tests_lib.rhuimanager_client import RHUIManagerClient
+from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements
+#from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
+from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
+#from rhui3_tests_lib.rhuimanager_sync import RHUIManagerSync
+from rhui3_tests_lib.util import Util
+
 logging.basicConfig(level=logging.DEBUG)
 
-connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-atomic_cli=stitches.connection.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
+CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+ATOMIC_CLI = stitches.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
 
 
 class TestClient(object):
@@ -24,12 +32,12 @@ class TestClient(object):
     '''
 
     def __init__(self):
-        self.rhua_os_version = Util.get_rhua_version(connection)["major"]
+        self.rhua_os_version = Util.get_rhua_version(CONNECTION)["major"]
         if self.rhua_os_version < 7:
             raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
 
-        with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as file:
-            doc = yaml.load(file)
+        with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as configfile:
+            doc = yaml.load(configfile)
 
         self.atomic_repo_name = doc['atomic_repo']['name']
 
@@ -43,100 +51,116 @@ class TestClient(object):
     @staticmethod
     def test_01_repo_setup():
         '''do initial rhui-manager run'''
-        RHUIManager.initial_run(connection)
+        RHUIManager.initial_run(CONNECTION)
 
-    @staticmethod
-    def test_02_add_cds():
-        '''
-            add a CDS
-        '''
-        cds_list = RHUIManagerInstance.list(connection, "cds")
-        nose.tools.assert_equal(cds_list, [])
-        RHUIManagerInstance.add_instance(connection, "cds", "cds01.example.com")
+    #@staticmethod
+    #def test_02_add_cds():
+    #    '''
+    #        add a CDS
+    #    '''
+    #    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
+    #    nose.tools.assert_equal(cds_list, [])
+    #    RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds01.example.com")
 
-    @staticmethod
-    def test_03_add_hap():
-        '''
-            add an HAProxy Load-balancer
-        '''
-        hap_list = RHUIManagerInstance.list(connection, "loadbalancers")
-        nose.tools.assert_equal(hap_list, [])
-        RHUIManagerInstance.add_instance(connection, "loadbalancers", "hap01.example.com")
+    #@staticmethod
+    #def test_03_add_hap():
+    #    '''
+    #        add an HAProxy Load-balancer
+    #    '''
+    #    hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
+    #    nose.tools.assert_equal(hap_list, [])
+    #    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com")
 
     @staticmethod
     def test_04_upload_atomic_cert():
         '''
             upload atomic cert
         '''
-        list = RHUIManagerEntitlements.upload_rh_certificate(connection, "/tmp/extra_rhui_files/rhcert_atomic.pem")
-        nose.tools.assert_not_equal(len(list), 0)
+        entlist = RHUIManagerEntitlements.upload_rh_certificate(CONNECTION,
+                                                                "/tmp/extra_rhui_files/" +
+                                                                "rhcert_atomic.pem")
+        nose.tools.assert_not_equal(len(entlist), 0)
 
     def test_05_add_atomic_repo(self):
         '''
            add the RHEL RHUI Atomic 7 Ostree Repo
         '''
-        RHUIManagerRepo.add_rh_repo_by_product(connection, [self.atomic_repo_name])
+        RHUIManagerRepo.add_rh_repo_by_product(CONNECTION, [self.atomic_repo_name])
 
     #def test_06_sync_atomic_repo(self):
     #    '''
     #       sync the RHEL RHUI Atomic 7 Ostree Repo
     #    '''
-    #    atomic_repo_version = RHUIManagerRepo.get_repo_version(connection, self.atomic_repo_name)
-    #    RHUIManagerSync.sync_repo(connection, [Util.format_repo(self.atomic_repo_name, atomic_repo_version))
+    #    atomic_repo_version = RHUIManagerRepo.get_repo_version(CONNECTION, self.atomic_repo_name)
+    #    RHUIManagerSync.sync_repo(CONNECTION,
+    #                              [Util.format_repo(self.atomic_repo_name, atomic_repo_version))
 
-    def test_07_generate_atomic_ent_cert(self):
+    def test_07_generate_atomic_cert(self):
         '''
            generate an entitlement certificate for the Atomic repo
         '''
-        RHUIManagerClient.generate_ent_cert(connection, [self.atomic_repo_name], "test_atomic_ent_cli", "/root/")
-        Expect.expect_retval(connection, "test -f /root/test_atomic_ent_cli.crt")
-        Expect.expect_retval(connection, "test -f /root/test_atomic_ent_cli.key")
+        RHUIManagerClient.generate_ent_cert(CONNECTION,
+                                            [self.atomic_repo_name],
+                                            "test_atomic_ent_cli",
+                                            "/root/")
+        Expect.expect_retval(CONNECTION, "test -f /root/test_atomic_ent_cli.crt")
+        Expect.expect_retval(CONNECTION, "test -f /root/test_atomic_ent_cli.key")
 
     @staticmethod
     def test_08_create_atomic_pkg():
         '''
            create an Atomic client configuration package
         '''
-        RHUIManager.initial_run(connection)
-        RHUIManagerClient.create_atomic_conf_pkg(connection, "/root", "test_atomic_pkg", "/root/test_atomic_ent_cli.crt", "/root/test_atomic_ent_cli.key")
-        Expect.expect_retval(connection, "test -f /root/test_atomic_pkg.tar.gz")
+        RHUIManager.initial_run(CONNECTION)
+        RHUIManagerClient.create_atomic_conf_pkg(CONNECTION,
+                                                 "/root",
+                                                 "test_atomic_pkg",
+                                                 "/root/test_atomic_ent_cli.crt",
+                                                 "/root/test_atomic_ent_cli.key")
+        Expect.expect_retval(CONNECTION, "test -f /root/test_atomic_pkg.tar.gz")
 
     #def test_09_check_sync_status_of_atomic_repo(self):
     #    '''
     #       check if Atomic repo was synced to pull the content
     #    '''
-    #    RHUIManager.initial_run(connection)
-    #    atomic_repo_version = RHUIManagerRepo.get_repo_version(connection, self.atomic_repo_name)
-    #    RHUIManagerSync.wait_till_repo_synced(connection, Util.format_repo(self.atomic_repo_name, atomic_repo_version))
+    #    RHUIManager.initial_run(CONNECTION)
+    #    atomic_repo_version = RHUIManagerRepo.get_repo_version(CONNECTION, self.atomic_repo_name)
+    #    RHUIManagerSync.wait_till_repo_synced(CONNECTION,
+    #                                          Util.format_repo(self.atomic_repo_name,
+    #                                                           atomic_repo_version))
 
     @staticmethod
     def test_10_install_atomic_pkg():
         '''
            install atomic pkg on atomic host
         '''
-        Util.install_pkg_from_rhua(connection, atomic_cli, "/root/test_atomic_pkg.tar.gz")
+        Util.install_pkg_from_rhua(CONNECTION, ATOMIC_CLI, "/root/test_atomic_pkg.tar.gz")
 
     #@staticmethod
     #def test_11_pull_atomic_content():
     #    '''
     #       pull atomic content
     #    '''
-    #    Expect.expect_retval(atomic_cli, "sudo ostree pull rhui-rhel-rhui-atomic-7-ostree-repo:rhel-atomic-host/7/x86_64/standard")
+    #    Expect.expect_retval(ATOMIC_CLI,
+    #                         "sudo ostree pull " +
+    #                         "rhui-rhel-rhui-atomic-7-ostree-repo:" +
+    #                         "rhel-atomic-host/7/x86_64/standard")
 
     @staticmethod
     def test_99_cleanup():
         '''
            remove entitlements and custom cli tar, uninstall cds, hap, delete the RH cert
         '''
-        RHUIManager.initial_run(connection)
-        RHUIManagerRepo.delete_all_repos(connection)
-        nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
-        RHUIManagerInstance.delete(connection, "loadbalancers", ["hap01.example.com"])
-        RHUIManagerInstance.delete(connection, "cds", ["cds01.example.com"])
-        Expect.expect_retval(connection, "rm -f /root/test_atomic_ent_cli*")
-        Expect.expect_retval(connection, "rm -f /root/test_atomic_pkg.tar.gz")
-     #   Expect.expect_retval(atomic_cli, "sudo ostree remote delete rhui-rhel-rhui-atomic-7-ostree-repo")
-        RHUIManager.remove_rh_certs(connection)
+        RHUIManager.initial_run(CONNECTION)
+        RHUIManagerRepo.delete_all_repos(CONNECTION)
+        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
+     #   RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
+     #   RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com"])
+        Expect.expect_retval(CONNECTION, "rm -f /root/test_atomic_ent_cli*")
+        Expect.expect_retval(CONNECTION, "rm -f /root/test_atomic_pkg.tar.gz")
+     #   Expect.expect_retval(ATOMIC_CLI,
+     #                        "sudo ostree remote delete rhui-rhel-rhui-atomic-7-ostree-repo")
+        RHUIManager.remove_rh_certs(CONNECTION)
 
     @staticmethod
     def teardown_class():

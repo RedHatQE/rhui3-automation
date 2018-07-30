@@ -1,6 +1,7 @@
 """ RHUIManager Client functions """
 
 from stitches.expect import Expect
+
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
 
@@ -9,7 +10,7 @@ class RHUIManagerClient(object):
     Represents -= Client Entitlement Management =- RHUI screen
     '''
     @staticmethod
-    def generate_ent_cert(connection, repolist, certname, dirname, validity_days="", cert_pw=None):
+    def generate_ent_cert(connection, repolist, certname, dirname, validity_days=""):
         '''
         generate an entitlement certificate
         '''
@@ -26,7 +27,8 @@ class RHUIManagerClient(object):
         RHUIManager.quit(connection)
 
     @staticmethod
-    def create_conf_rpm(connection, dirname, certpath, certkey, rpmname, rpmversion="", unprotected_repos=None):
+    def create_conf_rpm(connection, dirname, certpath, certkey, rpmname, rpmversion="",
+                        unprotected_repos=None):
         '''
         create a client configuration RPM from an entitlement certificate
         '''
@@ -40,7 +42,8 @@ class RHUIManagerClient(object):
         Expect.enter(connection, rpmversion)
         Expect.expect(connection, "Full path to the entitlement certificate.*:")
         Expect.enter(connection, certpath)
-        Expect.expect(connection, "Full path to the private key for the above entitlement certificate:")
+        Expect.expect(connection,
+                      "Full path to the private key for the above entitlement certificate:")
         Expect.enter(connection, certkey)
         if unprotected_repos:
             RHUIManager.select(connection, unprotected_repos)

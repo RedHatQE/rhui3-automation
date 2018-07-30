@@ -1,12 +1,16 @@
-import re
+""" General rhui-manager methods """
+
 import logging
+import re
 
 from stitches.expect import Expect, ExpectFailed
+
 from rhui3_tests_lib.util import Util
 
-SELECT_PATTERN = re.compile('^  (x|-)  (\d+) :')
-PROCEED_PATTERN = re.compile('.*Proceed\? \(y/n\).*', re.DOTALL)
-CONFIRM_PATTERN_STRING = "Enter value \([\d]+-[\d]+\) to toggle selection, 'c' to confirm selections, or '\?' for more commands: "
+SELECT_PATTERN = re.compile(r'^  (x|-)  (\d+) :')
+PROCEED_PATTERN = re.compile(r'.*Proceed\? \(y/n\).*', re.DOTALL)
+CONFIRM_PATTERN_STRING = r"Enter value \([\d]+-[\d]+\) to toggle selection, " + \
+                         r"'c' to confirm selections, or '\?' for more commands: "
 
 class NotSelectLine(ValueError):
     """
@@ -37,7 +41,7 @@ class RHUIManager(object):
         if enter_l:
             Expect.enter(connection, "l")
         match = Expect.match(connection, re.compile("(.*)" + prompt, re.DOTALL))
-        return match[0].split('\r\n')
+        return match[0].splitlines()
 
     @staticmethod
     def select(connection, value_list):
@@ -45,13 +49,13 @@ class RHUIManager(object):
         Select list of items (multiple choice)
         '''
         for value in value_list:
-            match = Expect.match(connection, re.compile(".*-\s+([0-9]+)\s*:[^\n]*\s+" +
+            match = Expect.match(connection, re.compile(r".*-\s+([0-9]+)\s*:[^\n]*\s+" +
                                                         Util.esc_parentheses(value) +
-                                                        "\s*\n.*for more commands:.*", re.DOTALL))
+                                                        r"\s*\n.*for more commands:.*", re.DOTALL))
             Expect.enter(connection, match[0])
-            match = Expect.match(connection, re.compile(".*x\s+([0-9]+)\s*:[^\n]*\s+" +
+            match = Expect.match(connection, re.compile(r".*x\s+([0-9]+)\s*:[^\n]*\s+" +
                                                         Util.esc_parentheses(value) +
-                                                        "\s*\n.*for more commands:.*", re.DOTALL))
+                                                        r"\s*\n.*for more commands:.*", re.DOTALL))
             Expect.enter(connection, "l")
         Expect.enter(connection, "c")
 
@@ -64,9 +68,9 @@ class RHUIManager(object):
         for item in itemslist:
             for line in lines:
                 if item in line:
-                     index = list(filter(str.isdigit, str(lines[lines.index(line)-1])))[0]
-                     Expect.enter(connection, index)
-                     break
+                    index = list(filter(str.isdigit, str(lines[lines.index(line)-1])))[0]
+                    Expect.enter(connection, index)
+                    break
         Expect.enter(connection, "c")
 
     @staticmethod
@@ -74,7 +78,10 @@ class RHUIManager(object):
         '''
         Select one item (single choice)
         '''
-        match = Expect.match(connection, re.compile(".*([0-9]+)\s+-\s+" + item + "\s*\n.*to abort:.*", re.DOTALL))
+        match = Expect.match(connection, re.compile(r".*([0-9]+)\s+-\s+" +
+                                                    item +
+                                                    r"\s*\n.*to abort:.*",
+                                                    re.DOTALL))
         Expect.enter(connection, match[0])
 
     @staticmethod
@@ -95,7 +102,7 @@ class RHUIManager(object):
         Use @param prefix to specify something to expect before exiting
         Use @param timeout to specify the timeout
         '''
-        Expect.expect(connection, prefix + ".*rhui \(.*\) =>", timeout)
+        Expect.expect(connection, prefix + r".*rhui \(.*\) =>", timeout)
         Expect.enter(connection, "q")
 
     @staticmethod
@@ -105,7 +112,7 @@ class RHUIManager(object):
 
         Use @param prefix to specify something to expect before exiting
         '''
-        Expect.expect(connection, prefix + ".*rhui \(.*\) =>")
+        Expect.expect(connection, prefix + r".*rhui \(.*\) =>")
         Expect.enter(connection, "logout")
 
     @staticmethod
@@ -113,23 +120,27 @@ class RHUIManager(object):
         '''
         Proceed without check (avoid this function when possible!)
         '''
-        Expect.expect(connection, "Proceed\? \(y/n\)")
+        Expect.expect(connection, r"Proceed\? \(y/n\)")
         Expect.enter(connection, "y")
 
     @staticmethod
-    def proceed_with_check(connection, caption, value_list, skip_list=[]):
+    def proceed_with_check(connection, caption, value_list, skip_list=""):
         '''
         Proceed with prior checking the list of values
 
         Use @param skip_list to skip meaningless 2nd-level headers
         '''
-        selected = Expect.match(connection, re.compile(".*" + caption + "\r\n(.*)\r\nProceed\? \(y/n\).*", re.DOTALL))[0].split("\r\n")
+        selected = Expect.match(connection,
+                                re.compile(".*" +
+                                           caption +
+                                           r"\r\n(.*)\r\nProceed\? \(y/n\).*",
+                                           re.DOTALL))[0].splitlines()
         selected_clean = []
         for val in selected:
             val = val.strip()
             val = val.replace("\t", " ")
             val = ' '.join(val.split())
-            if val != "" and not val in skip_list:
+            if val != "" and val not in skip_list:
                 selected_clean.append(val)
         if sorted(selected_clean) != sorted(value_list):
             logging.debug("Selected: " + str(selected_clean))
@@ -153,9 +164,9 @@ class RHUIManager(object):
         else:
             raise ValueError("Unsupported screen name: " + screen_name)
         Expect.enter(connection, "rhui-manager")
-        Expect.expect(connection, "rhui \(home\) =>")
+        Expect.expect(connection, r"rhui \(home\) =>")
         Expect.enter(connection, key)
-        Expect.expect(connection, "rhui \(" + screen_name + "\) =>")
+        Expect.expect(connection, r"rhui \(" + screen_name + r"\) =>")
 
     @staticmethod
     def initial_run(connection, username="admin", password="admin"):
@@ -163,14 +174,20 @@ class RHUIManager(object):
         Do rhui-manager initial run
         '''
         Expect.enter(connection, "rhui-manager")
-        state = Expect.expect_list(connection, [(re.compile(".*RHUI Username:.*", re.DOTALL),1),
-                                                (re.compile(".*rhui \(home\) =>.*", re.DOTALL), 2)])
+        state = Expect.expect_list(connection,
+                                   [(re.compile(".*RHUI Username:.*", re.DOTALL), 1),
+                                    (re.compile(r".*rhui \(home\) =>.*", re.DOTALL), 2)])
         if state == 1:
             Expect.enter(connection, username)
             Expect.expect(connection, "RHUI Password:")
             Expect.enter(connection, password)
-            password_state = Expect.expect_list(connection, [(re.compile(".*Invalid login.*", re.DOTALL),1),
-                                                (re.compile(".*rhui \(home\) =>.*", re.DOTALL), 2)])
+            password_state = Expect.expect_list(connection,
+                                                [(re.compile(".*Invalid login.*",
+                                                             re.DOTALL),
+                                                  1),
+                                                 (re.compile(r".*rhui \(home\) =>.*",
+                                                             re.DOTALL),
+                                                  2)])
             if password_state == 1:
                 initial_password = Util.get_initial_password(connection)
                 Expect.enter(connection, "rhui-manager")
@@ -178,7 +195,7 @@ class RHUIManager(object):
                 Expect.enter(connection, username)
                 Expect.expect(connection, "RHUI Password:")
                 Expect.enter(connection, initial_password)
-                Expect.expect(connection, "rhui \(home\) =>")
+                Expect.expect(connection, r"rhui \(home\) =>")
             else:
                 pass
         else:

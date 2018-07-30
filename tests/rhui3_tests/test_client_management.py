@@ -1,26 +1,29 @@
 '''Client management tests'''
 
-import requests
-import urllib3
-
-import nose, stitches, logging, yaml
-
-from rhui3_tests_lib.rhuimanager_client import *
-from rhui3_tests_lib.rhuimanager_entitlement import *
-from rhui3_tests_lib.rhuimanager_repo import *
-from rhui3_tests_lib.rhuimanager_sync import *
-from rhui3_tests_lib.rhuimanager_instance import *
-from rhui3_tests_lib.instance import *
-from rhui3_tests_lib.util import Util
-
 from os.path import basename
+
+import logging
+import nose
+import requests
+import stitches
+from stitches.expect import Expect
+import urllib3
+import yaml
+
+from rhui3_tests_lib.rhuimanager import RHUIManager
+from rhui3_tests_lib.rhuimanager_client import RHUIManagerClient
+from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements
+from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
+from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
+from rhui3_tests_lib.rhuimanager_sync import RHUIManagerSync
+from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-connection=stitches.connection.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-cli=stitches.connection.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
-atomic_cli=stitches.connection.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
+CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+CLI = stitches.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
+ATOMIC_CLI = stitches.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
 
 TEST_PACKAGE = "vm-dump-metrics"
 
@@ -30,10 +33,10 @@ class TestClient(object):
     '''
 
     def __init__(self):
-        self.rhua_os_version = Util.get_rhua_version(connection)["major"]
+        self.rhua_os_version = Util.get_rhua_version(CONNECTION)["major"]
 
-        with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as file:
-            doc = yaml.load(file)
+        with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as configfile:
+            doc = yaml.load(configfile)
 
         self.yum_repo1_name = doc['yum_repo1']['name']
         self.yum_repo1_version = doc['yum_repo1']['version']
@@ -54,48 +57,55 @@ class TestClient(object):
     @staticmethod
     def test_01_repo_setup():
         '''do initial rhui-manager run'''
-        RHUIManager.initial_run(connection)
+        RHUIManager.initial_run(CONNECTION)
 
     @staticmethod
     def test_02_upload_rh_certificate():
         '''
            upload a new or updated Red Hat content certificate
         '''
-        list = RHUIManagerEntitlements.upload_rh_certificate(connection)
-        nose.tools.assert_not_equal(len(list), 0)
+        entlist = RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
+        nose.tools.assert_not_equal(len(entlist), 0)
 
     @staticmethod
     def test_03_add_cds():
         '''
             add a CDS
         '''
-        cds_list = RHUIManagerInstance.list(connection, "cds")
+        cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
         nose.tools.assert_equal(cds_list, [])
-        RHUIManagerInstance.add_instance(connection, "cds", "cds01.example.com")
+        RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds01.example.com")
 
     @staticmethod
     def test_04_add_hap():
         '''
             add an HAProxy Load-balancer
         '''
-        hap_list = RHUIManagerInstance.list(connection, "loadbalancers")
+        hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
         nose.tools.assert_equal(hap_list, [])
-        RHUIManagerInstance.add_instance(connection, "loadbalancers", "hap01.example.com")
+        RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com")
 
-    def test_05_add_repos_upload_rpm_sync(self):
+    def test_05_add_upload_sync_stuff(self):
         '''
            add a custom and RH content repos to protect by a cli entitlement cert, upload rpm, sync
         '''
-        RHUIManagerRepo.add_custom_repo(connection, "custom-i386-x86_64", "", "custom/i386/x86_64", "1", "y")
-        RHUIManagerRepo.upload_content(connection, ["custom-i386-x86_64"], "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
-        RHUIManagerRepo.add_rh_repo_by_repo(connection,
+        RHUIManagerRepo.add_custom_repo(CONNECTION,
+                                        "custom-i386-x86_64",
+                                        "",
+                                        "custom/i386/x86_64",
+                                        "1",
+                                        "y")
+        RHUIManagerRepo.upload_content(CONNECTION,
+                                       ["custom-i386-x86_64"],
+                                       "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
+        RHUIManagerRepo.add_rh_repo_by_repo(CONNECTION,
                                             [Util.format_repo(self.yum_repo1_name,
                                                               self.yum_repo1_version,
                                                               self.yum_repo1_kind),
                                              Util.format_repo(self.yum_repo2_name,
                                                               self.yum_repo2_version,
                                                               self.yum_repo1_kind)])
-        RHUIManagerSync.sync_repo(connection,
+        RHUIManagerSync.sync_repo(CONNECTION,
                                   [Util.format_repo(self.yum_repo1_name, self.yum_repo1_version),
                                    Util.format_repo(self.yum_repo2_name, self.yum_repo2_version)])
 
@@ -104,86 +114,105 @@ class TestClient(object):
            generate an entitlement certificate
         '''
         if self.rhua_os_version < 7:
-           RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", self.yum_repo1_name], "test_ent_cli", "/root/")
+            RHUIManagerClient.generate_ent_cert(CONNECTION,
+                                                ["custom-i386-x86_64", self.yum_repo1_name],
+                                                "test_ent_cli",
+                                                "/root/")
         else:
-           RHUIManagerClient.generate_ent_cert(connection, ["custom-i386-x86_64", self.yum_repo2_name], "test_ent_cli", "/root/")
-        Expect.expect_retval(connection, "test -f /root/test_ent_cli.crt")
-        Expect.expect_retval(connection, "test -f /root/test_ent_cli.key")
+            RHUIManagerClient.generate_ent_cert(CONNECTION,
+                                                ["custom-i386-x86_64", self.yum_repo2_name],
+                                                "test_ent_cli",
+                                                "/root/")
+        Expect.expect_retval(CONNECTION, "test -f /root/test_ent_cli.crt")
+        Expect.expect_retval(CONNECTION, "test -f /root/test_ent_cli.key")
 
     @staticmethod
     def test_07_create_cli_rpm():
         '''
            create a client configuration RPM from an entitlement certificate
         '''
-        RHUIManager.initial_run(connection)
-        RHUIManagerClient.create_conf_rpm(connection, "/root", "/root/test_ent_cli.crt", "/root/test_ent_cli.key", "test_cli_rpm", "3.0")
-        Expect.expect_retval(connection, "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/" +
+        RHUIManager.initial_run(CONNECTION)
+        RHUIManagerClient.create_conf_rpm(CONNECTION,
+                                          "/root",
+                                          "/root/test_ent_cli.crt",
+                                          "/root/test_ent_cli.key",
+                                          "test_cli_rpm",
+                                          "3.0")
+        Expect.expect_retval(CONNECTION,
+                             "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/" +
                              "test_cli_rpm-3.0-1.noarch.rpm")
 
     @staticmethod
-    def test_08_ensure_gpgcheck_in_cli_conf():
+    def test_08_ensure_gpgcheck_conf():
         '''
            ensure that GPG checking is enabled in the client configuration
         '''
-        Expect.expect_retval(connection, "grep -q '^gpgcheck\s*=\s*1$' /root/test_cli_rpm-3.0/build/BUILD/test_cli_rpm-3.0/rh-cloud.repo")
+        Expect.expect_retval(CONNECTION,
+                             r"grep -q '^gpgcheck\s*=\s*1$' " +
+                             "/root/test_cli_rpm-3.0/build/BUILD/test_cli_rpm-3.0/rh-cloud.repo")
 
     @staticmethod
-    def test_09_remove_amazon_rhui_conf_rpm():
+    def test_09_rm_amazon_rhui_cf_rpm():
         '''
            remove amazon rhui configuration rpm from client
         '''
-        Util.remove_amazon_rhui_conf_rpm(cli)
+        Util.remove_amazon_rhui_conf_rpm(CLI)
 
     @staticmethod
     def test_10_install_conf_rpm():
         '''
            install configuration rpm to client
         '''
-        Util.install_pkg_from_rhua(connection, cli, "/root/test_cli_rpm-3.0/build/RPMS/noarch/test_cli_rpm-3.0-1.noarch.rpm")
+        Util.install_pkg_from_rhua(CONNECTION,
+                                   CLI,
+                                   "/root/test_cli_rpm-3.0/build/RPMS/noarch/" +
+                                   "test_cli_rpm-3.0-1.noarch.rpm")
 
     @staticmethod
-    def test_11_check_cli_conf_rpm_version():
+    def test_11_check_cli_cf_rpm_ver():
         '''
            check client configuration rpm version
         '''
-        Expect.expect_retval(cli, "[ `rpm -q --queryformat \"%{VERSION}\" test_cli_rpm` = '3.0' ]")
+        Expect.expect_retval(CLI, "[ `rpm -q --queryformat \"%{VERSION}\" test_cli_rpm` = '3.0' ]")
 
     def test_12_check_repo_sync_status(self):
         '''
            check if RH repos were synced to install rpm
         '''
-        RHUIManager.initial_run(connection)
+        RHUIManager.initial_run(CONNECTION)
         if self.rhua_os_version < 7:
-            RHUIManagerSync.wait_till_repo_synced(connection,
+            RHUIManagerSync.wait_till_repo_synced(CONNECTION,
                                                   [Util.format_repo(self.yum_repo1_name,
                                                                     self.yum_repo1_version)])
         else:
-            RHUIManagerSync.wait_till_repo_synced(connection,
+            RHUIManagerSync.wait_till_repo_synced(CONNECTION,
                                                   [Util.format_repo(self.yum_repo2_name,
                                                                     self.yum_repo2_version)])
 
     @staticmethod
-    def test_13_install_rpm_from_custom_repo():
+    def test_13_inst_rpm_custom_repo():
         '''
            install rpm from a custom repo
         '''
-        Expect.expect_retval(cli, "yum install -y rhui-rpm-upload-test --nogpgcheck", timeout=20)
+        Expect.expect_retval(CLI, "yum install -y rhui-rpm-upload-test --nogpgcheck", timeout=20)
 
-    def test_14_install_rpm_from_rh_repo(self):
+    @staticmethod
+    def test_14_inst_rpm_rh_repo():
         '''
            install rpm from a RH repo
         '''
-        Expect.expect_retval(cli, "yum install -y " + TEST_PACKAGE, timeout=20)
+        Expect.expect_retval(CLI, "yum install -y " + TEST_PACKAGE, timeout=20)
 
     @staticmethod
     def test_15_create_docker_cli_rpm():
         '''
            create a docker client configuration RPM
         '''
-        RHUIManager.initial_run(connection)
-        RHUIManagerClient.create_docker_conf_rpm(connection, "/root", "test_docker_cli_rpm", "4.0")
-        Expect.expect_retval(connection, "test -f /root/test_docker_cli_rpm-4.0/" +
-                             "build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm")
+        RHUIManager.initial_run(CONNECTION)
+        RHUIManagerClient.create_docker_conf_rpm(CONNECTION, "/root", "test_docker_cli_rpm", "4.0")
+        Expect.expect_retval(CONNECTION,
+                             "test -f /root/test_docker_cli_rpm-4.0/build/RPMS/noarch/" +
+                             "test_docker_cli_rpm-4.0-1.noarch.rpm")
 
     def test_16_install_docker_rpm(self):
         '''
@@ -191,15 +220,18 @@ class TestClient(object):
         '''
         if self.rhua_os_version < 7:
             raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
-        Util.install_pkg_from_rhua(connection, cli, "/root/test_docker_cli_rpm-4.0/build/RPMS/noarch/test_docker_cli_rpm-4.0-1.noarch.rpm")
+        Util.install_pkg_from_rhua(CONNECTION,
+                                   CLI,
+                                   "/root/test_docker_cli_rpm-4.0/build/RPMS/noarch/" +
+                                   "test_docker_cli_rpm-4.0-1.noarch.rpm")
 
-    def test_17_check_docker_rpm_version(self):
+    def test_17_check_docker_rpm_ver(self):
         '''
            check docker rpm version
         '''
         if self.rhua_os_version < 7:
             raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
-        Expect.expect_retval(cli, "[ `rpm "+
+        Expect.expect_retval(CLI, "[ `rpm "+
                              "-q --queryformat \"%{VERSION}\" test_docker_cli_rpm` = '4.0' ]")
 
     def test_18_unauthorized_access(self):
@@ -228,7 +260,7 @@ class TestClient(object):
            check if irrelevant Yum plug-ins are not enabled on the client with the config RPM
         '''
         # for RHBZ#1415681
-        Expect.expect_retval(cli,
+        Expect.expect_retval(CLI,
                              "yum repolist enabled 2> /dev/null | " +
                              "egrep '^Loaded plugins.*(rhnplugin|subscription-manager)'", 1)
 
@@ -238,39 +270,39 @@ class TestClient(object):
            check EUS release handling (working with /etc/yum/vars/releasever on the client)
         '''
         # for RHBZ#1504229
-        Expect.expect_retval(cli, "rhui-set-release --set 7.5")
-        Expect.expect_retval(cli, "[[ $(</etc/yum/vars/releasever) == 7.5 ]]")
-        Expect.expect_retval(cli, "[[ $(rhui-set-release) == 7.5 ]]")
-        Expect.expect_retval(cli, "rhui-set-release -s 6.5")
-        Expect.expect_retval(cli, "[[ $(</etc/yum/vars/releasever) == 6.5 ]]")
-        Expect.expect_retval(cli, "[[ $(rhui-set-release) == 6.5 ]]")
-        Expect.expect_retval(cli, "rhui-set-release -u")
-        Expect.expect_retval(cli, "test -f /etc/yum/vars/releasever", 1)
-        Expect.expect_retval(cli, "rhui-set-release -s 7.1")
-        Expect.expect_retval(cli, "[[ $(</etc/yum/vars/releasever) == 7.1 ]]")
-        Expect.expect_retval(cli, "[[ $(rhui-set-release) == 7.1 ]]")
-        Expect.expect_retval(cli, "rhui-set-release --unset")
-        Expect.expect_retval(cli, "test -f /etc/yum/vars/releasever", 1)
-        Expect.expect_retval(cli, "rhui-set-release foo", 1)
-        Expect.ping_pong(cli, "rhui-set-release --help", "Usage:")
-        Expect.ping_pong(cli, "rhui-set-release -h", "Usage:")
+        Expect.expect_retval(CLI, "rhui-set-release --set 7.5")
+        Expect.expect_retval(CLI, "[[ $(</etc/yum/vars/releasever) == 7.5 ]]")
+        Expect.expect_retval(CLI, "[[ $(rhui-set-release) == 7.5 ]]")
+        Expect.expect_retval(CLI, "rhui-set-release -s 6.5")
+        Expect.expect_retval(CLI, "[[ $(</etc/yum/vars/releasever) == 6.5 ]]")
+        Expect.expect_retval(CLI, "[[ $(rhui-set-release) == 6.5 ]]")
+        Expect.expect_retval(CLI, "rhui-set-release -u")
+        Expect.expect_retval(CLI, "test -f /etc/yum/vars/releasever", 1)
+        Expect.expect_retval(CLI, "rhui-set-release -s 7.1")
+        Expect.expect_retval(CLI, "[[ $(</etc/yum/vars/releasever) == 7.1 ]]")
+        Expect.expect_retval(CLI, "[[ $(rhui-set-release) == 7.1 ]]")
+        Expect.expect_retval(CLI, "rhui-set-release --unset")
+        Expect.expect_retval(CLI, "test -f /etc/yum/vars/releasever", 1)
+        Expect.expect_retval(CLI, "rhui-set-release foo", 1)
+        Expect.ping_pong(CLI, "rhui-set-release --help", "Usage:")
+        Expect.ping_pong(CLI, "rhui-set-release -h", "Usage:")
 
     def test_99_cleanup(self):
         '''
-           remove created repos, entitlements and custom cli rpms, remove rpms from cli, uninstall cds, hap, delete the RH cert
+           remove repos, certs, cli rpms; remove rpms from cli, uninstall cds, hap
         '''
-        RHUIManager.initial_run(connection)
-        RHUIManagerRepo.delete_all_repos(connection)
-        nose.tools.assert_equal(RHUIManagerRepo.list(connection), [])
-        RHUIManagerInstance.delete(connection, "loadbalancers", ["hap01.example.com"])
-        RHUIManagerInstance.delete(connection, "cds", ["cds01.example.com"])
-        Expect.expect_retval(connection, "rm -f /root/test_ent_cli*")
-        Expect.expect_retval(connection, "rm -rf /root/test_cli_rpm-3.0/")
-        Expect.expect_retval(connection, "rm -rf /root/test_docker_cli_rpm-4.0/")
-        if self.rhua_os_version >=7:
-            Util.remove_rpm(cli, ["test_docker_cli_rpm"])
-        Util.remove_rpm(cli, [TEST_PACKAGE, "test_cli_rpm", "rhui-rpm-upload-test"])
-        RHUIManager.remove_rh_certs(connection)
+        RHUIManager.initial_run(CONNECTION)
+        RHUIManagerRepo.delete_all_repos(CONNECTION)
+        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
+        RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
+        RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com"])
+        Expect.expect_retval(CONNECTION, "rm -f /root/test_ent_cli*")
+        Expect.expect_retval(CONNECTION, "rm -rf /root/test_cli_rpm-3.0/")
+        Expect.expect_retval(CONNECTION, "rm -rf /root/test_docker_cli_rpm-4.0/")
+        if self.rhua_os_version >= 7:
+            Util.remove_rpm(CLI, ["test_docker_cli_rpm"])
+        Util.remove_rpm(CLI, [TEST_PACKAGE, "test_cli_rpm", "rhui-rpm-upload-test"])
+        RHUIManager.remove_rh_certs(CONNECTION)
 
     @staticmethod
     def teardown_class():
