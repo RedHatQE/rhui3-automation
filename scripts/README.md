@@ -57,6 +57,16 @@ Default configuration:
   
 \* ATOMIC CLI machines can be run only with RHEL7 RHUI setup
 
+Note that RHEL-5 AMIs are not available in all regions;
+see the [RHEL 5 mapping file](RHEL5mapping.json).
+Attempts to launch a RHEL-5 client in a region that does not have a RHEL-5 AMI will fail.
+
+Moreover, with Ansible 2.4 and newer, it is no longer possible to manage machines with Python older
+than 2.6. RHEL 5 has Python 2.4. To avoid failures, the hosts configuration file will be created
+with the RHEL-5 client hostname and other data commented out so that it is all visible to you but
+ignored by `ansible-playbook`. Other than that, you are free to use the launched RHEL-5 client any
+way you want, just be sure to log in as root directly.
+
 Mutually exclusive options: 
 
   * **--nfs** - if specified, nfs filesystem with separate machine and NFS volume (100 GB) attached to this machine

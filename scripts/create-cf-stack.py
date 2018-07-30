@@ -173,6 +173,9 @@ try:
     with open("RHEL6mapping.json") as b:
         rhel6mapping = json.load(b)
 
+    with open("RHEL5mapping.json") as b:
+        rhel5mapping = json.load(b)
+
     with open("ATOMICmapping.json") as c:
         atomicmapping = json.load(c)
 
@@ -183,11 +186,13 @@ except Exception as e:
 json_dict['Mappings'] = \
   {u'RHEL7': {},
    u'RHEL6': {},
+   u'RHEL5': {},
    u'ATOMIC': {}
   }
   
 json_dict['Mappings']['RHEL7'] = rhel7mapping
 json_dict['Mappings']['RHEL6'] = rhel6mapping
+json_dict['Mappings']['RHEL5'] = rhel5mapping
 json_dict['Mappings']['ATOMIC'] = atomicmapping
 
 json_dict['Parameters'] = \
@@ -639,9 +644,18 @@ try:
             f.write('\n[CLI]\n')
             for instance in instances_detail:
                 if instance["role"] == "CLI":
+                    # RHEL 5 can't be set up using ansible 2.4+
+                    # write the data anyway so the user can see it, but comment it out
+                    if instance["OS"] == "RHEL5":
+                        f.write('#')
                     f.write(str(instance['public_hostname']))
                     f.write(' ')
-                    f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
+                    # only RHEL >= 6 has ec2-user, RHEL 5 has just root
+                    if instance["OS"] == "RHEL5":
+                        f.write('ansible_ssh_user=root ')
+                    else:
+                        f.write('ansible_ssh_user=ec2-user ansible_become=True ')
+                    f.write('ansible_ssh_private_key_file=')
                     f.write(ssh_key)
                     f.write('\n')
         # atomic_cli
