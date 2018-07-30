@@ -20,9 +20,11 @@ DATAFILES = [('share/rhui3_tests_lib/rhui3_tests', glob('rhui3_tests/*'))]
 
 setup(name='rhui3_tests_lib',
       version='1.0',
-      description='RHUI3 Testing Library',
-      author='Martin Minar',
-      author_email='mminar@redhat.com',
+      description='RHUI 3 Testing Library',
+      long_description='libraries to control the rhui-manager UI and facilitate other useful tasks',
+      author='RHUI QE Team',
+      author_email='noreply@redhat.com',
+      platforms='Linux',
       url='https://github.com/RedHatQE/rhui3-automation',
       license="GPLv3+",
       packages=[
