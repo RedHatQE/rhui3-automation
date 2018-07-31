@@ -1,8 +1,4 @@
 '''Atomic client tests (RHEL 7+ only)'''
-#
-# some tests are commented out because the Atomic Trees repo won't sync reliably
-# see RHBZ#1427190
-#
 
 from os.path import basename
 
