@@ -35,7 +35,7 @@ class TestClient(object):
     def __init__(self):
         self.rhua_os_version = Util.get_rhua_version(CONNECTION)["major"]
 
-        with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as configfile:
+        with open('/usr/share/rhui3_tests_lib/config/tested_repos.yaml', 'r') as configfile:
             doc = yaml.load(configfile)
 
         self.yum_repo1_name = doc['yum_repo1']['name']

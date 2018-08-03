@@ -128,5 +128,5 @@
   tags: tests
 
 - name: run tests suite
-  shell: nosetests -vs /tmp/rhui3-tests/tests &>>/tmp/rhui3test.log
+  shell: nosetests -vs /usr/share/rhui3_tests_lib/rhui3_tests &>>/tmp/rhui3test.log
   tags: run_tests
