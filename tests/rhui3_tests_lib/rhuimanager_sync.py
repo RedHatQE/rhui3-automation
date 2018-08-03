@@ -77,3 +77,24 @@ class RHUIManagerSync(object):
             if reposync[2] == "Error":
                 raise TypeError("The repo sync returned Error")
             nose.tools.assert_equal(reposync[2], "Success")
+
+    @staticmethod
+    def wait_till_pulp_tasks_finish(connection):
+        '''
+        wait until there are no running Pulp tasks
+        '''
+        # will be using pulp-admin, which requires you to log in to it
+        # if the Pulp user cert doesn't exist, use the one from rhui-manager
+        # but create the .pulp directory (with the right perms) if it doesn't exist
+        Expect.expect_retval(connection,
+                             "if ! [ -e ~/.pulp/user-cert.pem ]; then " +
+                             "mkdir -p -m 700 ~/.pulp; " +
+                             "ln -s ~/.rhui/rhua.example.com/user.crt ~/.pulp/user-cert.pem; " +
+                             "touch /tmp/pulploginhack; " +
+                             "fi")
+        while connection.recv_exit_status("pulp-admin tasks list | grep -q '^No tasks found'"):
+            time.sleep(15)
+        Expect.expect_retval(connection,
+                             "if [ -f /tmp/pulploginhack ]; then " +
+                             "rm -f ~/.pulp/user-cert.pem /tmp/pulploginhack; " +
+                             "fi")

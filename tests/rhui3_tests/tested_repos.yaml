@@ -11,6 +11,8 @@ yum_repo2:
 atomic_repo:
     name: "Red Hat Enterprise Linux Atomic Host (Trees) from RHUI"
     kind: "Atomic"
+    remote: "rhui-rhel-atomic-host-rhui-ostree"
+    ref: "rhel-atomic-host/7/x86_64/standard"
 CLI_repo1:
     name: "Red Hat Enterprise Linux Atomic Host (Debug RPMs) from RHUI"
     id: "rhel-atomic-host-rhui-debug-rpms-x86_64"
