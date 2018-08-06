@@ -32,7 +32,7 @@ class TestClient(object):
         if self.rhua_os_version < 7:
             raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
 
-        with open('/tmp/rhui3-tests/tests/rhui3_tests/tested_repos.yaml', 'r') as configfile:
+        with open('/usr/share/rhui3_tests_lib/config/tested_repos.yaml', 'r') as configfile:
             doc = yaml.load(configfile)
 
         self.atomic_repo_name = doc['atomic_repo']['name']

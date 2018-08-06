@@ -65,17 +65,17 @@ Provide any other optional variables described in the RHUI deployment Readme as 
 
 Note that it can take a few hours for all the test cases to run. If you only want to install the test machine, add `--skip-tags run_tests` on the command line.
 
-The framework will be installed in the `/tmp/rhui3-tests` directory on the TEST machine. The output of the tests will be stored in `/tmp/rhui3test.log` on the TEST machine.
+The test cases will be installed in the `/usr/share/rhui3_tests_lib/rhui3_tests/` directory and the libraries in the `/usr/lib/python*/site-packages/rhui3_tests_lib/` directory on the TEST machine. The output of the tests will be stored in `/tmp/rhui3test.log` on the TEST machine.
 
 If you now want to run the whole test suite, or if you want to run it again, you have two options. Either use _Ansible_ again as follows:
 
 `ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --tags run_tests`
 
-Or log in to the TEST machine, become root, enter the `/tmp/rhui3-tests/` directory, and use _nose_ as follows:
+Or log in to the TEST machine, become root, and use _nose_ as follows:
 
-`nosetests -vs tests/rhui3_tests`
+`nosetests -vs /usr/share/rhui3_tests_lib/rhui3-tests`
 
-To run only a single test case, or a subset of the available test cases, specify the test case(s) as the corresponding `test_XYZ.py` file name(s) on the `nosetests -vs` command line instead of `tests/rhui3_tests`, which is the directory containing all the test cases. For example:
+To run only a single test case, or a subset of the available test cases, specify the test case(s) as the corresponding `test_XYZ.py` file name(s) on the `nosetests -vs` command line instead of the directory containing all the test cases. For example:
 
-`nosetests -vs tests/rhui3_tests/test_client_management.py`
+`nosetests -vs /usr/share/rhui3_tests_lib/rhui3-tests/test_client_management.py`
 
