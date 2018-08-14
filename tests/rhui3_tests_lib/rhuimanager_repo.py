@@ -254,9 +254,8 @@ class RHUIManagerRepo(object):
         '''
         upload content to a custom repository
         '''
-        # Temporarily quit rhui-manager and check whether "path" is a file or a directory.
+        # Check whether "path" is a file or a directory.
         # If it is a directory, get a list of *.rpm files in it.
-        Expect.enter(connection, 'q')
         Expect.enter(connection, "stat -c %F " + path)
         path_type = Expect.expect_list(connection,
                                        [(re.compile(".*regular file.*", re.DOTALL), 1),
@@ -276,8 +275,7 @@ class RHUIManagerRepo(object):
             # Anyway, going on with no content,
             # leaving it up to proceed_with_check() to handle this situation.
             content = []
-        # Start rhui-manager again and continue.
-        RHUIManager.initial_run(connection)
+        # Continue in rhui-manager.
         RHUIManager.screen(connection, "repo")
         Expect.enter(connection, "u")
         RHUIManager.select(connection, repolist)
