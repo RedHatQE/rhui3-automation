@@ -131,7 +131,6 @@ class TestClient(object):
         '''
            create a client configuration RPM from an entitlement certificate
         '''
-        RHUIManager.initial_run(CONNECTION)
         RHUIManagerClient.create_conf_rpm(CONNECTION,
                                           "/root",
                                           "/root/test_ent_cli.crt",
@@ -179,7 +178,6 @@ class TestClient(object):
         '''
            check if RH repos were synced to install rpm
         '''
-        RHUIManager.initial_run(CONNECTION)
         if self.rhua_os_version < 7:
             RHUIManagerSync.wait_till_repo_synced(CONNECTION,
                                                   [Util.format_repo(self.yum_repo1_name,
@@ -208,7 +206,6 @@ class TestClient(object):
         '''
            create a docker client configuration RPM
         '''
-        RHUIManager.initial_run(CONNECTION)
         RHUIManagerClient.create_docker_conf_rpm(CONNECTION, "/root", "test_docker_cli_rpm", "4.0")
         Expect.expect_retval(CONNECTION,
                              "test -f /root/test_docker_cli_rpm-4.0/build/RPMS/noarch/" +
@@ -291,7 +288,6 @@ class TestClient(object):
         '''
            remove repos, certs, cli rpms; remove rpms from cli, uninstall cds, hap
         '''
-        RHUIManager.initial_run(CONNECTION)
         RHUIManagerRepo.delete_all_repos(CONNECTION)
         nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
         RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
