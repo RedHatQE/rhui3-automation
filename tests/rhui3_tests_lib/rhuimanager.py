@@ -171,7 +171,7 @@ class RHUIManager(object):
     @staticmethod
     def initial_run(connection, username="admin", password="admin"):
         '''
-        Do rhui-manager initial run
+        Run rhui-manager and make sure we're logged in, then quit it.
         '''
         Expect.enter(connection, "rhui-manager")
         state = Expect.expect_list(connection,
@@ -196,11 +196,7 @@ class RHUIManager(object):
                 Expect.expect(connection, "RHUI Password:")
                 Expect.enter(connection, initial_password)
                 Expect.expect(connection, r"rhui \(home\) =>")
-            else:
-                pass
-        else:
-            # initial step was already performed by someone
-            pass
+        Expect.enter(connection, "q")
 
     @staticmethod
     def change_user_password(connection, password='admin'):

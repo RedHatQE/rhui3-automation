@@ -109,7 +109,6 @@ class TestClient(object):
         '''
            create an Atomic client configuration package
         '''
-        RHUIManager.initial_run(CONNECTION)
         RHUIManagerClient.create_atomic_conf_pkg(CONNECTION,
                                                  "/root",
                                                  "test_atomic_pkg",
