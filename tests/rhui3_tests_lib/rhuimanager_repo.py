@@ -246,7 +246,7 @@ class RHUIManagerRepo(object):
         RHUIManager.proceed_without_check(connection)
         # Wait until all repos are deleted
         RHUIManager.quit(connection, "", 360)
-        while len(RHUIManagerRepo.list(connection)) != 0:
+        while RHUIManagerRepo.list(connection):
             time.sleep(10)
 
     @staticmethod
