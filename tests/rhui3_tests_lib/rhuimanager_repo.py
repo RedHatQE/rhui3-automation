@@ -4,6 +4,8 @@ from os.path import basename
 import re
 import time
 
+import nose
+
 from stitches.expect import Expect
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -313,3 +315,57 @@ class RHUIManagerRepo(object):
             packagelist.append(line)
         Expect.enter(connection, 'q')
         return packagelist
+
+    @staticmethod
+    def check_detailed_information(connection, repo_data, type_data, gpg_data, package_count):
+        '''
+        verify that a repository has the expected properties
+
+        repo_data: [string, string]
+                   [0]: repo name
+                   [1]: relative path
+        type_data: [bool, bool]
+                   [0]: True? Custom. False? Red Hat.
+                   [1]: True? Protected. False? Unprotected. (Only checked with a Custom repo.)
+        gpg_data:  [bool, string, bool]
+                   [0]: True? GPG Check Yes. False? GPG Check No.
+                   [1]: Custom GPG Keys (comma-separated names), or None.
+                   [2]: True? Red Hat GPG Key Yes. False? Red Hat GPG Key No.
+        '''
+        RHUIManager.screen(connection, "repo")
+        Expect.enter(connection, "i")
+        RHUIManager.select(connection, [repo_data[0]])
+        pattern = re.compile(r".*(Name:.*)\r\n\r\n-+\r\nrhui\s* \(repo\)\s* =>", re.DOTALL)
+        actual_responses = Expect.match(connection, pattern)[0].splitlines()
+        Expect.enter(connection, "q")
+        expected_responses = ["Name:                " + repo_data[0]]
+        if type_data[0]:
+            repo_type = "Custom"
+            if type_data[1]:
+                relative_path = "protected/" + repo_data[1]
+            else:
+                relative_path = "unprotected/" + repo_data[1]
+        else:
+            repo_type = "Red Hat"
+            relative_path = repo_data[1]
+        expected_responses.append("Type:                " + repo_type)
+        expected_responses.append("Relative Path:       " + relative_path)
+        if gpg_data[0]:
+            expected_responses.append("GPG Check:           Yes")
+            if gpg_data[1]:
+                expected_responses.append("Custom GPG Keys:     " + gpg_data[1])
+            else:
+                expected_responses.append("Custom GPG Keys:     (None)")
+            if gpg_data[2]:
+                expected_responses.append("Red Hat GPG Key:     Yes")
+            else:
+                expected_responses.append("Red Hat GPG Key:     No")
+        else:
+            expected_responses.append("GPG Check:           No")
+        expected_responses.append("Package Count:       " + str(package_count))
+        if repo_type == "Red Hat":
+            sync_data = actual_responses.pop()
+            nose.tools.ok_("Next Sync:" in sync_data)
+            sync_data = actual_responses.pop()
+            nose.tools.ok_("Last Sync:" in sync_data)
+        nose.tools.eq_(actual_responses, expected_responses)
