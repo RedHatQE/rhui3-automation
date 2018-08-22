@@ -24,7 +24,7 @@ elif args.rhel.startswith("RHEL-6"):
     mapping = "RHEL6mapping.json"
 elif args.rhel.startswith("RHEL-5"):
     mapping = "RHEL5mapping.json"
-elif args.rhel.startswith("RHEL-Atomic"):
+elif args.rhel.startswith("RHEL-Atomic") or args.rhel.startswith("Atomic"):
     mapping = "ATOMICmapping.json"
 else:
     sys.stderr.write("Wrong parameters")
