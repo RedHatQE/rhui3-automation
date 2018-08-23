@@ -16,6 +16,7 @@ Welcome to RHUI3 Test Plan!
    client_management
    cmdline
    entitlements
+   gpg
    hap
    repo_management
    sosreport
