@@ -8,6 +8,13 @@ class Sos(object):
         Sos handling for RHUI
     '''
     @staticmethod
+    def check_rhui_sos_script(connection):
+        '''
+            check if the RHUI sosreport script is available
+        '''
+        Expect.expect_retval(connection, "test -f /usr/share/rh-rhua/rhui-debug.py")
+
+    @staticmethod
     def run(connection):
         '''
             run the sosreport command

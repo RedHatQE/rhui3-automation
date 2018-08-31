@@ -4,6 +4,7 @@ from os.path import basename
 
 import logging
 import nose
+import pytoml
 import stitches
 from stitches.expect import Expect
 import yaml
@@ -168,6 +169,17 @@ class TestClient(object):
                              "{0}/{1}".format(self.atomic_repo_remote,
                                               self.atomic_repo_ref))
 
+    @staticmethod
+    def test_15_check_registry_config():
+        '''
+           check if Docker registry configuration was modified
+        '''
+        _, stdout, _ = ATOMIC_CLI.exec_command("cat /etc/containers/registries.conf")
+        with stdout as cfgfile:
+            cfg = pytoml.load(cfgfile)
+        nose.tools.ok_("cds.example.com:5000" in cfg["registries"]["search"]["registries"],
+                       msg="unexpected configuration: " + str(cfg))
+
     def test_99_cleanup(self):
         '''
            remove the repo, uninstall CDS and HAProxy, delete the configuration package and RH cert
@@ -180,6 +192,7 @@ class TestClient(object):
         Expect.expect_retval(CONNECTION, "rm -f /root/test_atomic_pkg.tar.gz")
         Expect.expect_retval(ATOMIC_CLI,
                              "ostree remote delete " + self.atomic_repo_remote)
+        Expect.expect_retval(ATOMIC_CLI, "mv -f /etc/containers/registries.conf{.backup,}")
         RHUIManager.remove_rh_certs(CONNECTION)
 
     @staticmethod

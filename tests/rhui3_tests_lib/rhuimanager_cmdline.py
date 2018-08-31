@@ -72,6 +72,35 @@ class RHUIManagerCLI(object):
                          repo_id + " *:: " + Util.esc_parentheses(repo_name))
 
     @staticmethod
+    def get_repo_lists(connection):
+        '''
+        get repo lists; dict with two lists: Red Hat and custom, with nested [id, name] lists
+        '''
+        _, stdout, _ = connection.exec_command("rhui-manager repo list")
+        with stdout as output:
+            rawlist = output.read().decode().splitlines()
+
+        first_rh_repo = 4
+        for i in range(first_rh_repo, len(rawlist) - 3):
+            if rawlist[i] == "":
+                last_rh_repo = i - 1
+                break
+        first_custom_repo = last_rh_repo + 4
+        last_custom_repo = len(rawlist) - 2
+
+        rhrepos = []
+        for index in range(first_rh_repo, last_rh_repo + 1):
+            tmplist = rawlist[index].split("::")
+            rhrepos.append([tmplist[0].strip(), tmplist[1].strip()])
+        customrepos = []
+        for index in range(first_custom_repo, last_custom_repo + 1):
+            tmplist = rawlist[index].split("::")
+            customrepos.append([tmplist[0].strip(), tmplist[1].strip()])
+
+        repodict = {"redhat": rhrepos, "custom": customrepos}
+        return repodict
+
+    @staticmethod
     def validate_repo_list(connection, repo_ids):
         '''
         check if only the given repo IDs are listed
@@ -168,7 +197,8 @@ class RHUIManagerCLI(object):
             cmd += " --unprotected_repos " + ",".join(unprotected_repos)
         Expect.ping_pong(connection,
                          cmd,
-                         "RPMs can be found at " + directory)
+                         "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-1.noarch.rpm" % \
+                         (directory, rpmdata[1], rpmdata[0], rpmdata[1], rpmdata[0]))
 
     @staticmethod
     def subscriptions_list(connection, what="registered", poolonly=False):

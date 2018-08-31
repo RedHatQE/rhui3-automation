@@ -9,7 +9,7 @@ import sys
 
 from setuptools import setup
 
-REQUIREMENTS = ['nose>=1.3.0', 'stitches>=0.12']
+REQUIREMENTS = ['nose>=1.3.0', 'pytoml', 'requests', 'stitches>=0.12']
 
 # Workaround for https://github.com/paramiko/paramiko/issues/1123
 PYTHON_VERSION = sys.version_info[0] + sys.version_info[1] / 10.0

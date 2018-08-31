@@ -23,7 +23,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 CLI = stitches.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
-ATOMIC_CLI = stitches.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
 
 TEST_PACKAGE = "vm-dump-metrics"
 
@@ -201,37 +200,7 @@ class TestClient(object):
         '''
         Expect.expect_retval(CLI, "yum install -y " + TEST_PACKAGE, timeout=20)
 
-    @staticmethod
-    def test_15_create_docker_cli_rpm():
-        '''
-           create a docker client configuration RPM
-        '''
-        RHUIManagerClient.create_docker_conf_rpm(CONNECTION, "/root", "test_docker_cli_rpm", "4.0")
-        Expect.expect_retval(CONNECTION,
-                             "test -f /root/test_docker_cli_rpm-4.0/build/RPMS/noarch/" +
-                             "test_docker_cli_rpm-4.0-1.noarch.rpm")
-
-    def test_16_install_docker_rpm(self):
-        '''
-           install a docker client configuration RPM to client
-        '''
-        if self.rhua_os_version < 7:
-            raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
-        Util.install_pkg_from_rhua(CONNECTION,
-                                   CLI,
-                                   "/root/test_docker_cli_rpm-4.0/build/RPMS/noarch/" +
-                                   "test_docker_cli_rpm-4.0-1.noarch.rpm")
-
-    def test_17_check_docker_rpm_ver(self):
-        '''
-           check docker rpm version
-        '''
-        if self.rhua_os_version < 7:
-            raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
-        Expect.expect_retval(CLI, "[ `rpm "+
-                             "-q --queryformat \"%{VERSION}\" test_docker_cli_rpm` = '4.0' ]")
-
-    def test_18_unauthorized_access(self):
+    def test_15_unauthorized_access(self):
         '''
            verify that RHUI repo content cannot be fetched without an entitlement certificate
         '''
@@ -252,7 +221,7 @@ class TestClient(object):
                                  verify=False)
 
     @staticmethod
-    def test_19_check_cli_plugins():
+    def test_16_check_cli_plugins():
         '''
            check if irrelevant Yum plug-ins are not enabled on the client with the config RPM
         '''
@@ -262,7 +231,7 @@ class TestClient(object):
                              "egrep '^Loaded plugins.*(rhnplugin|subscription-manager)'", 1)
 
     @staticmethod
-    def test_20_release_handling():
+    def test_17_release_handling():
         '''
            check EUS release handling (working with /etc/yum/vars/releasever on the client)
         '''
@@ -294,9 +263,6 @@ class TestClient(object):
         RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com"])
         Expect.expect_retval(CONNECTION, "rm -f /root/test_ent_cli*")
         Expect.expect_retval(CONNECTION, "rm -rf /root/test_cli_rpm-3.0/")
-        Expect.expect_retval(CONNECTION, "rm -rf /root/test_docker_cli_rpm-4.0/")
-        if self.rhua_os_version >= 7:
-            Util.remove_rpm(CLI, ["test_docker_cli_rpm"])
         Util.remove_rpm(CLI, [TEST_PACKAGE, "test_cli_rpm", "rhui-rpm-upload-test"])
         RHUIManager.remove_rh_certs(CONNECTION)
 

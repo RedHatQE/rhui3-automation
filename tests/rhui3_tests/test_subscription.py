@@ -91,6 +91,8 @@ class TestSubscription(object):
             unregister the subscription in RHUI
         '''
         RHUIManagerSubMan.subscriptions_unregister(CONNECTION, [self.subscription_name_1])
+        # also delete the cert file
+        RHUIManager.remove_rh_certs(CONNECTION)
 
     @staticmethod
     def test_08_check_registered_subs():

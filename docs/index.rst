@@ -15,6 +15,7 @@ Welcome to RHUI3 Test Plan!
    cds
    client_management
    cmdline
+   docker
    entitlements
    gpg
    hap
@@ -23,6 +24,7 @@ Welcome to RHUI3 Test Plan!
    subscription
    sync_management
    user_management
+   zzz_misc
    
 
 

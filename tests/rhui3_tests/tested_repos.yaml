@@ -14,9 +14,9 @@ atomic_repo:
     remote: "rhui-rhel-atomic-host-rhui-ostree"
     ref: "rhel-atomic-host/7/x86_64/standard"
 CLI_repo1:
-    name: "Red Hat Enterprise Linux Atomic Host (Debug RPMs) from RHUI"
-    id: "rhel-atomic-host-rhui-debug-rpms-x86_64"
-    label: "rhel-atomic-host-rhui-debug-rpms"
+    name: "Red Hat Enterprise Linux Atomic Host Beta (Source RPMs) from RHUI"
+    id: "rhel-atomic-host-beta-rhui-source-rpms"
+    label: "rhel-atomic-host-beta-rhui-source-rpms"
 CLI_repo2:
     name: "Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI (x86_64)"
     id: "rhel-atomic-host-rhui-rpms-x86_64"
@@ -26,3 +26,7 @@ subscription1:
 docker_container1:
     name: "rhcertification/redhat-certification"
     displayname: "RH Certification Docker"
+docker_container2:
+    name: "rhel7-minimal"
+    id: "rhel7-minimal-from-rhui"
+    displayname: "RHEL 7 Minimal"
