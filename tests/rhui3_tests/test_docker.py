@@ -107,7 +107,7 @@ class TestClient(object):
            install the Docker client configuration RPM
         '''
         if self.cli_os_version < 7:
-            raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.cli_os_version))
+            raise nose.exc.SkipTest("Not supported on RHEL " + str(self.cli_os_version))
         Util.install_pkg_from_rhua(RHUA,
                                    CLI,
                                    CONF_RPM_PATH)
@@ -117,7 +117,7 @@ class TestClient(object):
            restart the Docker service for the configuration to take effect
         '''
         if self.cli_os_version < 7:
-            raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.cli_os_version))
+            raise nose.exc.SkipTest("Not supported on RHEL " + str(self.cli_os_version))
         Expect.expect_retval(CLI, "systemctl restart docker")
 
     def test_11_pull_image(self):
@@ -125,7 +125,7 @@ class TestClient(object):
            pull the Docker container
         '''
         if self.cli_os_version < 7:
-            raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.cli_os_version))
+            raise nose.exc.SkipTest("Not supported on RHEL " + str(self.cli_os_version))
         Expect.expect_retval(CLI, "docker pull %s" % self.docker_container_id, timeout=30)
 
     def test_12_check_image(self):
@@ -133,7 +133,7 @@ class TestClient(object):
            check if the container is now available
         '''
         if self.cli_os_version < 7:
-            raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.cli_os_version))
+            raise nose.exc.SkipTest("Not supported on RHEL " + str(self.cli_os_version))
         Expect.ping_pong(CLI, "docker images", "cds.example.com:5000/%s" % self.docker_container_id)
 
     def test_13_run_command(self):
@@ -141,7 +141,7 @@ class TestClient(object):
            run a test command (uname) in the container
         '''
         if self.cli_os_version < 7:
-            raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.cli_os_version))
+            raise nose.exc.SkipTest("Not supported on RHEL " + str(self.cli_os_version))
         Expect.ping_pong(CLI, "docker run rhel7-minimal-from-rhui uname", "Linux")
 
     def test_99_cleanup(self):

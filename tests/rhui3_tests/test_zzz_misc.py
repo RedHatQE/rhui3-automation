@@ -72,8 +72,8 @@ def test_03_restart_services_script():
     # the new PIDs must differ and mustn't be 0, which would mean the pidfile couldn't be read
     # (which would mean the service didn't (re)start)
     for i in range(len(RHUI_SERVICE_PIDFILES)):
-        nose.tools.ok_(new_pids[i] != old_pids[i])
-        nose.tools.ok_(new_pids[i] > 0)
+        nose.tools.ok_(new_pids[i] != old_pids[i], msg="not all the RHUI services restarted")
+        nose.tools.ok_(new_pids[i] > 0, msg="not all the RHUI services started")
 
 def test_04_fabric_crypto_req():
     '''
@@ -89,13 +89,10 @@ def test_05_celery_selinux():
     # for RHBZ#1608166 - anyway, only non-fatal denials are expected if everything else works
     rhua_rhel_version = Util.get_rhua_version(RHUA)["major"]
     if rhua_rhel_version < 7:
-        Expect.ping_pong(RHUA,
-                         "grep celery /var/log/audit/audit.log | audit2allow",
-                         r"audit2allow\r\n\r\n\r\n\[root@rhua ~\]")
+        output = r"audit2allow\r\n\r\n\r\n\[root@rhua ~\]"
     else:
-        Expect.ping_pong(RHUA,
-                         "grep celery /var/log/audit/audit.log | audit2allow",
-                         "Nothing to do")
+        output = "Nothing to do"
+    Expect.ping_pong(RHUA, "grep celery /var/log/audit/audit.log | audit2allow", output)
 
 def teardown():
     '''

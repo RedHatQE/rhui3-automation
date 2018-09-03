@@ -80,20 +80,25 @@ class RHUIManagerCLI(object):
         with stdout as output:
             rawlist = output.read().decode().splitlines()
 
-        first_rh_repo = 4
-        for i in range(first_rh_repo, len(rawlist) - 3):
-            if rawlist[i] == "":
-                last_rh_repo = i - 1
+        # the first RH repo is on the 5th line (if there's a RH repo at all)
+        first_rh_repo_index = 4
+        # find the position of the last RH repo
+        for index in range(first_rh_repo_index, len(rawlist) - 3):
+            if rawlist[index] == "":
+                last_rh_repo_index = index - 1
                 break
-        first_custom_repo = last_rh_repo + 4
-        last_custom_repo = len(rawlist) - 2
+        # the first custom repo is 4 lines below the last RH repo
+        first_custom_repo_index = last_rh_repo_index + 4
+        # the last custom repo is 2 lines above the end of the output
+        last_custom_repo_index = len(rawlist) - 2
 
+        # parse the repo IDs and names
         rhrepos = []
-        for index in range(first_rh_repo, last_rh_repo + 1):
+        for index in range(first_rh_repo_index, last_rh_repo_index + 1):
             tmplist = rawlist[index].split("::")
             rhrepos.append([tmplist[0].strip(), tmplist[1].strip()])
         customrepos = []
-        for index in range(first_custom_repo, last_custom_repo + 1):
+        for index in range(first_custom_repo_index, last_custom_repo_index + 1):
             tmplist = rawlist[index].split("::")
             customrepos.append([tmplist[0].strip(), tmplist[1].strip()])
 
