@@ -142,7 +142,7 @@ class TestClient(object):
         '''
         if self.cli_os_version < 7:
             raise nose.exc.SkipTest("Not supported on RHEL " + str(self.cli_os_version))
-        Expect.ping_pong(CLI, "docker run rhel7-minimal-from-rhui uname", "Linux")
+        Expect.ping_pong(CLI, "docker run %s uname" % self.docker_container_id, "Linux")
 
     def test_99_cleanup(self):
         '''
