@@ -72,6 +72,40 @@ class RHUIManagerCLI(object):
                          repo_id + " *:: " + Util.esc_parentheses(repo_name))
 
     @staticmethod
+    def get_repo_lists(connection):
+        '''
+        get repo lists; dict with two lists: Red Hat and custom, with nested [id, name] lists
+        '''
+        _, stdout, _ = connection.exec_command("rhui-manager repo list")
+        with stdout as output:
+            rawlist = output.read().decode().splitlines()
+
+        # the first RH repo is on the 5th line (if there's a RH repo at all)
+        first_rh_repo_index = 4
+        # find the position of the last RH repo
+        for index in range(first_rh_repo_index, len(rawlist) - 3):
+            if rawlist[index] == "":
+                last_rh_repo_index = index - 1
+                break
+        # the first custom repo is 4 lines below the last RH repo
+        first_custom_repo_index = last_rh_repo_index + 4
+        # the last custom repo is 2 lines above the end of the output
+        last_custom_repo_index = len(rawlist) - 2
+
+        # parse the repo IDs and names
+        rhrepos = []
+        for index in range(first_rh_repo_index, last_rh_repo_index + 1):
+            tmplist = rawlist[index].split("::")
+            rhrepos.append([tmplist[0].strip(), tmplist[1].strip()])
+        customrepos = []
+        for index in range(first_custom_repo_index, last_custom_repo_index + 1):
+            tmplist = rawlist[index].split("::")
+            customrepos.append([tmplist[0].strip(), tmplist[1].strip()])
+
+        repodict = {"redhat": rhrepos, "custom": customrepos}
+        return repodict
+
+    @staticmethod
     def validate_repo_list(connection, repo_ids):
         '''
         check if only the given repo IDs are listed
@@ -168,7 +202,8 @@ class RHUIManagerCLI(object):
             cmd += " --unprotected_repos " + ",".join(unprotected_repos)
         Expect.ping_pong(connection,
                          cmd,
-                         "RPMs can be found at " + directory)
+                         "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-1.noarch.rpm" % \
+                         (directory, rpmdata[1], rpmdata[0], rpmdata[1], rpmdata[0]))
 
     @staticmethod
     def subscriptions_list(connection, what="registered", poolonly=False):

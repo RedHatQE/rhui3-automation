@@ -26,7 +26,7 @@ In addition, you need a ZIP file with the following files in the root of the arc
   * _Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI_
 * `rhcert_atomic.pem` — This must be a valid Red Hat content certificate allowing access to the following products:
   * _Red Hat Enterprise Linux Atomic Host (Trees) from RHUI_
-  * _Red Hat Enterprise Linux Atomic Host (Debug RPMs) from RHUI_
+  * _Red Hat Enterprise Linux Atomic Host Beta (Source RPMs) from RHUI_
   * _Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI_
 * `rhcert_expired.pem` — This must be an expired Red Hat content certificate.
 * `rhcert_incompatible.pem` — This must be a Red Hat content certificate containing one or more entitlements that are not compatible with RHUI (containing a non-RHUI repository path) and no compatible entitlement at all.

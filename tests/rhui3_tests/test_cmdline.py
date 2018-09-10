@@ -20,7 +20,7 @@ from rhui3_tests_lib.util import Util
 logging.basicConfig(level=logging.DEBUG)
 
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-CUSTOM_REPO_NAME = "my_custom_repo"
+CUSTOM_REPOS = ["my_custom_repo", "another_custom_repo"]
 TMPDIR = mkdtemp()
 AVAILABLE_POOL_FILE = join(TMPDIR, "available")
 REGISTERED_POOL_FILE = join(TMPDIR, "registered")
@@ -61,26 +61,28 @@ class TestCLI(object):
 
     @staticmethod
     def test_04_create_custom_repo():
-        '''Create a custom repo for further testing (interactively; not yet supported by the CLI)'''
-        RHUIManagerRepo.add_custom_repo(CONNECTION, CUSTOM_REPO_NAME, entitlement="n")
+        '''Create two custom repos for testing (interactively; not yet supported by the CLI)'''
+        RHUIManagerRepo.add_custom_repo(CONNECTION, CUSTOM_REPOS[0], entitlement="n")
+        RHUIManagerRepo.add_custom_repo(CONNECTION, CUSTOM_REPOS[1], entitlement="n")
 
     @staticmethod
     def test_05_check_custom_repo():
-        '''Check if the custom repo was actually created'''
-        RHUIManagerCLI.repo_list(CONNECTION, CUSTOM_REPO_NAME, CUSTOM_REPO_NAME)
+        '''Check if the custom repos were actually created'''
+        RHUIManagerCLI.repo_list(CONNECTION, CUSTOM_REPOS[0], CUSTOM_REPOS[0])
+        RHUIManagerCLI.repo_list(CONNECTION, CUSTOM_REPOS[1], CUSTOM_REPOS[1])
 
     @staticmethod
     def test_06_upload_rpm():
-        '''Upload content to the custom repo'''
+        '''Upload content to one of the custom repos'''
         RHUIManagerCLI.packages_upload(CONNECTION,
-                                       CUSTOM_REPO_NAME,
+                                       CUSTOM_REPOS[0],
                                        "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
 
     @staticmethod
     def test_07_check_package():
         '''Check that the uploaded package is now in the repo'''
         RHUIManagerCLI.packages_list(CONNECTION,
-                                     CUSTOM_REPO_NAME,
+                                     CUSTOM_REPOS[0],
                                      "rhui-rpm-upload-test-1-1.noarch.rpm")
 
     @staticmethod
@@ -102,13 +104,13 @@ class TestCLI(object):
         '''Check if a repo is available'''
         RHUIManagerCLI.repo_unused(CONNECTION, self.yum_repo_name_1)
 
-    def test_12_add_rh_repo_by_product(self):
-        '''Add a Red Hat repo by its product name'''
-        RHUIManagerCLI.repo_add(CONNECTION, self.yum_repo_name_1)
-
-    def test_13_add_rh_repo_by_id(self):
+    def test_12_add_rh_repo_by_id(self):
         '''Add a Red Hat repo by its ID'''
         RHUIManagerCLI.repo_add_by_repo(CONNECTION, [self.yum_repo_id_2])
+
+    def test_13_add_rh_repo_by_product(self):
+        '''Add a Red Hat repo by its product name'''
+        RHUIManagerCLI.repo_add(CONNECTION, self.yum_repo_name_1)
 
     def test_14_repo_list(self):
         '''Check the added repos'''
@@ -120,7 +122,8 @@ class TestCLI(object):
         RHUIManagerCLI.validate_repo_list(CONNECTION,
                                           [self.yum_repo_id_1,
                                            self.yum_repo_id_2,
-                                           CUSTOM_REPO_NAME])
+                                           CUSTOM_REPOS[0],
+                                           CUSTOM_REPOS[1]])
 
     def test_16_start_syncing_repo(self):
         '''Sync one of the repos'''
@@ -153,7 +156,7 @@ class TestCLI(object):
                                   ["/tmp/atomic_and_my.key", "/tmp/atomic_and_my.crt"],
                                   ["1.0", "atomic_and_my"],
                                   "/tmp",
-                                  [CUSTOM_REPO_NAME])
+                                  [CUSTOM_REPOS[0]])
 
     @staticmethod
     def test_22_ensure_gpgcheck_config():
@@ -269,7 +272,15 @@ class TestCLI(object):
         Expect.expect_retval(CONNECTION, "grep -q PyGIWarning /tmp/repos.stderr", 1)
 
     @staticmethod
-    def test_38_upload_semi_bad_cert():
+    def test_40_check_repo_sorting():
+        '''Check if repo lists are sorted'''
+        # for RHBZ#1601478
+        repos = RHUIManagerCLI.get_repo_lists(CONNECTION)
+        nose.tools.assert_equal(repos["redhat"], sorted(repos["redhat"]))
+        nose.tools.assert_equal(repos["custom"], sorted(repos["custom"]))
+
+    @staticmethod
+    def test_41_upload_semi_bad_cert():
         '''Check that a partially invalid certificate can still be accepted'''
         # for RHBZ#1588931 & RHBZ#1584527
         # delete currently used certificates and repos first

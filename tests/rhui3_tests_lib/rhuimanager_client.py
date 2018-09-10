@@ -47,7 +47,12 @@ class RHUIManagerClient(object):
         Expect.enter(connection, certkey)
         if unprotected_repos:
             RHUIManager.select(connection, unprotected_repos)
-        RHUIManager.quit(connection)
+        if not rpmversion:
+            rpmversion = "2.0"
+        Expect.expect(connection,
+                      "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-1.noarch.rpm" % \
+                      (dirname, rpmname, rpmversion, rpmname, rpmversion))
+        Expect.enter(connection, "q")
 
     @staticmethod
     def create_docker_conf_rpm(connection, dirname, rpmname, rpmversion="", dockerport=""):
@@ -64,7 +69,12 @@ class RHUIManagerClient(object):
         Expect.enter(connection, rpmversion)
         Expect.expect(connection, "Port to serve Docker content on .*:")
         Expect.enter(connection, dockerport)
-        RHUIManager.quit(connection)
+        if not rpmversion:
+            rpmversion = "2.0"
+        Expect.expect(connection,
+                      "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-1.noarch.rpm" % \
+                      (dirname, rpmname, rpmversion, rpmname, rpmversion))
+        Expect.enter(connection, "q")
 
     @staticmethod
     def create_atomic_conf_pkg(connection, dirname, tarname, certpath, certkey, dockerport=""):
@@ -83,4 +93,7 @@ class RHUIManagerClient(object):
         Expect.enter(connection, certkey)
         Expect.expect(connection, "Port to serve Docker content on .*:")
         Expect.enter(connection, dockerport)
-        RHUIManager.quit(connection)
+        Expect.expect(connection,
+                      "Location: %s/%s.tar.gz" % \
+                      (dirname, tarname))
+        Expect.enter(connection, "q")
