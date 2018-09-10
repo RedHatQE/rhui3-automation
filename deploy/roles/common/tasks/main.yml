@@ -3,8 +3,10 @@
 # set up & configure ntp on all the hosts
 # set up custom DNS if requested
 # disable (or remove) cloud-init
+# install vim
 - include: upgrade_all_pkg.yml
 - include: ntp.yml
 - include: hosts.yml
 - include: dns_override.yml
 - include: cloud-init.yml
+- include: vim.yml

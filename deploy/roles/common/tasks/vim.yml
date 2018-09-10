@@ -1,0 +1,11 @@
+---
+# file: roles/common/tasks/vim.yml
+# install vim, which may not be installed by default but is so much better than vi
+# N/A to Atomic hosts as packages cannot be installed there
+
+- name: install vim
+  package:
+    name: vim
+    state: present
+  when: ansible_env.SUDO_USER != "cloud-user"
+  tags: vim
