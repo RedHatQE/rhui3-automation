@@ -81,6 +81,10 @@ argparser.add_argument('--subnetid', help='Subnet id (for VPC)')
 
 argparser.add_argument('--r3', action='store_const', const=True, default=False,
                         help='use r3.xlarge instances to squeeze out more network and cpu performance (requires vpcid and subnetid)')
+argparser.add_argument('--ami-5-override', help='RHEL 5 AMI ID to override the mapping', metavar='ID')
+argparser.add_argument('--ami-6-override', help='RHEL 6 AMI ID to override the mapping', metavar='ID')
+argparser.add_argument('--ami-7-override', help='RHEL 7 AMI ID to override the mapping', metavar='ID')
+argparser.add_argument('--ami-atomic-override', help='RHEL Atomic host AMI ID to override the mapping', metavar='ID')
 
 args = argparser.parse_args()
 
@@ -166,34 +170,43 @@ fs_type_f = fs_type
 if fs_type_f == "rhua":
     fs_type_f = "nfs"
 
+json_dict['Mappings'] = {u'RHEL5': {args.region: {}},
+                         u'RHEL6': {args.region: {}},
+                         u'RHEL7': {args.region: {}},
+                         u'ATOMIC': {args.region: {}}}
+
 try:
-    with open("RHEL7mapping.json") as a:
-        rhel7mapping = json.load(a)
-    
-    with open("RHEL6mapping.json") as b:
-        rhel6mapping = json.load(b)
+    if args.ami_5_override:
+        json_dict['Mappings']['RHEL5'][args.region]['AMI'] = args.ami_5_override
+    else:
+        with open("RHEL5mapping.json") as mjson:
+            rhel5mapping = json.load(mjson)
+            json_dict['Mappings']['RHEL5'] = rhel5mapping
 
-    with open("RHEL5mapping.json") as b:
-        rhel5mapping = json.load(b)
+    if args.ami_6_override:
+        json_dict['Mappings']['RHEL6'][args.region]['AMI'] = args.ami_6_override
+    else:
+        with open("RHEL6mapping.json") as mjson:
+            rhel6mapping = json.load(mjson)
+            json_dict['Mappings']['RHEL6'] = rhel6mapping
 
-    with open("ATOMICmapping.json") as c:
-        atomicmapping = json.load(c)
+    if args.ami_7_override:
+        json_dict['Mappings']['RHEL7'][args.region]['AMI'] = args.ami_7_override
+    else:
+        with open("RHEL7mapping.json") as mjson:
+            rhel7mapping = json.load(mjson)
+            json_dict['Mappings']['RHEL7'] = rhel7mapping
+
+    if args.ami_atomic_override:
+        json_dict['Mappings']['ATOMIC'][args.region]['AMI'] = args.ami_atomic_override
+    else:
+        with open("ATOMICmapping.json") as mjson:
+            atomicmapping = json.load(mjson)
+            json_dict['Mappings']['ATOMIC'] = atomicmapping
 
 except Exception as e:
     sys.stderr.write("Got '%s' error \n" % e)
     sys.exit(1)
-
-json_dict['Mappings'] = \
-  {u'RHEL7': {},
-   u'RHEL6': {},
-   u'RHEL5': {},
-   u'ATOMIC': {}
-  }
-  
-json_dict['Mappings']['RHEL7'] = rhel7mapping
-json_dict['Mappings']['RHEL6'] = rhel6mapping
-json_dict['Mappings']['RHEL5'] = rhel5mapping
-json_dict['Mappings']['ATOMIC'] = atomicmapping
 
 json_dict['Parameters'] = \
 {u'KeyName': {u'Description': u'Name of an existing EC2 KeyPair to enable SSH access to the instances',
