@@ -133,8 +133,8 @@ json_dict['AWSTemplateFormatVersion'] = '2010-09-09'
 
 if args.gluster:
     fs_type = "gluster"
-    if args.cds < 2:
-        args.cds = 2
+    if args.cds < 3:
+        args.cds = 3
     if args.nfs:
         logging.error("Can't be NFS and Gluster configuration.")
         sys.exit(1)
