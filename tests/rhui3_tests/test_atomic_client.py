@@ -49,7 +49,7 @@ class TestClient(object):
 
     @staticmethod
     def test_01_initial_run():
-        '''do initial rhui-manager run'''
+        '''log in to RHUI'''
         RHUIManager.initial_run(CONNECTION)
 
     @staticmethod

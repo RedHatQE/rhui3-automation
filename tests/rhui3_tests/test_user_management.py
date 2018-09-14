@@ -20,34 +20,35 @@ def setup():
 
 def test_01_initial_run():
     '''
-        TODO a test case for an initial password
+        log in the RHUI (try the "usual" or the default admin password)
     '''
     RHUIManager.initial_run(CONNECTION)
 
 def test_02_change_password():
     '''
-        change a user's password (will log the user out automatically)
+        change the password (will log the user out automatically)
     '''
     RHUIManager.screen(CONNECTION, "users")
     RHUIManager.change_user_password(CONNECTION, password="new_rhui_pass")
 
 def test_03_login_with_new_pass():
     '''
-       log in with a new password
+       log in with the new password
     '''
     RHUIManager.initial_run(CONNECTION, password="new_rhui_pass")
 
-def test_04():
+def test_04_change_password_to_usual():
     '''
-        change a user's password back to the default one
+        change the password back to the "usual" one
     '''
     RHUIManager.screen(CONNECTION, "users")
     RHUIManager.change_user_password(CONNECTION)
 
 def test_05_login_with_wrong_pass():
     '''
-        BZ 1282522. Doing initial run with the wrong password.
+        try logging in with the wrong password, should fail gracefully
     '''
+    # for RHBZ#1282522
     Expect.enter(CONNECTION, "rhui-manager")
     Expect.expect(CONNECTION, ".*RHUI Username:.*")
     Expect.enter(CONNECTION, "admin")

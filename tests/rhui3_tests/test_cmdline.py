@@ -51,74 +51,74 @@ class TestCLI(object):
 
     @staticmethod
     def test_01_initial_run():
-        '''Do an initial rhui-manager run to make sure we are logged in'''
+        '''log in to RHUI'''
         RHUIManager.initial_run(CONNECTION)
 
     @staticmethod
     def test_02_check_empty_repo_list():
-        '''Check if the repolist is empty (interactively; not currently supported by the CLI)'''
+        '''check if the repolist is empty (interactively; not currently supported by the CLI)'''
         nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
 
     @staticmethod
     def test_04_create_custom_repo():
-        '''Create two custom repos for testing (interactively; not yet supported by the CLI)'''
+        '''create two custom repos for testing (interactively; not yet supported by the CLI)'''
         RHUIManagerRepo.add_custom_repo(CONNECTION, CUSTOM_REPOS[0], entitlement="n")
         RHUIManagerRepo.add_custom_repo(CONNECTION, CUSTOM_REPOS[1], entitlement="n")
 
     @staticmethod
     def test_05_check_custom_repo():
-        '''Check if the custom repos were actually created'''
+        '''check if the custom repos were actually created'''
         RHUIManagerCLI.repo_list(CONNECTION, CUSTOM_REPOS[0], CUSTOM_REPOS[0])
         RHUIManagerCLI.repo_list(CONNECTION, CUSTOM_REPOS[1], CUSTOM_REPOS[1])
 
     @staticmethod
     def test_06_upload_rpm():
-        '''Upload content to one of the custom repos'''
+        '''upload content to one of the custom repos'''
         RHUIManagerCLI.packages_upload(CONNECTION,
                                        CUSTOM_REPOS[0],
                                        "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
 
     @staticmethod
     def test_07_check_package():
-        '''Check that the uploaded package is now in the repo'''
+        '''check that the uploaded package is now in the repo'''
         RHUIManagerCLI.packages_list(CONNECTION,
                                      CUSTOM_REPOS[0],
                                      "rhui-rpm-upload-test-1-1.noarch.rpm")
 
     @staticmethod
     def test_08_upload_certificate():
-        '''Upload the Atomic (the small) entitlement certificate'''
+        '''upload the Atomic (the small) entitlement certificate'''
         RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_atomic.pem", "Atomic")
 
     @staticmethod
     def test_09_check_certificate_info():
-        '''Check certificate info for validity'''
+        '''check certificate info for validity'''
         RHUIManagerCLI.cert_info(CONNECTION)
 
     @staticmethod
     def test_10_check_certificate_exp():
-        '''Check if the certificate expiration date is OK'''
+        '''check if the certificate expiration date is OK'''
         RHUIManagerCLI.cert_expiration(CONNECTION)
 
     def test_11_check_unused_product(self):
-        '''Check if a repo is available'''
+        '''check if a repo is available'''
         RHUIManagerCLI.repo_unused(CONNECTION, self.yum_repo_name_1)
 
     def test_12_add_rh_repo_by_id(self):
-        '''Add a Red Hat repo by its ID'''
+        '''add a Red Hat repo by its ID'''
         RHUIManagerCLI.repo_add_by_repo(CONNECTION, [self.yum_repo_id_2])
 
     def test_13_add_rh_repo_by_product(self):
-        '''Add a Red Hat repo by its product name'''
+        '''add a Red Hat repo by its product name'''
         RHUIManagerCLI.repo_add(CONNECTION, self.yum_repo_name_1)
 
     def test_14_repo_list(self):
-        '''Check the added repos'''
+        '''check the added repos'''
         RHUIManagerCLI.repo_list(CONNECTION, self.yum_repo_id_1, self.yum_repo_name_1)
         RHUIManagerCLI.repo_list(CONNECTION, self.yum_repo_id_2, self.yum_repo_name_2)
 
     def test_15_no_unexpected_repos(self):
-        '''Check if no stray repo was added'''
+        '''check if no stray repo was added'''
         RHUIManagerCLI.validate_repo_list(CONNECTION,
                                           [self.yum_repo_id_1,
                                            self.yum_repo_id_2,
@@ -126,23 +126,23 @@ class TestCLI(object):
                                            CUSTOM_REPOS[1]])
 
     def test_16_start_syncing_repo(self):
-        '''Sync one of the repos'''
+        '''sync one of the repos'''
         RHUIManagerCLI.repo_sync(CONNECTION, self.yum_repo_id_2, self.yum_repo_name_2)
 
     def test_17_repo_info(self):
-        '''Verify that the repo name is part of the information about the specified repo ID'''
+        '''verify that the repo name is part of the information about the specified repo ID'''
         RHUIManagerCLI.repo_info(CONNECTION, self.yum_repo_id_2, self.yum_repo_name_2)
 
     def test_18_check_package_in_repo(self):
-        '''Check a random package in the repo'''
+        '''check a random package in the repo'''
         RHUIManagerCLI.packages_list(CONNECTION, self.yum_repo_id_2, "ostree")
 
     def test_19_list_labels(self):
-        '''Check repo labels'''
+        '''check repo labels'''
         RHUIManagerCLI.repo_labels(CONNECTION, self.yum_repo_label_1)
 
     def test_20_generate_certificate(self):
-        '''Generate an entitlement certificate'''
+        '''generate an entitlement certificate'''
         RHUIManagerCLI.client_cert(CONNECTION,
                                    [self.yum_repo_label_1, self.yum_repo_label_2],
                                    "atomic_and_my",
@@ -151,7 +151,7 @@ class TestCLI(object):
 
     @staticmethod
     def test_21_create_cli_config_rpm():
-        '''Create a client configuration RPM'''
+        '''create a client configuration RPM'''
         RHUIManagerCLI.client_rpm(CONNECTION,
                                   ["/tmp/atomic_and_my.key", "/tmp/atomic_and_my.crt"],
                                   ["1.0", "atomic_and_my"],
@@ -160,26 +160,26 @@ class TestCLI(object):
 
     @staticmethod
     def test_22_ensure_gpgcheck_config():
-        '''Ensure that GPG checking is enabled in the client configuration'''
+        '''ensure that GPG checking is enabled in the client configuration'''
         Expect.expect_retval(CONNECTION,
                              r"grep -q '^gpgcheck\s*=\s*1$' " +
                              "/tmp/atomic_and_my-1.0/build/BUILD/atomic_and_my-1.0/rh-cloud.repo")
 
     @staticmethod
     def test_23_upload_expired_cert():
-        '''Check expired certificate handling'''
+        '''check expired certificate handling'''
         RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_expired.pem",
                                    "The provided certificate is expired or invalid")
 
     @staticmethod
     def test_24_upload_incompat_cert():
-        '''Check incompatible certificate handling'''
+        '''check incompatible certificate handling'''
         RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_incompatible.pem",
                                    "does not contain any entitlements")
 
     @staticmethod
     def test_25_register_system():
-        '''Register the system in RHSM, attach RHUI SKU'''
+        '''register the system in RHSM, attach RHUI SKU'''
         # update subscription-manager first (due to RHBZ#1554482)
         rhua_os_version = Util.get_rhua_version(CONNECTION)
         if rhua_os_version["major"] == 7 and rhua_os_version["minor"] == 5:
@@ -189,7 +189,7 @@ class TestCLI(object):
 
     @staticmethod
     def test_26_fetch_available_pool():
-        '''Fetch the available pool ID'''
+        '''fetch the available pool ID'''
         available_pool = RHUIManagerCLI.subscriptions_list(CONNECTION, "available", True)
         nose.tools.ok_(re.search(r'^[0-9a-f]+$', available_pool) is not None)
         with open(AVAILABLE_POOL_FILE, "w") as apf:
@@ -197,7 +197,7 @@ class TestCLI(object):
 
     @staticmethod
     def test_27_register_subscription():
-        '''Register the subscription using the fetched pool ID'''
+        '''register the subscription using the fetched pool ID'''
         with open(AVAILABLE_POOL_FILE) as apf:
             available_pool = apf.read()
         nose.tools.ok_(re.search(r'^[0-9a-f]+$', available_pool) is not None)
@@ -205,7 +205,7 @@ class TestCLI(object):
 
     @staticmethod
     def test_28_fetch_registered_pool():
-        '''Fetch the registered pool ID'''
+        '''fetch the registered pool ID'''
         registered_pool = RHUIManagerCLI.subscriptions_list(CONNECTION, "registered", True)
         nose.tools.ok_(re.search(r'^[0-9a-f]+$', registered_pool) is not None)
         with open(REGISTERED_POOL_FILE, "w") as rpf:
@@ -213,7 +213,7 @@ class TestCLI(object):
 
     @staticmethod
     def test_29_compare_pools():
-        '''Check if the previously available and now registered pool IDs are the same'''
+        '''check if the previously available and now registered pool IDs are the same'''
         with open(AVAILABLE_POOL_FILE) as apf:
             available_pool = apf.read()
         with open(REGISTERED_POOL_FILE) as rpf:
@@ -221,14 +221,14 @@ class TestCLI(object):
         nose.tools.assert_equal(available_pool, registered_pool)
 
     def test_30_check_reg_pool_for_rhui(self):
-        '''Check if the registered subscription's description is RHUI for CCSP'''
+        '''check if the registered subscription's description is RHUI for CCSP'''
         list_reg = RHUIManagerCLI.subscriptions_list(CONNECTION)
         nose.tools.ok_(self.subscription_name_1 in list_reg,
                        msg="Expected subscription not registered in RHUI! Got: " + list_reg)
 
     @staticmethod
     def test_31_unregister_subscription():
-        '''Remove the subscription from RHUI'''
+        '''remove the subscription from RHUI'''
         with open(REGISTERED_POOL_FILE) as rpf:
             registered_pool = rpf.read()
         nose.tools.ok_(re.search(r'^[0-9a-f]+$', registered_pool) is not None)
@@ -236,16 +236,16 @@ class TestCLI(object):
 
     @staticmethod
     def test_32_unregister_system():
-        '''Unregister the system from RHSM'''
+        '''unregister the system from RHSM'''
         RHSMRHUI.unregister_system(CONNECTION)
 
     def test_33_resync_repo(self):
-        '''Sync the repo again'''
+        '''sync the repo again'''
         RHUIManagerCLI.repo_sync(CONNECTION, self.yum_repo_id_2, self.yum_repo_name_2)
 
     @staticmethod
     def test_34_resync_no_warning():
-        '''Check if the syncs did not cause known unnecessary warnings'''
+        '''check if the syncs did not cause known unnecessary warnings'''
         # for RHBZ#1506872
         Expect.expect_retval(CONNECTION, "grep -q 'pulp.*metadata:WARNING' /var/log/messages", 1)
         # for RHBZ#1579294
@@ -253,27 +253,27 @@ class TestCLI(object):
 
     @staticmethod
     def test_35_list_repos():
-        '''Get a list of available repos for further examination'''
+        '''get a list of available repos for further examination'''
         Expect.expect_retval(CONNECTION,
                              "rhui-manager repo unused > /tmp/repos.stdout 2> /tmp/repos.stderr",
                              timeout=1200)
 
     @staticmethod
     def test_36_check_iso_repos():
-        '''Check if non-RPM repos were ignored'''
+        '''check if non-RPM repos were ignored'''
         # for RHBZ#1199426
         Expect.expect_retval(CONNECTION,
                              "egrep -q 'Containers|Images|ISOs|Kickstart' /tmp/repos.stdout", 1)
 
     @staticmethod
     def test_37_check_pygiwarning():
-        '''Check if PyGIWarning was not issued'''
+        '''check if PyGIWarning was not issued'''
         # for RHBZ#1450430
         Expect.expect_retval(CONNECTION, "grep -q PyGIWarning /tmp/repos.stderr", 1)
 
     @staticmethod
     def test_40_check_repo_sorting():
-        '''Check if repo lists are sorted'''
+        '''check if repo lists are sorted'''
         # for RHBZ#1601478
         repos = RHUIManagerCLI.get_repo_lists(CONNECTION)
         nose.tools.assert_equal(repos["redhat"], sorted(repos["redhat"]))
@@ -281,7 +281,7 @@ class TestCLI(object):
 
     @staticmethod
     def test_41_upload_semi_bad_cert():
-        '''Check that a partially invalid certificate can still be accepted'''
+        '''check that a partially invalid certificate can still be accepted'''
         # for RHBZ#1588931 & RHBZ#1584527
         # delete currently used certificates and repos first
         RHUIManager.remove_rh_certs(CONNECTION)
@@ -295,7 +295,7 @@ class TestCLI(object):
 
     @staticmethod
     def test_99_cleanup():
-        '''Cleanup: remove certs and other files'''
+        '''cleanup: remove certs and other files'''
         RHUIManager.remove_rh_certs(CONNECTION)
         Expect.ping_pong(CONNECTION, "rm -rf /tmp/atomic_and_my* ; " +
                          "ls /tmp/atomic_and_my* 2>&1",

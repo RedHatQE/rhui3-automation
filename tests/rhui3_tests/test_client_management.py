@@ -55,7 +55,7 @@ class TestClient(object):
 
     @staticmethod
     def test_01_repo_setup():
-        '''do initial rhui-manager run'''
+        '''log in to RHUI'''
         RHUIManager.initial_run(CONNECTION)
 
     @staticmethod
@@ -128,7 +128,7 @@ class TestClient(object):
     @staticmethod
     def test_07_create_cli_rpm():
         '''
-           create a client configuration RPM from an entitlement certificate
+           create a client configuration RPM from the entitlement certificate
         '''
         RHUIManagerClient.create_conf_rpm(CONNECTION,
                                           "/root",
@@ -152,14 +152,14 @@ class TestClient(object):
     @staticmethod
     def test_09_rm_amazon_rhui_cf_rpm():
         '''
-           remove amazon rhui configuration rpm from client
+           remove Amazon RHUI configuration from the client
         '''
         Util.remove_amazon_rhui_conf_rpm(CLI)
 
     @staticmethod
     def test_10_install_conf_rpm():
         '''
-           install configuration rpm to client
+           install the client configuration RPM
         '''
         Util.install_pkg_from_rhua(CONNECTION,
                                    CLI,
@@ -169,13 +169,13 @@ class TestClient(object):
     @staticmethod
     def test_11_check_cli_cf_rpm_ver():
         '''
-           check client configuration rpm version
+           check the client configuration RPM version
         '''
         Expect.expect_retval(CLI, "[ `rpm -q --queryformat \"%{VERSION}\" test_cli_rpm` = '3.0' ]")
 
     def test_12_check_repo_sync_status(self):
         '''
-           check if RH repos were synced to install rpm
+           check if RH repos have been synced so RPMs can be installed from them
         '''
         if self.rhua_os_version < 7:
             RHUIManagerSync.wait_till_repo_synced(CONNECTION,
@@ -189,14 +189,14 @@ class TestClient(object):
     @staticmethod
     def test_13_inst_rpm_custom_repo():
         '''
-           install rpm from a custom repo
+           install an RPM from the custom repo
         '''
         Expect.expect_retval(CLI, "yum install -y rhui-rpm-upload-test --nogpgcheck", timeout=20)
 
     @staticmethod
     def test_14_inst_rpm_rh_repo():
         '''
-           install rpm from a RH repo
+           install an RPM from the RH repo
         '''
         Expect.expect_retval(CLI, "yum install -y " + TEST_PACKAGE, timeout=20)
 

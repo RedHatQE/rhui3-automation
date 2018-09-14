@@ -68,7 +68,7 @@ def test_05_upload_to_custom_repo():
 
 def test_06_display_detailed_info():
     '''
-        Check detailed information on the repo
+        check detailed information on the repo
     '''
     RHUIManagerRepo.check_detailed_information(RHUA,
                                                [REPO, REPO],

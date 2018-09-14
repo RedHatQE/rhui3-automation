@@ -38,7 +38,7 @@ class TestSync(object):
         print("*** Running %s: *** " % basename(__file__))
 
     def test_01_setup(self):
-        '''do rhui-manager login, upload RH cert, add a repo to sync '''
+        '''log in to rhui-manager, upload RH cert, add a repo to sync '''
         RHUIManager.initial_run(CONNECTION)
         entlist = RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
         nose.tools.assert_not_equal(len(entlist), 0)
@@ -52,12 +52,12 @@ class TestSync(object):
                                                                 self.yum_repo_version)])
 
     def test_03_check_sync_started(self):
-        '''ensure that sync started'''
+        '''ensure that the sync started'''
         RHUIManagerSync.check_sync_started(CONNECTION, [Util.format_repo(self.yum_repo_name,
                                                                          self.yum_repo_version)])
 
     def test_04_wait_till_repo_synced(self):
-        '''wait until repo is synced'''
+        '''wait until the repo is synced'''
         RHUIManagerSync.wait_till_repo_synced(CONNECTION, [Util.format_repo(self.yum_repo_name,
                                                                             self.yum_repo_version)])
 

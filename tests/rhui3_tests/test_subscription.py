@@ -36,7 +36,7 @@ class TestSubscription(object):
 
     @staticmethod
     def test_00_initial_run():
-        '''Do an initial rhui-manager run to make sure we are logged in'''
+        '''log in to RHUI'''
         RHUIManager.initial_run(CONNECTION)
 
     @staticmethod

@@ -47,7 +47,7 @@ class TestClient(object):
 
     @staticmethod
     def test_01_init():
-        '''log in to rhui-manager'''
+        '''log in to RHUI'''
         RHUIManager.initial_run(RHUA)
 
     @staticmethod

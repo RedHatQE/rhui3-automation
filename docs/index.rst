@@ -1,10 +1,10 @@
-.. RHUI3 Test Plan documentation master file, created by
+.. RHUI 3 Test Plan documentation master file, created by
    sphinx-quickstart on Wed Jan  3 13:37:09 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to RHUI3 Test Plan!
-===========================
+Welcome to the RHUI 3 Test Plan!
+================================
 
 
 .. toctree::
@@ -29,7 +29,7 @@ Welcome to RHUI3 Test Plan!
 
 
 
-Indices and tables
+Indices and Tables
 ==================
 
 * :ref:`genindex`
