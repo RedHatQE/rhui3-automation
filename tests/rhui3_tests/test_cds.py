@@ -1,6 +1,8 @@
 '''CDS management tests'''
 
 from os.path import basename
+import random
+import re
 
 import logging
 import nose
@@ -12,6 +14,11 @@ from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
 logging.basicConfig(level=logging.DEBUG)
 
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+
+CDS_PATTERN = r"cds[0-9]+\.example\.com"
+with open("/etc/hosts") as hostsfile:
+    ALL_HOSTS = hostsfile.read()
+CDS_HOSTNAMES = re.findall(CDS_PATTERN, ALL_HOSTS)
 
 def setup():
     '''
@@ -34,36 +41,37 @@ def test_02_list_empty_cds():
 
 def test_03_add_cds():
     '''
-        add two CDSs
+        add all known CDSs
     '''
-    RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds01.example.com")
-    RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds02.example.com")
+    for cds in CDS_HOSTNAMES:
+        RHUIManagerInstance.add_instance(CONNECTION, "cds", cds)
 
 def test_04_list_cds():
     '''
-        list CDSs, expect two
+        list CDSs, expect as many as there are in /etc/hosts
     '''
     cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
-    nose.tools.assert_equal(len(cds_list), 2)
+    nose.tools.assert_equal(len(cds_list), len(CDS_HOSTNAMES))
 
 def test_05_readd_cds():
     '''
-        add the CDS again (reapply the configuration)
+        add one of the CDSs again (reapply the configuration)
     '''
-    RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds01.example.com", update=True)
+    # choose a random CDS hostname from the list
+    RHUIManagerInstance.add_instance(CONNECTION, "cds", random.choice(CDS_HOSTNAMES), update=True)
 
 def test_06_list_cds():
     '''
         check if the CDSs are still tracked
     '''
     cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
-    nose.tools.assert_equal(len(cds_list), 2)
+    nose.tools.assert_equal(len(cds_list), len(CDS_HOSTNAMES))
 
 def test_07_delete_cds():
     '''
-        delete both CDSs
+        delete all CDSs
     '''
-    RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com", "cds02.example.com"])
+    RHUIManagerInstance.delete_all(CONNECTION, "cds")
 
 def test_08_list_cds():
     '''

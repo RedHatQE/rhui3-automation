@@ -82,7 +82,7 @@ class RHUIManagerInstance(object):
     @staticmethod
     def delete(connection, screen, instances):
         '''
-        unregister (delete) CDS instance from the RHUI
+        unregister (delete) one or more CDS or HAProxy instances from the RHUI
         '''
         RHUIManager.screen(connection, screen)
         Expect.enter(connection, "d")
@@ -91,9 +91,24 @@ class RHUIManagerInstance(object):
         RHUIManager.quit(connection, "Unregistered", 180)
 
     @staticmethod
+    def delete_all(connection, screen):
+        '''
+        unregister (delete) all CDS or HAProxy instances from the RHUI
+        '''
+        RHUIManager.screen(connection, screen)
+        Expect.enter(connection, "d")
+        Expect.expect(connection, "Enter value .*:")
+        Expect.enter(connection, "a")
+        Expect.expect(connection, "Enter value .*:")
+        Expect.enter(connection, "c")
+        Expect.expect(connection, "Are you sure .*:")
+        Expect.enter(connection, "y")
+        RHUIManager.quit(connection, "Unregistered")
+
+    @staticmethod
     def list(connection, screen):
         '''
-        return the list of currently managed CDSes
+        return the list of currently managed CDS or HAProxy instances
         '''
         RHUIManager.screen(connection, screen)
         # eating prompt!!
