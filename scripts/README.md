@@ -46,7 +46,7 @@ Default configuration:
   * **--rhua [rhel_version]** - RHEL version for RHUI setup, `default = RHEL6`
   * **--iso [iso_date]** - iso version to title the instance (as in $user_nick_$RHELrelease_$ROLE_*$iso_date)*
   * **--dns** - if specified, a separate machine for dns, `default = the same as RHUA`
-  * **--cds [number]** - number of CDS machines, `default = 1` (if Gluster filesystem, `default = 2`)
+  * **--cds [number]** - number of CDS machines, `default = 1` (if Gluster filesystem, `default = 3`)
   * **--haproxy [number]** - number of HAProxies, `default = 1`
   * **--input-conf [name]** - the name of input conf file, `default = "/etc/rhui_ec2.yaml"`
   * **--output-conf [name]** - the name of output conf file, `default = "hosts_$RHELrelease_$iso.cfg"`
@@ -86,7 +86,7 @@ If there is a separate NFS machine, an extra 100 GB volume is attached to this m
 
 #### Gluster filesystem
 
-Configuration with Gluster filesystem needs at least 2 CDS, 1 HAProxy and RHUA machine. <br />
+Configuration with Gluster filesystem needs at least 3 CDS, 1 HAProxy and RHUA machine. <br />
 There is an extra 100 GB volume attached to each CDS machine.
 
 <img src="https://github.com/RedHatQE/rhui3-automation/blob/stack_script/scripts/img/rhui-storage-gluster.png" width="350">
@@ -98,7 +98,7 @@ There is an extra 100 GB volume attached to each CDS machine.
 * `scripts/create-cf-stack.py --iso 20160809`
   * basic RHEL6 NFS configuration
   * 1xRHUA=DNS=NFS, 1xCDS, 1xHAProxy
-* `scripts/create-cf-stack.py --rhua RHEL7 --test --gluster --cds 3 --iso 20160809`
+* `scripts/create-cf-stack.py --rhua RHEL7 --test --gluster --iso 20160809`
   * RHEL7 Gluster configuration
   * 1xRHUA=DNS, 3xCDS, 1xHAProxy, 1xtest_machine
 * `scripts/create-cf-stack.py --region eu-central-1 --nfs cli6 2 --haproxy 2 --iso 20160809`
