@@ -10,7 +10,7 @@ import yaml
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements
-from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
+from rhui3_tests_lib.rhuimanager_repo import AlreadyExistsError, RHUIManagerRepo
 from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
@@ -84,13 +84,11 @@ class TestRepo(object):
 
     @staticmethod
     def test_05_repo_id_uniqueness():
-        '''check that the repo ID is unique'''
-        RHUIManagerRepo.add_custom_repo(CONNECTION,
-                                        "custom-i386-x86_64",
-                                        "",
-                                        "custom/i386/x86_64",
-                                        "1",
-                                        "y")
+        '''verify that rhui-manager refuses to create a custom repo whose name already exists'''
+        nose.tools.assert_raises(AlreadyExistsError,
+                                 RHUIManagerRepo.add_custom_repo,
+                                 CONNECTION,
+                                 "custom-i386-x86_64")
 
     @staticmethod
     def test_06_upload_to_custom_repo():

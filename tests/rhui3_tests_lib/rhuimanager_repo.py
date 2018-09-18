@@ -6,10 +6,16 @@ import time
 
 import nose
 
-from stitches.expect import Expect
+from stitches.expect import CTRL_C, Expect
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
+
+class AlreadyExistsError(Exception):
+    '''
+    To be raised if a custom repo already exists with this name.
+    '''
+    pass
 
 class RHUIManagerRepo(object):
     '''
@@ -37,7 +43,7 @@ class RHUIManagerRepo(object):
                                    [(re.compile(".*Display name for the custom repository.*:",
                                                 re.DOTALL),
                                      1),
-                                    (re.compile(".*Unique ID for the custom repository.*:",
+                                    (re.compile(".*repository.*already exists.*Unique ID.*:",
                                                 re.DOTALL),
                                      2)])
         if state == 1:
@@ -109,8 +115,9 @@ class RHUIManagerRepo(object):
                                            checklist)
             RHUIManager.quit(connection, "Successfully created repository *")
         else:
-            Expect.enter(connection, '\x03')
+            Expect.enter(connection, CTRL_C)
             RHUIManager.quit(connection)
+            raise AlreadyExistsError()
 
     @staticmethod
     def add_rh_repo_all(connection):
