@@ -11,13 +11,13 @@ The latest released RHUI 3 ISO. If you use an older ISO, you will get failures f
 RHUI deployment with the following hosts:
 
 * one RHUA instance
-* two CDS instances
+* at least one CDS instance if using NFS, at least three if using Gluster
 * one HAProxy instance
 * one client instance
 * one atomic client instance
 * one test instance
 
-See the [RHUI deployment readme file ](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md) for details. Also, if you use Gluster instead of NFS, note that you need two more hosts serving as Gluster instances.
+See the [RHUI deployment readme file ](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md) for details.
 
 In addition, you need a ZIP file with the following files in the root of the archive:
 
