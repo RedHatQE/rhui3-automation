@@ -13,12 +13,14 @@ Welcome to the RHUI 3 Test Plan!
    
    atomic_client
    cds
+   cds_cmd
    client_management
    cmdline
    docker
    entitlements
    gpg
    hap
+   hap_cmd
    repo_management
    sosreport
    subscription
