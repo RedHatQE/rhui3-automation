@@ -135,8 +135,7 @@ class Util(object):
                                rpmpath +
                                " 2>/dev/null").read()[:-1]
             return (rpmnvr, rpmname)
-        else:
-            return (None, None)
+        return (None, None)
 
     @staticmethod
     def get_rhua_version(connection):

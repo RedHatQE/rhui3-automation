@@ -253,7 +253,8 @@ class TestClient(object):
         Expect.ping_pong(CLI, "rhui-set-release --help", "Usage:")
         Expect.ping_pong(CLI, "rhui-set-release -h", "Usage:")
 
-    def test_99_cleanup(self):
+    @staticmethod
+    def test_99_cleanup():
         '''
            remove repos, certs, cli rpms; remove rpms from cli, uninstall cds, hap
         '''

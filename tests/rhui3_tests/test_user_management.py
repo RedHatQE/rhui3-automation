@@ -37,7 +37,7 @@ def test_03_login_with_new_pass():
     '''
     RHUIManager.initial_run(CONNECTION, password="new_rhui_pass")
 
-def test_04_change_password_to_usual():
+def test_04_reset_password():
     '''
         change the password back to the "usual" one
     '''
