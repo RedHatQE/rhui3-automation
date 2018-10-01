@@ -2,6 +2,7 @@
 
 import os
 import random
+import re
 import string
 import tempfile
 import time
@@ -176,3 +177,13 @@ class Util(object):
         if kind:
             repo += " ({0})".format(kind)
         return repo
+
+    @staticmethod
+    def get_cds_hostnames():
+        '''
+        read CDS hostnames from /etc/hosts and return a list of them
+        '''
+        cds_pattern = r"cds[0-9]+\.example\.com"
+        with open("/etc/hosts") as hostsfile:
+            all_hosts = hostsfile.read()
+        return re.findall(cds_pattern, all_hosts)

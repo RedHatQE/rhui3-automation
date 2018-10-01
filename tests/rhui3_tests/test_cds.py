@@ -2,7 +2,6 @@
 
 from os.path import basename
 import random
-import re
 
 import logging
 import nose
@@ -10,15 +9,13 @@ import stitches
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
+from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
-CDS_PATTERN = r"cds[0-9]+\.example\.com"
-with open("/etc/hosts") as hostsfile:
-    ALL_HOSTS = hostsfile.read()
-CDS_HOSTNAMES = re.findall(CDS_PATTERN, ALL_HOSTS)
+CDS_HOSTNAMES = Util.get_cds_hostnames()
 
 def setup():
     '''
