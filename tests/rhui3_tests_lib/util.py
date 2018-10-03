@@ -138,9 +138,9 @@ class Util(object):
         return (None, None)
 
     @staticmethod
-    def get_rhua_version(connection):
+    def get_rhel_version(connection):
         '''
-        get RHUA os version
+        get RHEL X.Y version (dict with two integers representing the major and minor version)
         '''
         _, stdout, _ = connection.exec_command(r"egrep -o '[0-9]+\.[0-9]+' /etc/redhat-release")
         with stdout as output:

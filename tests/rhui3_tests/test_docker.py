@@ -29,7 +29,7 @@ class TestClient(object):
     '''
 
     def __init__(self):
-        self.cli_os_version = Util.get_rhua_version(CLI)["major"]
+        self.cli_os_version = Util.get_rhel_version(CLI)["major"]
 
         with open('/usr/share/rhui3_tests_lib/config/tested_repos.yaml', 'r') as configfile:
             doc = yaml.load(configfile)

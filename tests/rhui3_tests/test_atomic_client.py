@@ -29,7 +29,7 @@ class TestClient(object):
     '''
 
     def __init__(self):
-        self.rhua_os_version = Util.get_rhua_version(CONNECTION)["major"]
+        self.rhua_os_version = Util.get_rhel_version(CONNECTION)["major"]
         if self.rhua_os_version < 7:
             raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
 

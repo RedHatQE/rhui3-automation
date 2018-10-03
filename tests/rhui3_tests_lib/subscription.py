@@ -37,7 +37,7 @@ class RHSMRHUI(object):
         '''
             enable the RHUI 3 repo
         '''
-        rhel_version = Util.get_rhua_version(connection)["major"]
+        rhel_version = Util.get_rhel_version(connection)["major"]
         # the RHUI 3 for RHEL 6 repo tends to be unavailable with the test account :/ try using beta
         if rhel_version == 6:
             Expect.expect_retval(connection, "subscription-manager repos " +

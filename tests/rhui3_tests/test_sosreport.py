@@ -117,7 +117,7 @@ def test_08_cds_sosreport_check():
     '''
         check if the sosreport archive from the CDS node contains the desired files
     '''
-    cds_rhel_version = Util.get_rhua_version(CONNECTION_CDS)
+    cds_rhel_version = Util.get_rhel_version(CONNECTION_CDS)
     if cds_rhel_version["major"] == 7 and cds_rhel_version["minor"] < 6:
         raise nose.exc.SkipTest("N/A here until RHBZ#1596494 is fixed.")
     with open(SOSREPORT_FILELIST) as filelist:
