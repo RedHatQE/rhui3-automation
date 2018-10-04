@@ -30,3 +30,16 @@ docker_container2:
     name: "rhel7-minimal"
     id: "rhel7-minimal-from-rhui"
     displayname: "RHEL 7 Minimal"
+EUS_repos:
+    6:
+        id: "rhel-sap-hana-for-rhel-6-server-eus-rhui-rpms-6.7-x86_64"
+        label: "rhel-sap-hana-for-rhel-6-server-eus-rhui-rpms"
+        name: "RHEL for SAP HANA (for RHEL 6 Server) Extended Update Support (RPMs) from RHUI (6.7-x86_64)"
+        path: "content/eus/rhel/rhui/server/6/6.7/x86_64/sap-hana/os"
+        test_package: "compat-sap-c++"
+    7:
+        id: "rhel-sap-hana-for-rhel-7-server-eus-rhui-rpms-7.4-x86_64"
+        label: "rhel-sap-hana-for-rhel-7-server-eus-rhui-rpms"
+        name: "RHEL for SAP HANA (for RHEL 7 Server) Extended Update Support (RPMs) from RHUI (7.4-x86_64)"
+        path: "content/eus/rhel/rhui/server/7/7.4/x86_64/sap-hana/os"
+        test_package: "compat-sap-c++-7"

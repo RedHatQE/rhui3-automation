@@ -60,7 +60,8 @@ class RHUIManagerCLI(object):
         '''
         Expect.ping_pong(connection,
                          "rhui-manager repo add_by_repo --repo_ids " + ",".join(repo_ids),
-                         "Successfully added")
+                         "Successfully added",
+                         timeout=300)
 
     @staticmethod
     def repo_list(connection, repo_id, repo_name):

@@ -18,6 +18,7 @@ Welcome to the RHUI 3 Test Plan!
    cmdline
    docker
    entitlements
+   eus_cmd
    gpg
    hap
    hap_cmd
