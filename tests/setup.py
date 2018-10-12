@@ -16,7 +16,7 @@ PYTHON_VERSION = sys.version_info[0] + sys.version_info[1] / 10.0
 if PYTHON_VERSION <= 2.6:
     REQUIREMENTS.append('paramiko==2.3.1')
 
-DATAFILES = [('share/rhui3_tests_lib/rhui3_tests', glob('rhui3_tests/test_*')),
+DATAFILES = [('share/rhui3_tests_lib/rhui3_tests', glob('rhui3_tests/test_*.py')),
              ('share/rhui3_tests_lib/config', ['rhui3_tests/tested_repos.yaml'])]
 
 setup(name='rhui3_tests_lib',
