@@ -7,7 +7,7 @@ import nose
 import stitches
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
-from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
+from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, NoSuchInstance
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -58,13 +58,23 @@ def test_06_list_hap():
     hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
     nose.tools.assert_not_equal(hap_list, [])
 
-def test_07_delete_hap():
+def test_07_delete_nonexisting_hap():
+    '''
+        try deleting an untracked HAProxy Load-balancer, should be rejected (by rhui3_tests_lib)
+    '''
+    nose.tools.assert_raises(NoSuchInstance,
+                             RHUIManagerInstance.delete,
+                             CONNECTION,
+                             "loadbalancers",
+                             ["hapfoo.example.com"])
+
+def test_08_delete_hap():
     '''
         delete the HAProxy Load-balancer
     '''
     RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
 
-def test_08_list_hap():
+def test_09_list_hap():
     '''
         list HAProxy Load-balancers again, expect none
     '''

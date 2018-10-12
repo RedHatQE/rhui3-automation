@@ -9,7 +9,8 @@ import stitches
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements, \
                                                     BadCertificate, \
-                                                    IncompatibleCertificate
+                                                    IncompatibleCertificate, \
+                                                    MissingCertificate
 from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
 
 logging.basicConfig(level=logging.DEBUG)
@@ -141,6 +142,16 @@ class TestEntitlement(object):
             remove the certificate
         '''
         RHUIManager.remove_rh_certs(CONNECTION)
+
+    @staticmethod
+    def test_15_upload_nonexist_cert():
+        '''
+            try uploading a certificate file that does not exist, should be handled gracefully
+        '''
+        nose.tools.assert_raises(MissingCertificate,
+                                 RHUIManagerEntitlements.upload_rh_certificate,
+                                 CONNECTION,
+                                 "/this_file_cant_be_there")
 
     @staticmethod
     def teardown_class():

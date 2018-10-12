@@ -8,7 +8,7 @@ import nose
 import stitches
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
-from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
+from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, NoSuchInstance
 from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
@@ -64,13 +64,23 @@ def test_06_list_cds():
     cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
     nose.tools.assert_equal(len(cds_list), len(CDS_HOSTNAMES))
 
-def test_07_delete_cds():
+def test_07_delete_nonexisting_cds():
+    '''
+        try deleting an untracked CDSs, should be rejected (by rhui3_tests_lib)
+    '''
+    nose.tools.assert_raises(NoSuchInstance,
+                             RHUIManagerInstance.delete,
+                             CONNECTION,
+                             "cds",
+                             ["cdsfoo.example.com"])
+
+def test_08_delete_cds():
     '''
         delete all CDSs
     '''
     RHUIManagerInstance.delete_all(CONNECTION, "cds")
 
-def test_08_list_cds():
+def test_09_list_cds():
     '''
         list CDSs, expect none
     '''

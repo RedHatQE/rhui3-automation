@@ -2,21 +2,21 @@
 
 import re
 
-from stitches.expect import Expect, ExpectFailed, CTRL_C
+from stitches.expect import Expect, CTRL_C
 from rhui3_tests_lib.rhuimanager import RHUIManager, PROCEED_PATTERN
 from rhui3_tests_lib.instance import Instance
 
-class InstanceAlreadyExistsError(ExpectFailed):
+class InstanceAlreadyExistsError(Exception):
     """
     To be raised when trying to add an already tracked Cds or HAProxy
     """
 
-class NoSuchInstance(ExpectFailed):
+class NoSuchInstance(Exception):
     """
     To be raised e.g. when trying to select a non-existing Cds or HAProxy
     """
 
-class InvalidSshKeyPath(ExpectFailed):
+class InvalidSshKeyPath(Exception):
     """
     To be raised if rhui-manager wasn't able to locate the provided SSH key path
     """
@@ -35,7 +35,7 @@ class RHUIManagerInstance(object):
         '''
         Register (add) a new CDS or HAProxy instance
         @param hostname instance
-        @param update: Bool; update the cds or hap if it is already tracked or raise ExpectFailed
+        @param update: Bool; update the cds or hap if it is already tracked or raise an exception
         '''
 
         RHUIManager.screen(connection, screen)
@@ -52,7 +52,8 @@ class RHUIManagerInstance(object):
             # cds or haproxy of the same hostname is already being tracked
             if not update:
                 # but we don't wish to update its config: raise
-                raise ExpectFailed("%s already tracked but update wasn't required" % hostname)
+                raise InstanceAlreadyExistsError("%s already tracked but update wasn't required" % \
+                                                 hostname)
             else:
                 # we wish to update, send 'y' answer
                 Expect.enter(connection, "y")
@@ -69,7 +70,7 @@ class RHUIManagerInstance(object):
             (PROCEED_PATTERN, 2)
         ])
         if state == 1:
-            # don't know how to continue with invalid path: raise
+            # don't know how to continue with invalid path: raise an exception
             Expect.enter(connection, CTRL_C)
             Expect.enter(connection, "q")
             raise InvalidSshKeyPath(ssh_key_path)
@@ -84,6 +85,12 @@ class RHUIManagerInstance(object):
         '''
         unregister (delete) one or more CDS or HAProxy instances from the RHUI
         '''
+        # first check if the instances are really tracked
+        tracked_instances = RHUIManagerInstance.list(connection, screen)
+        hostnames = [instance.host_name for instance in tracked_instances]
+        bad_instances = [i for i in instances if i not in hostnames]
+        if bad_instances:
+            raise NoSuchInstance(bad_instances)
         RHUIManager.screen(connection, screen)
         Expect.enter(connection, "d")
         RHUIManager.select_items(connection, instances)

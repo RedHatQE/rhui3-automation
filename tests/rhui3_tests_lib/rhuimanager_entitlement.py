@@ -2,27 +2,23 @@
 
 import re
 
-from stitches.expect import Expect, ExpectFailed
+from stitches.expect import CTRL_C, Expect
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
-class MissingCertificate(ExpectFailed):
+class MissingCertificate(Exception):
     """
-    To be raised in case rhui-manager wasn't able to locate the provided certificate
+    Raised when the certificate file does not exist
     """
 
 class BadCertificate(Exception):
     """
     Raised when a certificate is expired or invalid
     """
-    def __init__(self):
-        Exception.__init__(self)
 
 class IncompatibleCertificate(Exception):
     """
     Raised when a certificate is incompatible with RHUI
     """
-    def __init__(self):
-        Exception.__init__(self)
 
 class RHUIManagerEntitlements(object):
     '''
@@ -87,10 +83,6 @@ class RHUIManagerEntitlements(object):
         '''
         upload a new or updated Red Hat content certificate
         '''
-
-        if connection.recv_exit_status("test -f %s" % certificate_file):
-            raise ExpectFailed("Missing certificate file: %s" % certificate_file)
-
         bad_cert_msg = "The provided certificate is expired or invalid"
         incompatible_cert_msg = "does not contain any entitlements"
 
@@ -98,7 +90,13 @@ class RHUIManagerEntitlements(object):
         Expect.enter(connection, "u")
         Expect.expect(connection, "Full path to the new content certificate:")
         Expect.enter(connection, certificate_file)
-        Expect.expect(connection, "The RHUI will be updated with the following certificate:")
+        state = Expect.expect_list(connection,
+                                   [(re.compile(".*The RHUI will be updated.*", re.DOTALL), 1),
+                                    (re.compile(".*Cannot find file.*", re.DOTALL), 2)])
+        if state == 2:
+            Expect.enter(connection, CTRL_C)
+            RHUIManager.quit(connection)
+            raise MissingCertificate("No such certificate file: %s" % certificate_file)
         Expect.enter(connection, "y")
         match = Expect.match(connection,
                              re.compile("(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
