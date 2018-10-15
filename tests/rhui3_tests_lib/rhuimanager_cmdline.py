@@ -8,6 +8,16 @@ import nose
 from stitches.expect import Expect
 from rhui3_tests_lib.util import Util
 
+def _get_repo_status(connection, repo_name):
+    '''
+    get the status of the given repository
+    '''
+    Expect.enter(connection, "rhui-manager status")
+    status = Expect.match(connection,
+                          re.compile(".*" + Util.esc_parentheses(repo_name) +
+                                     "[^A-Z]*([A-Za-z]*).*", re.DOTALL))[0]
+    return status
+
 class RHUIManagerCLI(object):
     '''
     The RHUI manager command-line interface (shell commands to control the RHUA).
@@ -123,17 +133,6 @@ class RHUIManagerCLI(object):
                          "No such file or directory")
 
     @staticmethod
-    def get_repo_status(connection, repo_name):
-        '''
-        (internally used) method to get the status of the given repository
-        '''
-        Expect.enter(connection, "rhui-manager status")
-        status = Expect.match(connection,
-                              re.compile(".*" + Util.esc_parentheses(repo_name) +
-                                         "[^A-Z]*([A-Za-z]*).*", re.DOTALL))[0]
-        return status
-
-    @staticmethod
     def repo_sync(connection, repo_id, repo_name):
         '''
         sync a repo
@@ -141,10 +140,10 @@ class RHUIManagerCLI(object):
         Expect.ping_pong(connection,
                          "rhui-manager repo sync --repo_id " + repo_id,
                          "successfully scheduled for the next available timeslot")
-        repo_status = RHUIManagerCLI.get_repo_status(connection, repo_name)
+        repo_status = _get_repo_status(connection, repo_name)
         while repo_status in ["Never", "Running", "Unknown"]:
             time.sleep(10)
-            repo_status = RHUIManagerCLI.get_repo_status(connection, repo_name)
+            repo_status = _get_repo_status(connection, repo_name)
         nose.tools.assert_equal(repo_status, "Success")
 
     @staticmethod

@@ -5,10 +5,29 @@ import time
 
 import nose
 
-from stitches.expect import Expect
+from stitches.expect import Expect, CTRL_C
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.util import Util
 
+def _get_repo_status(connection, reponame):
+    '''
+    display repo sync summary
+    '''
+    RHUIManager.screen(connection, "sync")
+    Expect.enter(connection, "dr")
+    reponame_quoted = Util.esc_parentheses(reponame)
+    res = Expect.match(connection,
+                       re.compile(".*" + reponame_quoted + r"\s*\r\n([^\n]*)\r\n.*",
+                                  re.DOTALL), [1], 60)[0]
+    connection.cli.exec_command("killall -s SIGINT rhui-manager")
+    res = Util.uncolorify(res)
+    ret_list = res.split("             ")
+    for i, _ in enumerate(ret_list):
+        ret_list[i] = ret_list[i].strip()
+
+    Expect.enter(connection, CTRL_C)
+    Expect.enter(connection, "q")
+    return ret_list
 
 class RHUIManagerSync(object):
     '''
@@ -31,34 +50,13 @@ class RHUIManagerSync(object):
         RHUIManager.quit(connection)
 
     @staticmethod
-    def get_repo_status(connection, reponame):
-        '''
-        display repo sync summary
-        '''
-        RHUIManager.screen(connection, "sync")
-        Expect.enter(connection, "dr")
-        reponame_quoted = Util.esc_parentheses(reponame)
-        res = Expect.match(connection,
-                           re.compile(".*" + reponame_quoted + r"\s*\r\n([^\n]*)\r\n.*",
-                                      re.DOTALL), [1], 60)[0]
-        connection.cli.exec_command("killall -s SIGINT rhui-manager")
-        res = Util.uncolorify(res)
-        ret_list = res.split("             ")
-        for i, _ in enumerate(ret_list):
-            ret_list[i] = ret_list[i].strip()
-
-        Expect.enter(connection, '\x03')
-        Expect.enter(connection, 'q')
-        return ret_list
-
-    @staticmethod
     def check_sync_started(connection, repolist):
         '''ensure that sync started'''
         for repo in repolist:
             reposync = ["", "", "Never"]
             while reposync[2] in ["Never", "Unknown"]:
                 time.sleep(10)
-                reposync = RHUIManagerSync.get_repo_status(connection, repo)
+                reposync = _get_repo_status(connection, repo)
             if reposync[2] in ["Running", "Success"]:
                 pass
             else:
@@ -73,7 +71,7 @@ class RHUIManagerSync(object):
             reposync = ["", "", "Running"]
             while reposync[2] in ["Running", "Never", "Unknown"]:
                 time.sleep(10)
-                reposync = RHUIManagerSync.get_repo_status(connection, repo)
+                reposync = _get_repo_status(connection, repo)
             if reposync[2] == "Error":
                 raise TypeError("The repo sync returned Error")
             nose.tools.assert_equal(reposync[2], "Success")

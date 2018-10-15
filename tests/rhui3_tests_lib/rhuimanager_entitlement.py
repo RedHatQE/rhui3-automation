@@ -5,6 +5,8 @@ import re
 from stitches.expect import CTRL_C, Expect
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
+PROMPT = r"rhui \(entitlements\) => "
+
 class MissingCertificate(Exception):
     """
     Raised when the certificate file does not exist
@@ -24,15 +26,13 @@ class RHUIManagerEntitlements(object):
     '''
     Represents -= Entitlements Manager =- RHUI screen
     '''
-    prompt = r'rhui \(entitlements\) => '
-
     @staticmethod
     def list(connection):
         '''
         return the list of entitlements
         '''
         RHUIManager.screen(connection, "entitlements")
-        lines = RHUIManager.list_lines(connection, prompt=RHUIManagerEntitlements.prompt)
+        lines = RHUIManager.list_lines(connection, prompt=PROMPT)
         Expect.enter(connection, 'q')
         return lines
 
@@ -45,7 +45,7 @@ class RHUIManagerEntitlements(object):
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "l")
         match = Expect.match(connection,
-                             re.compile("(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
+                             re.compile("(.*)" + PROMPT, re.DOTALL))
 
         matched_string = match[0].replace('l\r\n\r\nRed Hat Entitlements\r\n\r\n  ' +
                                           '\x1b[92mValid\x1b[0m\r\n    ', '', 1)
@@ -68,7 +68,7 @@ class RHUIManagerEntitlements(object):
         Expect.enter(connection, "c")
         match = Expect.match(connection,
                              re.compile("c\r\n\r\nCustom Repository Entitlements\r\n\r\n(.*)" +
-                                        RHUIManagerEntitlements.prompt, re.DOTALL))[0]
+                                        PROMPT, re.DOTALL))[0]
 
         repo_list = []
 
@@ -99,7 +99,7 @@ class RHUIManagerEntitlements(object):
             raise MissingCertificate("No such certificate file: %s" % certificate_file)
         Expect.enter(connection, "y")
         match = Expect.match(connection,
-                             re.compile("(.*)" + RHUIManagerEntitlements.prompt, re.DOTALL))
+                             re.compile("(.*)" + PROMPT, re.DOTALL))
         matched_string = match[0].replace('l\r\n\r\nRed Hat Entitlements\r\n\r\n  ' +
                                           '\x1b[92mValid\x1b[0m\r\n    ', '', 1)
         if bad_cert_msg in matched_string:

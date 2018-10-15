@@ -5,12 +5,12 @@ import re
 from stitches.expect import Expect
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
+PROMPT = r'rhui \(subscriptions\) => '
+
 class RHUIManagerSubMan(object):
     '''
     Represents -= Subscriptions Manager =- RHUI screen
     '''
-    prompt = r'rhui \(subscriptions\) => '
-
     @staticmethod
     def subscriptions_list(connection, what):
         '''
@@ -25,8 +25,7 @@ class RHUIManagerSubMan(object):
 
         RHUIManager.screen(connection, "subscriptions")
         Expect.enter(connection, key)
-        lines = Expect.match(connection, re.compile("(.*)" + RHUIManagerSubMan.prompt,
-                                                    re.DOTALL))[0]
+        lines = Expect.match(connection, re.compile("(.*)" + PROMPT, re.DOTALL))[0]
         sub_list = []
         for line in lines.splitlines():
             # subscription names are on lines that start with two spaces
