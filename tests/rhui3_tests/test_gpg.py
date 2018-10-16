@@ -21,6 +21,7 @@ REPO = "custom_gpg"
 SIG = "9f6e93a2"
 SIGNED_PACKAGE = "rhui-rpm-upload-trial"
 UNSIGNED_PACKAGE = "rhui-rpm-upload-test"
+SIGNED_PACKAGE_SIG2 = "rhui-rpm-upload-tryout"
 
 def setup():
     '''
@@ -57,7 +58,7 @@ def test_04_create_custom_repo():
 
 def test_05_upload_to_custom_repo():
     '''
-        upload a signed and an unsigned package to the custom repo
+        upload an unsigned and two differently signed packages to the custom repo
     '''
     RHUIManagerRepo.upload_content(RHUA,
                                    [REPO],
@@ -65,6 +66,9 @@ def test_05_upload_to_custom_repo():
     RHUIManagerRepo.upload_content(RHUA,
                                    [REPO],
                                    "/tmp/extra_rhui_files/%s-1-1.noarch.rpm" % UNSIGNED_PACKAGE)
+    RHUIManagerRepo.upload_content(RHUA,
+                                   [REPO],
+                                   "/tmp/extra_rhui_files/%s-1-1.noarch.rpm" % SIGNED_PACKAGE_SIG2)
 
 def test_06_display_detailed_info():
     '''
@@ -74,7 +78,7 @@ def test_06_display_detailed_info():
                                                [REPO, REPO],
                                                [True, True],
                                                [True, "test_gpg_key", False],
-                                               2)
+                                               3)
 
 def test_07_generate_ent_cert():
     '''
@@ -133,6 +137,20 @@ def test_14_install_unsigned_pkg():
                      "Package %s-1-1.noarch.rpm is not signed" % UNSIGNED_PACKAGE)
     Expect.expect_retval(CLI, "rpm -q %s" % UNSIGNED_PACKAGE, 1)
 
+def test_15_install_2nd_signed_pkg():
+    '''
+       try installing the package signed with the key unknown to the client, should not work
+    '''
+    rhel = Util.get_rhel_version(CLI)["major"]
+    if rhel <= 7:
+        output = "The GPG keys.*%s.*are not correct for this package" % REPO
+    else:
+        output = "Public key for %s-1-1.noarch.rpm is not installed" % SIGNED_PACKAGE_SIG2
+    Expect.ping_pong(CLI,
+                     "yum -y install %s" % SIGNED_PACKAGE_SIG2,
+                     output)
+    Expect.expect_retval(CLI, "rpm -q %s" % SIGNED_PACKAGE_SIG2, 1)
+
 def test_99_cleanup():
     '''
        clean up
@@ -142,6 +160,12 @@ def test_99_cleanup():
     RHUIManagerInstance.delete(RHUA, "cds", ["cds01.example.com"])
     Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % REPO)
     Util.remove_rpm(CLI, [SIGNED_PACKAGE, "gpg-pubkey-%s" % SIG, REPO])
+    rhel = Util.get_rhel_version(CLI)["major"]
+    if rhel <= 7:
+        cache = "/var/cache/yum/x86_64/%sServer/rhui-custom-%s/" % (rhel, REPO)
+    else:
+        cache = "/var/cache/dnf/rhui-custom-%s*/" % REPO
+    Expect.expect_retval(CLI, "rm -rf %s" % cache)
 
 def teardown():
     '''
