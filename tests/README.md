@@ -33,6 +33,7 @@ In addition, you need a ZIP file with the following files in the root of the arc
 * `rhcert_partially_invalid.pem` — This must be a Red Hat content certificate containing one or more entitlements that are not compatible with RHUI (containing a non-RHUI repository path) but also at least one compatible entitlement.
 * `rhui-rpm-upload-test-1-1.noarch.rpm` — This package will be uploaded to a custom repository.
 * `rhui-rpm-upload-trial-1-1.noarch.rpm` — This package will also be uploaded to a custom repository. It must be signed with the RHUI QE GPG key.
+* `rhui-rpm-upload-tryout-1-1.noarch.rpm` — This package will also be uploaded to a custom repository. It must be signed with a key different from RHUI QE.
 * `test_gpg_key` — This is the RHUI QE public GPG key (0x9F6E93A2).
 
 Lastly, in order for the subscription test to be able to run, you need a file with valid Red Hat credentials allowing access to RHUI. The file must look like this:
