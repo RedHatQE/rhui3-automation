@@ -7,5 +7,5 @@
   package:
     name: vim
     state: present
-  when: ansible_env.SUDO_USER != "cloud-user"
+  when: not atomic | default(False)
   tags: vim
