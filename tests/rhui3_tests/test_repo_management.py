@@ -111,7 +111,8 @@ class TestRepo(object):
                                                                   "custom-i386-x86_64",
                                                                   ""),
                                 ["rhui-rpm-upload-test-1-1.noarch.rpm",
-                                 "rhui-rpm-upload-trial-1-1.noarch.rpm"])
+                                 "rhui-rpm-upload-trial-1-1.noarch.rpm",
+                                 "rhui-rpm-upload-tryout-1-1.noarch.rpm"])
         nose.tools.assert_equal(RHUIManagerRepo.check_for_package(CONNECTION,
                                                                   "custom-i386-x86_64",
                                                                   "rhui-rpm-upload-test"),
@@ -132,7 +133,7 @@ class TestRepo(object):
                                                    ["custom-i386-x86_64", "custom/i386/x86_64"],
                                                    [True, True],
                                                    [True, None, True],
-                                                   2)
+                                                   3)
         RHUIManagerRepo.check_detailed_information(CONNECTION,
                                                    ["custom-x86_64-x86_64", "custom/x86_64/x86_64"],
                                                    [True, False],
