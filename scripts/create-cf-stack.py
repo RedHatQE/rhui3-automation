@@ -678,7 +678,7 @@ try:
                 if instance["role"] == "ATOMIC_CLI":
                     f.write(str(instance['public_hostname']))
                     f.write(' ')
-                    f.write('ansible_ssh_user=cloud-user ansible_become=True ansible_ssh_private_key_file=')
+                    f.write('atomic=True ansible_ssh_user=cloud-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
                     f.write('\n')
         # test
