@@ -95,8 +95,8 @@ def test_05_eus_7_repos_check():
     '''
         check if all supported RHEL 7 EUS versions are available
     '''
-    # RHEL 7.1-7.5
-    _check_listing(7, 1, 5)
+    # RHEL 7.1-7.6
+    _check_listing(7, 1, 6)
 
 def teardown():
     '''
