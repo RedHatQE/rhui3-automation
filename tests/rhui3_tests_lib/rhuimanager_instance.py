@@ -3,7 +3,7 @@
 import re
 
 from stitches.expect import Expect, CTRL_C
-from rhui3_tests_lib.rhuimanager import RHUIManager, PROCEED_PATTERN
+from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.instance import Instance
 
 class InstanceAlreadyExistsError(Exception):
@@ -38,6 +38,15 @@ class RHUIManagerInstance(object):
         @param update: Bool; update the cds or hap if it is already tracked or raise an exception
         '''
 
+        # first check if the RHUA knows the host's SSH key, because if so, rhui-manager
+        # won't ask you to confirm the key
+        # the following command doesn't work as expected on RHEL 6:
+        # key_check_cmd = "ssh-keygen -F %s" % hostname
+        # work around that:
+        key_check_cmd = "grep -q ^%s, /root/.ssh/known_hosts" % hostname
+        # check if the host is known
+        known_host = connection.recv_exit_status(key_check_cmd) == 0
+        # run rhui-manager and add the instance
         RHUIManager.screen(connection, screen)
         Expect.enter(connection, "a")
         Expect.expect(connection, ".*Hostname of the .*instance to register:")
@@ -67,15 +76,17 @@ class RHUIManagerInstance(object):
         Expect.enter(connection, ssh_key_path)
         state = Expect.expect_list(connection, [
             (re.compile(".*Cannot find file, please enter a valid path.*", re.DOTALL), 1),
-            (PROCEED_PATTERN, 2)
+            (re.compile(".*Checking that instance ports are reachable.*", re.DOTALL), 2)
         ])
         if state == 1:
             # don't know how to continue with invalid path: raise an exception
             Expect.enter(connection, CTRL_C)
             Expect.enter(connection, "q")
             raise InvalidSshKeyPath(ssh_key_path)
-        # all OK, confirm
-        Expect.enter(connection, "y")
+        # all OK
+        # if the SSH key is unknown, rhui-manager now asks you to confirm it; say yes
+        if not known_host:
+            Expect.enter(connection, "y")
         # some installation and configuration through Puppet happens here, let it take its time
         RHUIManager.quit(connection, "The .*was successfully configured.", 180)
 

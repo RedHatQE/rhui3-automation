@@ -5,6 +5,7 @@ from os.path import basename
 import logging
 import nose
 import stitches
+from stitches.expect import Expect
 
 from rhui3_tests_lib.rhui_cmd import RHUICLI
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -139,6 +140,48 @@ def test_15_add_bad_hap():
 #     '''
 #     status = RHUICLI.delete(CONNECTION, "haproxy", ["bar" + HA_HOSTNAME], force=True)
 #     nose.tools.ok_(not status, msg="unexpected deletion status: %s" % status)
+
+def test_17_add_hap_changed_case():
+    '''
+    add and delete an HAProxy Load-balancer with uppercase characters, should work
+    '''
+    # for RHBZ#1572623
+    hap_up = HA_HOSTNAME.replace("hap", "HAP")
+    status = RHUICLI.add(CONNECTION, "haproxy", hap_up, unsafe=True)
+    nose.tools.ok_(status, msg="unexpected %s addition status: %s" % (hap_up, status))
+    hap_list = RHUICLI.list(CONNECTION, "haproxy")
+    nose.tools.eq_(hap_list, [hap_up])
+    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [hap_up])
+
+def test_18_add_safe_unknown_key():
+    '''
+    try adding the Load-balancer when its SSH key is unknown, without using --unsafe; should fail
+    '''
+    # for RHBZ#1409460
+    # make sure its key is unknown
+    Expect.expect_retval(CONNECTION,
+                         "if [ -f ~/.ssh/known_hosts ]; then ssh-keygen -R %s; fi" % HA_HOSTNAME)
+    # try adding the Load-balancer
+    status = RHUICLI.add(CONNECTION, "haproxy", HA_HOSTNAME)
+    nose.tools.ok_(not status, msg="unexpected addition status: %s" % status)
+    hap_list = RHUICLI.list(CONNECTION, "haproxy")
+    nose.tools.eq_(hap_list, [])
+
+def test_19_add_safe_known_key():
+    '''
+    add and delete the Load-balancer when its SSH key is known, without using --unsafe; should work
+    '''
+    # for RHBZ#1409460
+    # accept the host's SSH key
+    Expect.expect_retval(CONNECTION, "ssh-keyscan -t rsa %s >>/root/.ssh/known_hosts" % HA_HOSTNAME)
+    # actually add and delete the host
+    status = RHUICLI.add(CONNECTION, "haproxy", HA_HOSTNAME)
+    nose.tools.ok_(status, msg="unexpected addition status: %s" % status)
+    hap_list = RHUICLI.list(CONNECTION, "haproxy")
+    nose.tools.eq_(hap_list, [HA_HOSTNAME])
+    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [HA_HOSTNAME])
+    # clean up the SSH key
+    Expect.expect_retval(CONNECTION, "ssh-keygen -R %s" % HA_HOSTNAME)
 
 def teardown():
     '''
