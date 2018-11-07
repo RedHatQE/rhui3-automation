@@ -1,6 +1,7 @@
 '''Client management tests'''
 
 from os.path import basename
+import re
 
 import logging
 import nose
@@ -150,14 +151,26 @@ class TestClient(object):
                              "/root/test_cli_rpm-3.0/build/BUILD/test_cli_rpm-3.0/rh-cloud.repo")
 
     @staticmethod
-    def test_09_rm_amazon_rhui_cf_rpm():
+    def test_09_check_cli_crt_sig():
+        '''check if SHA-256 is used in the client certificate signature'''
+        # for RHBZ#1628957
+        sigs_expected = ["sha256", "sha256"]
+        _, stdout, _ = CONNECTION.exec_command("openssl x509 -noout -text -in " +
+                                               "/root/test_ent_cli.crt")
+        with stdout as output:
+            cert_details = output.read().decode()
+        sigs_actual = re.findall("sha[0-9]+", cert_details)
+        nose.tools.eq_(sigs_expected, sigs_actual)
+
+    @staticmethod
+    def test_10_rm_amazon_rhui_cf_rpm():
         '''
            remove Amazon RHUI configuration from the client
         '''
         Util.remove_amazon_rhui_conf_rpm(CLI)
 
     @staticmethod
-    def test_10_install_conf_rpm():
+    def test_11_install_conf_rpm():
         '''
            install the client configuration RPM
         '''
@@ -166,11 +179,7 @@ class TestClient(object):
                                    "/root/test_cli_rpm-3.0/build/RPMS/noarch/" +
                                    "test_cli_rpm-3.0-1.noarch.rpm")
 
-    @staticmethod
-    def test_11_check_cli_cf_rpm_ver():
-        '''
-           check the client configuration RPM version
-        '''
+        # verify the installation by checking the client configuration RPM version
         Expect.expect_retval(CLI, "[ `rpm -q --queryformat \"%{VERSION}\" test_cli_rpm` = '3.0' ]")
 
     def test_12_check_repo_sync_status(self):

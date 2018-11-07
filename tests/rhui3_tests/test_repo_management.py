@@ -6,6 +6,7 @@ from os.path import basename
 import logging
 import nose
 import stitches
+from stitches.expect import Expect
 import yaml
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -16,6 +17,8 @@ from rhui3_tests_lib.util import Util
 logging.basicConfig(level=logging.DEBUG)
 
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+# side channel for hacking
+CONNECTION_2 = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
 class TestRepo(object):
     '''
@@ -224,9 +227,21 @@ class TestRepo(object):
         nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
 
     @staticmethod
-    def test_99_delete_rh_cert():
-        '''delete the RH cert'''
-        RHUIManager.remove_rh_certs(CONNECTION)
+    def test_21_missing_cert_handling():
+        '''check if rhui-manager can handle the loss of the RH cert'''
+        # for RHBZ#1325390
+        RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
+        # launch rhui-manager in one connection, delete the cert in the other
+        RHUIManager.screen(CONNECTION, "repo")
+        RHUIManager.remove_rh_certs(CONNECTION_2)
+        Expect.enter(CONNECTION, "a")
+        # a bit strange response to see in this context, but eh, no == all if you're a geek
+        Expect.expect(CONNECTION, "All entitled products are currently deployed in the RHUI")
+        Expect.enter(CONNECTION, "q")
+        # an error message should be logged, though
+        Expect.ping_pong(CONNECTION,
+                         "tail /root/.rhui/rhui.log",
+                         "The entitlement.*has no associated certificate")
 
     @staticmethod
     def teardown_class():

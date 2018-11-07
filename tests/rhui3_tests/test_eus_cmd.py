@@ -13,7 +13,6 @@ from rhui3_tests_lib.rhui_cmd import RHUICLI
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_cmdline import RHUIManagerCLI
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
-from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
 from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
@@ -166,7 +165,7 @@ class TestEUSCLI(object):
 
     def test_99_cleanup(self):
         '''clean up'''
-        RHUIManagerRepo.delete_all_repos(RHUA)
+        RHUIManagerCLI.repo_delete(RHUA, self.repo_id)
         RHUIManager.remove_rh_certs(RHUA)
         # HAProxy deletion in the CLI is currently broken (RHBZ#1409695):
         # RHUICLI.delete(RHUA, "haproxy", ["hap01.example.com"], force=True)

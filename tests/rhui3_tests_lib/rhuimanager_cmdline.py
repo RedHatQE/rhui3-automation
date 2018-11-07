@@ -18,6 +18,16 @@ def _get_repo_status(connection, repo_name):
                                      "[^A-Z]*([A-Za-z]*).*", re.DOTALL))[0]
     return status
 
+class CustomRepoAlreadyExists(Exception):
+    '''
+    Raised if a custom repo with this ID already exists
+    '''
+
+class CustomRepoGpgKeyNotFound(Exception):
+    '''
+    Raised if the GPG key path to use with a custom repo is invalid
+    '''
+
 class RHUIManagerCLI(object):
     '''
     The RHUI manager command-line interface (shell commands to control the RHUA).
@@ -117,22 +127,6 @@ class RHUIManagerCLI(object):
         return repodict
 
     @staticmethod
-    def validate_repo_list(connection, repo_ids):
-        '''
-        check if only the given repo IDs are listed
-        '''
-        Expect.expect_retval(connection,
-                             "rhui-manager repo list | " +
-                             "grep -v 'ID.*Repository Name$' | grep :: | cut -d ' ' -f 1 | " +
-                             "sort > /tmp/actual_repo_list && "
-                             "echo \"" + "\n".join(sorted(repo_ids)) + "\" > "
-                             "/tmp/expected_repo_list && " +
-                             "cmp /tmp/actual_repo_list /tmp/expected_repo_list")
-        Expect.ping_pong(connection,
-                         "rm -f /tmp/*_repo_list ; ls /tmp/*_repo_list 2>&1",
-                         "No such file or directory")
-
-    @staticmethod
     def repo_sync(connection, repo_id, repo_name):
         '''
         sync a repo
@@ -154,6 +148,68 @@ class RHUIManagerCLI(object):
         Expect.ping_pong(connection,
                          "rhui-manager repo info --repo_id " + repo_id,
                          "Name: *" + Util.esc_parentheses(repo_name))
+
+    @staticmethod
+    def repo_create_custom(connection,
+                           repo_id,
+                           path="",
+                           display_name="",
+                           entitlement="",
+                           legacy_md=False,
+                           redhat_content=False,
+                           protected=False,
+                           gpg_public_keys=""):
+        '''
+        create a custom repo
+        '''
+        # compose the command
+        cmd = "rhui-manager repo create_custom --repo_id %s" % repo_id
+        if path:
+            cmd += " --path %s" % path
+        if display_name:
+            cmd += " --display_name '%s'" % display_name
+        if entitlement:
+            cmd += " --entitlement %s" % entitlement
+        if legacy_md:
+            cmd += " --legacy_md"
+        if redhat_content:
+            cmd += " --redhat_content"
+        if protected:
+            cmd += " --protected"
+        if gpg_public_keys:
+            cmd += " --gpg_public_keys %s" % gpg_public_keys
+        # get a list of invalid GPG key files (will be implicitly empty if that option isn't used)
+        key_list = gpg_public_keys.split(",")
+        bad_keys = [key for key in key_list if connection.recv_exit_status("test -f %s" % key)]
+        # possible output (more or less specific):
+        out = {"missing_options": "Usage:",
+               "invalid_id": "Only.*valid in a repository ID",
+               "repo_exists": "A repository with ID \"%s\" already exists" % repo_id,
+               "bad_gpg": "The following files are unreadable:\r\n\r\n%s" % "\r\n".join(bad_keys),
+               "success": "Successfully created repository \"%s\"" % (display_name or repo_id)}
+        # run the command and see what happens
+        Expect.enter(connection, cmd)
+        state = Expect.expect_list(connection,
+                                   [(re.compile(".*%s.*" % out["missing_options"], re.DOTALL), 1),
+                                    (re.compile(".*%s.*" % out["invalid_id"], re.DOTALL), 2),
+                                    (re.compile(".*%s.*" % out["repo_exists"], re.DOTALL), 3),
+                                    (re.compile(".*%s.*" % out["bad_gpg"], re.DOTALL), 4),
+                                    (re.compile(".*%s.*" % out["success"], re.DOTALL), 5)])
+        if state == 1 or state == 2:
+            raise ValueError("the given repo ID is unusable")
+        if state == 3:
+            raise CustomRepoAlreadyExists()
+        if state == 4:
+            raise CustomRepoGpgKeyNotFound()
+        # make sure rhui-manager reported success
+        nose.tools.assert_equal(state, 5)
+
+    @staticmethod
+    def repo_delete(connection, repo_id):
+        '''
+        delete the given repo
+        '''
+        Expect.expect_retval(connection, "rhui-manager repo delete --repo_id %s" % repo_id)
 
     @staticmethod
     def packages_list(connection, repo_id, package):

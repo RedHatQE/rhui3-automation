@@ -81,6 +81,18 @@ def test_09_list_hap():
     hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
     nose.tools.assert_equal(hap_list, [])
 
+def test_10_add_hap_uppercase():
+    '''
+        add (and delete) an HAProxy Load-balancer with uppercase characters
+    '''
+    # for RHBZ#1572623
+    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "HAP01.example.com")
+    hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
+    nose.tools.assert_not_equal(hap_list, [])
+    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["HAP01.example.com"])
+    hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
+    nose.tools.assert_equal(hap_list, [])
+
 def teardown():
     '''
        announce the end of the test run

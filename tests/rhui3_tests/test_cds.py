@@ -87,6 +87,20 @@ def test_09_list_cds():
     cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
     nose.tools.assert_equal(cds_list, [])
 
+def test_10_add_cds_uppercase():
+    '''
+        add (and delete) a CDS with uppercase characters
+    '''
+    # for RHBZ#1572623
+    # choose a random CDS hostname from the list
+    cds_up = random.choice(CDS_HOSTNAMES).replace("cds", "CDS")
+    RHUIManagerInstance.add_instance(CONNECTION, "cds", cds_up)
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
+    nose.tools.assert_equal(len(cds_list), 1)
+    RHUIManagerInstance.delete(CONNECTION, "cds", [cds_up])
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
+    nose.tools.assert_equal(len(cds_list), 0)
+
 def teardown():
     '''
        announce the end of the test run

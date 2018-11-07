@@ -6,6 +6,7 @@ import random
 import logging
 import nose
 import stitches
+from stitches.expect import Expect
 
 from rhui3_tests_lib.rhui_cmd import RHUICLI
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -153,6 +154,55 @@ def test_15_add_bad_cds():
 #     '''
 #     status = RHUICLI.delete(CONNECTION, "cds", ["bar" + CDS_HOSTNAMES[0]], force=True)
 #     nose.tools.ok_(not status, msg="unexpected deletion status: %s" % status)
+
+def test_17_add_cds_changed_case():
+    '''
+    add and delete a CDS with uppercase characters, should work
+    '''
+    # for RHBZ#1572623
+    # choose a random CDS hostname from the list
+    cds_up = random.choice(CDS_HOSTNAMES).replace("cds", "CDS")
+    status = RHUICLI.add(CONNECTION, "cds", cds_up, unsafe=True)
+    nose.tools.ok_(status, msg="unexpected %s addition status: %s" % (cds_up, status))
+    cds_list = RHUICLI.list(CONNECTION, "cds")
+    nose.tools.eq_(cds_list, [cds_up])
+    status = RHUICLI.delete(CONNECTION, "cds", [cds_up], force=True)
+    nose.tools.ok_(status, msg="unexpected %s deletion status: %s" % (cds_up, status))
+
+def test_18_add_safe_unknown_key():
+    '''
+    try adding a CDS whose SSH key is unknown, without using --unsafe; should fail
+    '''
+    # for RHBZ#1409460
+    # choose a random CDS hostname from the list
+    cds = random.choice(CDS_HOSTNAMES)
+    # make sure its key is unknown
+    Expect.expect_retval(CONNECTION,
+                         "if [ -f ~/.ssh/known_hosts ]; then ssh-keygen -R %s; fi" % cds)
+    # try adding the CDS
+    status = RHUICLI.add(CONNECTION, "cds", cds)
+    nose.tools.ok_(not status, msg="unexpected %s addition status: %s" % (cds, status))
+    cds_list = RHUICLI.list(CONNECTION, "cds")
+    nose.tools.eq_(cds_list, [])
+
+def test_19_add_safe_known_key():
+    '''
+    add and delete a CDS whose SSH key is known, without using --unsafe; should work
+    '''
+    # for RHBZ#1409460
+    # choose a random CDS hostname from the list
+    cds = random.choice(CDS_HOSTNAMES)
+    # accept the host's SSH key
+    Expect.expect_retval(CONNECTION, "ssh-keyscan -t rsa %s >> /root/.ssh/known_hosts" % cds)
+    # actually add and delete the host
+    status = RHUICLI.add(CONNECTION, "cds", cds)
+    nose.tools.ok_(status, msg="unexpected %s addition status: %s" % (cds, status))
+    cds_list = RHUICLI.list(CONNECTION, "cds")
+    nose.tools.eq_(cds_list, [cds])
+    status = RHUICLI.delete(CONNECTION, "cds", [cds], force=True)
+    nose.tools.ok_(status, msg="unexpected %s deletion status: %s" % (cds, status))
+    # clean up the SSH key
+    Expect.expect_retval(CONNECTION, "ssh-keygen -R %s" % cds)
 
 def teardown():
     '''
