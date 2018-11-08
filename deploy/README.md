@@ -119,6 +119,7 @@ Network Ports:
 * RHUA to cdn.redhat.com 443/TCP
 * RHUA to CDSes 22/TCP for initial SSH configuration
 * RHUA to HAProxies 22/TCP for initial SSH configuration
+* RHUA to itself 5671/TCP for Qpid
 * CDS to RHUA 8140/TCP for puppet
 * HAProxy to RHUA 8140/TCP for puppet
 * clients to CDS or HAProxy 443/TCP
