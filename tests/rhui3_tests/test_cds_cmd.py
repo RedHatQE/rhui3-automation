@@ -47,7 +47,7 @@ def test_03_add_cds():
 
 def test_04_list_cds():
     '''
-    check if the CDSes have been added
+    check if the CDSs have been added
     '''
     cds_list = RHUICLI.list(CONNECTION, "cds")
     nose.tools.eq_(cds_list, CDS_HOSTNAMES)

@@ -66,7 +66,7 @@ def test_06_list_cds():
 
 def test_07_delete_nonexisting_cds():
     '''
-        try deleting an untracked CDSs, should be rejected (by rhui3_tests_lib)
+        try deleting an untracked CDS, should be rejected (by rhui3_tests_lib)
     '''
     nose.tools.assert_raises(NoSuchInstance,
                              RHUIManagerInstance.delete,
