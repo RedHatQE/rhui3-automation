@@ -75,7 +75,7 @@ ec2-10.0.0.6.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_b
 
 * example 2:
 ```ini
-# Rhua, Dns, 2*(Cds+Gluster), HAProxy
+# Rhua, Dns, 3*(Cds+Gluster), HAProxy
 [RHUA]
 ec2-10.0.0.1.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
@@ -85,13 +85,15 @@ ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_b
 [GLUSTER]
 ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [CDS]
 ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 
 [HAPROXY]
-ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.6.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
 ```
 Replace _USER_ with the actual local user name and make sure the .pem file has this name.
 
@@ -107,11 +109,13 @@ Even though one can apply multiple roles to a single node, some combinations are
 - optional roles --- may be absent in one's site: Dns, HAProxy, Proxy, Cli, Atomic Cli, Test
 - multi-roles --- usually multiple instances per site: CDS, Gluster, HAProxy, Cli
 
-Important Note: GlusterFS Configuration
+Important Notes: GlusterFS Configuration
 ---------------------------------------
 The machines that are used for Gluster need to have EC2 Volumes of minimum size of 100GB connected to them!
 - Go to EC2 Dashboard > Volumes > Create Volume
 - Select volume, right click and do Attach
+
+As of Red Hat Gluster Storage 3.4 at least three Gluster nodes are required, which is why the example above shows three addresses.
 
 Network Ports:
 ---------------------------------------
