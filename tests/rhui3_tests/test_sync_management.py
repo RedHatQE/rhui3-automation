@@ -23,12 +23,15 @@ class TestSync(object):
     '''
 
     def __init__(self):
-        with open('/usr/share/rhui3_tests_lib/config/tested_repos.yaml', 'r') as configfile:
+        self.rhua_version = Util.get_rhel_version(CONNECTION)["major"]
+        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
-
-        self.yum_repo_name = doc['yum_repo1']['name']
-        self.yum_repo_version = doc['yum_repo1']['version']
-        self.yum_repo_kind = doc['yum_repo1']['kind']
+            try:
+                self.yum_repo_name = doc["yum_repos"][self.rhua_version]["name"]
+                self.yum_repo_version = doc["yum_repos"][self.rhua_version]["version"]
+                self.yum_repo_kind = doc["yum_repos"][self.rhua_version]["kind"]
+            except KeyError as version:
+                raise nose.SkipTest("No test repo defined for RHEL %s" % version)
 
     @staticmethod
     def setup_class():

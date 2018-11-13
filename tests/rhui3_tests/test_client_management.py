@@ -33,19 +33,16 @@ class TestClient(object):
     '''
 
     def __init__(self):
-        self.rhua_os_version = Util.get_rhel_version(CONNECTION)["major"]
-
-        with open('/usr/share/rhui3_tests_lib/config/tested_repos.yaml', 'r') as configfile:
+        self.cli_version = Util.get_rhel_version(CLI)["major"]
+        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
-
-        self.yum_repo1_name = doc['yum_repo1']['name']
-        self.yum_repo1_version = doc['yum_repo1']['version']
-        self.yum_repo1_kind = doc['yum_repo1']['kind']
-        self.yum_repo1_path = doc['yum_repo1']['path']
-        self.yum_repo2_name = doc['yum_repo2']['name']
-        self.yum_repo2_version = doc['yum_repo2']['version']
-        self.yum_repo2_kind = doc['yum_repo2']['kind']
-        self.yum_repo2_path = doc['yum_repo2']['path']
+            try:
+                self.yum_repo_name = doc["yum_repos"][self.cli_version]["name"]
+                self.yum_repo_version = doc["yum_repos"][self.cli_version]["version"]
+                self.yum_repo_kind = doc["yum_repos"][self.cli_version]["kind"]
+                self.yum_repo_path = doc["yum_repos"][self.cli_version]["path"]
+            except KeyError as version:
+                raise nose.SkipTest("No test repo defined for RHEL %s" % version)
 
     @staticmethod
     def setup_class():
@@ -99,30 +96,20 @@ class TestClient(object):
                                        ["custom-i386-x86_64"],
                                        "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
         RHUIManagerRepo.add_rh_repo_by_repo(CONNECTION,
-                                            [Util.format_repo(self.yum_repo1_name,
-                                                              self.yum_repo1_version,
-                                                              self.yum_repo1_kind),
-                                             Util.format_repo(self.yum_repo2_name,
-                                                              self.yum_repo2_version,
-                                                              self.yum_repo1_kind)])
+                                            [Util.format_repo(self.yum_repo_name,
+                                                              self.yum_repo_version,
+                                                              self.yum_repo_kind)])
         RHUIManagerSync.sync_repo(CONNECTION,
-                                  [Util.format_repo(self.yum_repo1_name, self.yum_repo1_version),
-                                   Util.format_repo(self.yum_repo2_name, self.yum_repo2_version)])
+                                  [Util.format_repo(self.yum_repo_name, self.yum_repo_version)])
 
     def test_06_generate_ent_cert(self):
         '''
            generate an entitlement certificate
         '''
-        if self.rhua_os_version < 7:
-            RHUIManagerClient.generate_ent_cert(CONNECTION,
-                                                ["custom-i386-x86_64", self.yum_repo1_name],
-                                                "test_ent_cli",
-                                                "/root/")
-        else:
-            RHUIManagerClient.generate_ent_cert(CONNECTION,
-                                                ["custom-i386-x86_64", self.yum_repo2_name],
-                                                "test_ent_cli",
-                                                "/root/")
+        RHUIManagerClient.generate_ent_cert(CONNECTION,
+                                            ["custom-i386-x86_64", self.yum_repo_name],
+                                            "test_ent_cli",
+                                            "/root/")
         Expect.expect_retval(CONNECTION, "test -f /root/test_ent_cli.crt")
         Expect.expect_retval(CONNECTION, "test -f /root/test_ent_cli.key")
 
@@ -186,14 +173,9 @@ class TestClient(object):
         '''
            check if RH repos have been synced so RPMs can be installed from them
         '''
-        if self.rhua_os_version < 7:
-            RHUIManagerSync.wait_till_repo_synced(CONNECTION,
-                                                  [Util.format_repo(self.yum_repo1_name,
-                                                                    self.yum_repo1_version)])
-        else:
-            RHUIManagerSync.wait_till_repo_synced(CONNECTION,
-                                                  [Util.format_repo(self.yum_repo2_name,
-                                                                    self.yum_repo2_version)])
+        RHUIManagerSync.wait_till_repo_synced(CONNECTION,
+                                              [Util.format_repo(self.yum_repo_name,
+                                                                self.yum_repo_version)])
 
     @staticmethod
     def test_13_inst_rpm_custom_repo():
@@ -213,16 +195,13 @@ class TestClient(object):
         '''
            verify that RHUI repo content cannot be fetched without an entitlement certificate
         '''
-        # re-use the already added repos
-        repo_paths = [self.yum_repo1_path, self.yum_repo2_path]
-        # try HEADing the repodata file for each repo
+        # try HEADing the repodata file for the already added repo
         # the HTTP request must not complete (not even with HTTP 403);
         # it is supposed to raise an SSLError instead
-        for repo_path in repo_paths:
-            nose.tools.assert_raises(requests.exceptions.SSLError, requests.head,
-                                     "https://cds.example.com/pulp/repos/" +
-                                     repo_path + "/repodata/repomd.xml",
-                                     verify=False)
+        nose.tools.assert_raises(requests.exceptions.SSLError, requests.head,
+                                 "https://cds.example.com/pulp/repos/" +
+                                 self.yum_repo_path + "/repodata/repomd.xml",
+                                 verify=False)
         # also check the protected custom repo
         nose.tools.assert_raises(requests.exceptions.SSLError, requests.head,
                                  "https://cds.example.com/pulp/repos/" +

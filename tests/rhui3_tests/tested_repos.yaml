@@ -1,13 +1,14 @@
-yum_repo1:
-    name: "Red Hat Enterprise Linux for SAP (RHEL 6 Server) (RPMs) from RHUI"
-    version: "6Server-x86_64"
-    kind: "Yum"
-    path: "content/dist/rhel/rhui/server/6/6Server/x86_64/sap/os"
-yum_repo2:
-    name: "Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI"
-    version: "7Server-x86_64"
-    kind: "Yum"
-    path: "content/dist/rhel/rhui/server/7/7Server/x86_64/sap/os"
+yum_repos:
+    6:
+        name: "Red Hat Enterprise Linux for SAP (RHEL 6 Server) (RPMs) from RHUI"
+        version: "6Server-x86_64"
+        kind: "Yum"
+        path: "content/dist/rhel/rhui/server/6/6Server/x86_64/sap/os"
+    7:
+        name: "Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI"
+        version: "7Server-x86_64"
+        kind: "Yum"
+        path: "content/dist/rhel/rhui/server/7/7Server/x86_64/sap/os"
 atomic_repo:
     name: "Red Hat Enterprise Linux Atomic Host (Trees) from RHUI"
     kind: "Atomic"
