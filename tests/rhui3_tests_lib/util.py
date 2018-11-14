@@ -186,3 +186,13 @@ class Util(object):
         with open("/etc/hosts") as hostsfile:
             all_hosts = hostsfile.read()
         return re.findall(cds_pattern, all_hosts)
+
+    @staticmethod
+    def get_rpms_in_dir(connection, directory):
+        '''
+        return a list of RPM files in the directory
+        '''
+        _, stdout, _ = connection.exec_command("cd %s && ls -w1 *.rpm" % directory)
+        with stdout as output:
+            rpms = output.read().decode().splitlines()
+            return rpms

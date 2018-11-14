@@ -20,22 +20,29 @@ CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_
 # side channel for hacking
 CONNECTION_2 = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
+CUSTOM_REPOS = ["custom-i386-x86_64", "custom-x86_64-x86_64", "custom-i386-i386"]
+CUSTOM_PATHS = [repo.replace("-", "/") for repo in CUSTOM_REPOS]
+CUSTOM_RPMS_DIR = "/tmp/extra_rhui_files"
+
 class TestRepo(object):
     '''
        class for repository manipulation tests
     '''
 
     def __init__(self):
-        self.rhua_version = Util.get_rhel_version(CONNECTION)["major"]
+        self.custom_rpms = Util.get_rpms_in_dir(CONNECTION, CUSTOM_RPMS_DIR)
+        if not self.custom_rpms:
+            raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR)
+        rhel_version = Util.get_rhel_version(CONNECTION)["major"]
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:
-                self.yum_repo_name = doc["yum_repos"][self.rhua_version]["name"]
-                self.yum_repo_version = doc["yum_repos"][self.rhua_version]["version"]
-                self.yum_repo_kind = doc["yum_repos"][self.rhua_version]["kind"]
-                self.yum_repo_path = doc['yum_repos'][self.rhua_version]['path']
-                self.docker_container_name = doc['docker_container1']['name']
-                self.docker_container_displayname = doc['docker_container1']['displayname']
+                self.yum_repo_name = doc["yum_repos"][rhel_version]["name"]
+                self.yum_repo_version = doc["yum_repos"][rhel_version]["version"]
+                self.yum_repo_kind = doc["yum_repos"][rhel_version]["kind"]
+                self.yum_repo_path = doc["yum_repos"][rhel_version]["path"]
+                self.docker_container_name = doc["docker_container1"]["name"]
+                self.docker_container_displayname = doc["docker_container1"]["displayname"]
             except KeyError as version:
                 raise nose.SkipTest("No test repo defined for RHEL %s" % version)
 
@@ -48,127 +55,111 @@ class TestRepo(object):
 
     @staticmethod
     def test_01_repo_setup():
-        '''log in to RHUI'''
+        '''log in to RHUI, upload cert, check if no repo exists'''
         RHUIManager.initial_run(CONNECTION)
         entlist = RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
-        nose.tools.assert_not_equal(len(entlist), 0)
+        nose.tools.ok_(entlist)
+        nose.tools.ok_(not RHUIManagerRepo.list(CONNECTION))
 
     @staticmethod
-    def test_02_check_empty_repo_list():
-        '''check if the repolist is empty'''
-        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
-
-    @staticmethod
-    def test_03_create_3_custom_repos():
+    def test_02_create_3_custom_repos():
         '''create 3 custom repos (protected, unprotected, no RH GPG check) '''
         RHUIManagerRepo.add_custom_repo(CONNECTION,
-                                        "custom-i386-x86_64",
+                                        CUSTOM_REPOS[0],
                                         "",
-                                        "custom/i386/x86_64",
+                                        CUSTOM_PATHS[0],
                                         "1",
                                         "y")
         RHUIManagerRepo.add_custom_repo(CONNECTION,
-                                        "custom-x86_64-x86_64",
+                                        CUSTOM_REPOS[1],
                                         "",
-                                        "custom/x86_64/x86_64",
+                                        CUSTOM_PATHS[1],
                                         "1",
                                         "n")
         RHUIManagerRepo.add_custom_repo(CONNECTION,
-                                        "custom-i386-i386",
+                                        CUSTOM_REPOS[2],
                                         "",
-                                        "custom/i386/i386",
+                                        CUSTOM_PATHS[2],
                                         "1",
                                         "y",
                                         "",
                                         "n")
 
     @staticmethod
-    def test_04_check_custom_repo_list():
+    def test_03_check_custom_repo_list():
         '''check if the repolist contains the 3 custom repos'''
-        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION),
-                                ['custom-i386-i386', 'custom-i386-x86_64', 'custom-x86_64-x86_64'])
+        nose.tools.eq_(RHUIManagerRepo.list(CONNECTION), sorted(CUSTOM_REPOS))
 
     @staticmethod
-    def test_05_repo_id_uniqueness():
+    def test_04_repo_id_uniqueness():
         '''verify that rhui-manager refuses to create a custom repo whose name already exists'''
         nose.tools.assert_raises(AlreadyExistsError,
                                  RHUIManagerRepo.add_custom_repo,
                                  CONNECTION,
-                                 "custom-i386-x86_64")
+                                 CUSTOM_REPOS[0])
 
-    @staticmethod
-    def test_06_upload_to_custom_repo():
-        '''upload content to the custom repo'''
+    def test_05_upload_one_rpm(self):
+        '''upload one rpm to the custom repo'''
         RHUIManagerRepo.upload_content(CONNECTION,
-                                       ["custom-i386-x86_64"],
-                                       "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
+                                       [CUSTOM_REPOS[0]],
+                                       "%s/%s" % (CUSTOM_RPMS_DIR, self.custom_rpms[0]))
 
     @staticmethod
-    def test_07_upload_several_rpms():
+    def test_06_upload_several_rpms():
         '''upload several rpms to the custom repo from a directory'''
         RHUIManagerRepo.upload_content(CONNECTION,
-                                       ["custom-i386-x86_64"],
-                                       "/tmp/extra_rhui_files/")
+                                       [CUSTOM_REPOS[0]],
+                                       CUSTOM_RPMS_DIR)
 
-    @staticmethod
-    def test_08_check_for_package():
+    def test_07_check_for_package(self):
         '''check package lists'''
-        nose.tools.assert_equal(RHUIManagerRepo.check_for_package(CONNECTION,
-                                                                  "custom-i386-x86_64",
-                                                                  ""),
-                                ["rhui-rpm-upload-test-1-1.noarch.rpm",
-                                 "rhui-rpm-upload-trial-1-1.noarch.rpm",
-                                 "rhui-rpm-upload-tryout-1-1.noarch.rpm"])
-        nose.tools.assert_equal(RHUIManagerRepo.check_for_package(CONNECTION,
-                                                                  "custom-i386-x86_64",
-                                                                  "rhui-rpm-upload-test"),
-                                ["rhui-rpm-upload-test-1-1.noarch.rpm"])
-        nose.tools.assert_equal(RHUIManagerRepo.check_for_package(CONNECTION,
-                                                                  "custom-i386-x86_64",
-                                                                  "test"),
-                                [])
-        nose.tools.assert_equal(RHUIManagerRepo.check_for_package(CONNECTION,
-                                                                  "custom-x86_64-x86_64",
-                                                                  ""),
-                                [])
+        test_rpm_name = self.custom_rpms[0].rsplit('-', 2)[0]
+        nose.tools.eq_(RHUIManagerRepo.check_for_package(CONNECTION,
+                                                         CUSTOM_REPOS[0],
+                                                         ""),
+                       self.custom_rpms)
+        nose.tools.eq_(RHUIManagerRepo.check_for_package(CONNECTION,
+                                                         CUSTOM_REPOS[0],
+                                                         test_rpm_name),
+                       [self.custom_rpms[0]])
+        nose.tools.eq_(RHUIManagerRepo.check_for_package(CONNECTION,
+                                                         CUSTOM_REPOS[0],
+                                                         "test"),
+                       [])
+        nose.tools.eq_(RHUIManagerRepo.check_for_package(CONNECTION,
+                                                         CUSTOM_REPOS[1],
+                                                         ""),
+                       [])
 
-    @staticmethod
-    def test_09_display_custom_repos():
+    def test_08_display_custom_repos(self):
         '''check detailed information on the custom repos'''
         RHUIManagerRepo.check_detailed_information(CONNECTION,
-                                                   ["custom-i386-x86_64", "custom/i386/x86_64"],
+                                                   [CUSTOM_REPOS[0], CUSTOM_PATHS[0]],
                                                    [True, True],
                                                    [True, None, True],
-                                                   3)
+                                                   len(self.custom_rpms))
         RHUIManagerRepo.check_detailed_information(CONNECTION,
-                                                   ["custom-x86_64-x86_64", "custom/x86_64/x86_64"],
+                                                   [CUSTOM_REPOS[1], CUSTOM_PATHS[1]],
                                                    [True, False],
                                                    [True, None, True],
                                                    0)
         RHUIManagerRepo.check_detailed_information(CONNECTION,
-                                                   ["custom-i386-i386", "custom/i386/i386"],
+                                                   [CUSTOM_REPOS[2], CUSTOM_PATHS[2]],
                                                    [True, True],
                                                    [False],
                                                    0)
 
-    @staticmethod
-    def test_10_remove_3_custom_repos():
-        '''remove the 3 custom repos'''
-        RHUIManagerRepo.delete_repo(CONNECTION,
-                                    ["custom-i386-x86_64",
-                                     "custom-x86_64-x86_64",
-                                     "custom-i386-i386"])
-        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
-
-    def test_11_add_rh_repo_by_repo(self):
-        '''add a RH repo by repository'''
+    def test_09_add_rh_repo_by_repo(self):
+        '''add a Red Hat repo by its name'''
         RHUIManagerRepo.add_rh_repo_by_repo(CONNECTION, [Util.format_repo(self.yum_repo_name,
                                                                           self.yum_repo_version,
                                                                           self.yum_repo_kind)])
-        nose.tools.assert_not_equal(RHUIManagerRepo.list(CONNECTION), [])
+        repo_list = RHUIManagerRepo.list(CONNECTION)
+        nose.tools.ok_(Util.format_repo(self.yum_repo_name, self.yum_repo_version) in repo_list,
+                       msg="The repo wasn't added. Actual repolist: %s" % repo_list)
 
-    def test_12_display_rh_repo(self):
-        '''check detailed information on the RH repo'''
+    def test_10_display_rh_repo(self):
+        '''check detailed information on the Red Hat repo'''
         RHUIManagerRepo.check_detailed_information(CONNECTION,
                                                    [Util.format_repo(self.yum_repo_name,
                                                                      self.yum_repo_version),
@@ -177,43 +168,42 @@ class TestRepo(object):
                                                    [True, None, True],
                                                    0)
 
-    def test_13_delete_one_repo(self):
-        '''remove the RH repo'''
+    def test_11_delete_one_repo(self):
+        '''remove the Red Hat repo'''
         RHUIManagerRepo.delete_repo(CONNECTION, [self.yum_repo_name + ".*"])
-        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
+        repo_list = RHUIManagerRepo.list(CONNECTION)
+        nose.tools.ok_(Util.format_repo(self.yum_repo_name, self.yum_repo_version) not in repo_list,
+                       msg="The repo wasn't removed. Actual repolist: %s" % repo_list)
 
-    def test_14_add_rh_repo_by_product(self):
-        '''add a RH repo by product'''
+    def test_12_add_rh_repo_by_product(self):
+        '''add a Red Hat repo by the product that contains it, remove it'''
         RHUIManagerRepo.add_rh_repo_by_product(CONNECTION, [self.yum_repo_name])
-        #nose.tools.assert_not_equal(RHUIManagerRepo.list(CONNECTION), [])
-
-    @staticmethod
-    def test_15_delete_repo():
-        '''remove the RH repo'''
+        repo_list = RHUIManagerRepo.list(CONNECTION)
+        nose.tools.ok_(Util.format_repo(self.yum_repo_name, self.yum_repo_version) in repo_list,
+                       msg="The repo wasn't added. Actual repolist: %s" % repo_list)
         RHUIManagerRepo.delete_all_repos(CONNECTION)
-        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
+        nose.tools.ok_(not RHUIManagerRepo.list(CONNECTION))
 
     @staticmethod
-    def test_16_add_all_rh_repos():
-        '''add all RH repos'''
+    def test_13_add_all_rh_repos():
+        '''add all Red Hat repos, remove them (takes a lot of time!)'''
         RHUIManagerRepo.add_rh_repo_all(CONNECTION)
-        #nose.tools.assert_not_equal(RHUIManagerRepo.list(CONNECTION), [])
-
-    @staticmethod
-    def test_17_delete_all_repos():
-        '''delete all the repos'''
+        # it's not feasible to get the repo list if so many repos are present; skip the check
+        #nose.tools.ok_(len(RHUIManagerRepo.list(CONNECTION)) > 100)
         RHUIManagerRepo.delete_all_repos(CONNECTION)
-        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
+        nose.tools.ok_(not RHUIManagerRepo.list(CONNECTION))
 
-    def test_18_add_docker_container(self):
+    def test_14_add_docker_container(self):
         '''add a Docker container'''
         RHUIManagerRepo.add_docker_container(CONNECTION,
                                              self.docker_container_name,
                                              "",
                                              self.docker_container_displayname)
-        nose.tools.assert_not_equal(RHUIManagerRepo.list(CONNECTION), [])
+        repo_list = RHUIManagerRepo.list(CONNECTION)
+        nose.tools.ok_(self.docker_container_displayname in repo_list,
+                       msg="The container wasn't added. Actual repolist: %s" % repo_list)
 
-    def test_19_display_docker_cont(self):
+    def test_15_display_docker_cont(self):
         '''check detailed information on the Docker container'''
         RHUIManagerRepo.check_detailed_information(CONNECTION,
                                                    [self.docker_container_displayname,
@@ -224,13 +214,13 @@ class TestRepo(object):
                                                    0)
 
     @staticmethod
-    def test_20_delete_docker_container():
+    def test_16_delete_docker_container():
         '''delete the Docker container'''
         RHUIManagerRepo.delete_all_repos(CONNECTION)
-        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
+        nose.tools.ok_(not RHUIManagerRepo.list(CONNECTION))
 
     @staticmethod
-    def test_21_missing_cert_handling():
+    def test_17_missing_cert_handling():
         '''check if rhui-manager can handle the loss of the RH cert'''
         # for RHBZ#1325390
         RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)

@@ -25,6 +25,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 CLI = stitches.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
 
+CUSTOM_REPO = "custom-i386-x86_64"
+CUSTOM_PATH = CUSTOM_REPO.replace("-", "/")
+CUSTOM_RPMS_DIR = "/tmp/extra_rhui_files"
+
 TEST_PACKAGE = "vm-dump-metrics"
 
 class TestClient(object):
@@ -33,6 +37,10 @@ class TestClient(object):
     '''
 
     def __init__(self):
+        try:
+            self.custom_rpm = Util.get_rpms_in_dir(CONNECTION, CUSTOM_RPMS_DIR)[0]
+        except IndexError:
+            raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR)
         self.cli_version = Util.get_rhel_version(CLI)["major"]
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
@@ -87,14 +95,14 @@ class TestClient(object):
            add a custom and RH content repos to protect by a cli entitlement cert, upload rpm, sync
         '''
         RHUIManagerRepo.add_custom_repo(CONNECTION,
-                                        "custom-i386-x86_64",
+                                        CUSTOM_REPO,
                                         "",
-                                        "custom/i386/x86_64",
+                                        CUSTOM_PATH,
                                         "1",
                                         "y")
         RHUIManagerRepo.upload_content(CONNECTION,
-                                       ["custom-i386-x86_64"],
-                                       "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
+                                       [CUSTOM_REPO],
+                                       "%s/%s" % (CUSTOM_RPMS_DIR, self.custom_rpm))
         RHUIManagerRepo.add_rh_repo_by_repo(CONNECTION,
                                             [Util.format_repo(self.yum_repo_name,
                                                               self.yum_repo_version,
@@ -107,7 +115,7 @@ class TestClient(object):
            generate an entitlement certificate
         '''
         RHUIManagerClient.generate_ent_cert(CONNECTION,
-                                            ["custom-i386-x86_64", self.yum_repo_name],
+                                            [CUSTOM_REPO, self.yum_repo_name],
                                             "test_ent_cli",
                                             "/root/")
         Expect.expect_retval(CONNECTION, "test -f /root/test_ent_cli.crt")
@@ -177,12 +185,12 @@ class TestClient(object):
                                               [Util.format_repo(self.yum_repo_name,
                                                                 self.yum_repo_version)])
 
-    @staticmethod
-    def test_13_inst_rpm_custom_repo():
+    def test_13_inst_rpm_custom_repo(self):
         '''
            install an RPM from the custom repo
         '''
-        Expect.expect_retval(CLI, "yum install -y rhui-rpm-upload-test --nogpgcheck", timeout=20)
+        test_rpm_name = self.custom_rpm.rsplit('-', 2)[0]
+        Expect.expect_retval(CLI, "yum install -y %s --nogpgcheck" % test_rpm_name, timeout=20)
 
     @staticmethod
     def test_14_inst_rpm_rh_repo():
@@ -205,7 +213,7 @@ class TestClient(object):
         # also check the protected custom repo
         nose.tools.assert_raises(requests.exceptions.SSLError, requests.head,
                                  "https://cds.example.com/pulp/repos/" +
-                                 "protected/custom-i386-x86_64/repodata/repomd.xml",
+                                 "protected/%s/repodata/repomd.xml" % CUSTOM_PATH,
                                  verify=False)
 
     @staticmethod
@@ -241,18 +249,18 @@ class TestClient(object):
         Expect.ping_pong(CLI, "rhui-set-release --help", "Usage:")
         Expect.ping_pong(CLI, "rhui-set-release -h", "Usage:")
 
-    @staticmethod
-    def test_99_cleanup():
+    def test_99_cleanup(self):
         '''
            remove repos, certs, cli rpms; remove rpms from cli, uninstall cds, hap
         '''
+        test_rpm_name = self.custom_rpm.rsplit('-', 2)[0]
         RHUIManagerRepo.delete_all_repos(CONNECTION)
         nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
         RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
         RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com"])
         Expect.expect_retval(CONNECTION, "rm -f /root/test_ent_cli*")
         Expect.expect_retval(CONNECTION, "rm -rf /root/test_cli_rpm-3.0/")
-        Util.remove_rpm(CLI, [TEST_PACKAGE, "test_cli_rpm", "rhui-rpm-upload-test"])
+        Util.remove_rpm(CLI, [TEST_PACKAGE, "test_cli_rpm", test_rpm_name])
         RHUIManager.remove_rh_certs(CONNECTION)
 
     @staticmethod

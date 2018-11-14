@@ -3,6 +3,7 @@
 from os.path import basename
 
 import logging
+import nose
 import stitches
 from stitches.expect import Expect
 
@@ -22,6 +23,7 @@ SIG = "9f6e93a2"
 SIGNED_PACKAGE = "rhui-rpm-upload-trial"
 UNSIGNED_PACKAGE = "rhui-rpm-upload-test"
 SIGNED_PACKAGE_SIG2 = "rhui-rpm-upload-tryout"
+CUSTOM_RPMS_DIR = "/tmp/extra_rhui_files"
 
 def setup():
     '''
@@ -60,15 +62,11 @@ def test_05_upload_to_custom_repo():
     '''
         upload an unsigned and two differently signed packages to the custom repo
     '''
-    RHUIManagerRepo.upload_content(RHUA,
-                                   [REPO],
-                                   "/tmp/extra_rhui_files/%s-1-1.noarch.rpm" % SIGNED_PACKAGE)
-    RHUIManagerRepo.upload_content(RHUA,
-                                   [REPO],
-                                   "/tmp/extra_rhui_files/%s-1-1.noarch.rpm" % UNSIGNED_PACKAGE)
-    RHUIManagerRepo.upload_content(RHUA,
-                                   [REPO],
-                                   "/tmp/extra_rhui_files/%s-1-1.noarch.rpm" % SIGNED_PACKAGE_SIG2)
+    avail_rpm_names = [pkg.rsplit('-', 2)[0] for pkg in Util.get_rpms_in_dir(RHUA,
+                                                                             CUSTOM_RPMS_DIR)]
+    nose.tools.eq_(avail_rpm_names, sorted([SIGNED_PACKAGE, UNSIGNED_PACKAGE, SIGNED_PACKAGE_SIG2]),
+                   msg="Failed to find the packages to upload. Got: %s" % avail_rpm_names)
+    RHUIManagerRepo.upload_content(RHUA, [REPO], CUSTOM_RPMS_DIR)
 
 def test_06_display_detailed_info():
     '''
