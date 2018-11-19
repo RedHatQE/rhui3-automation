@@ -56,6 +56,7 @@ argparser.add_argument('--iso', help='iso version', default="iso")
 argparser.add_argument('--cli5', help='number of RHEL5 clients', type=int, default=0)
 argparser.add_argument('--cli6', help='number of RHEL6 clients', type=int, default=0)
 argparser.add_argument('--cli7', help='number of RHEL7 clients', type=int, default=0)
+argparser.add_argument('--cli8', help='number of RHEL8 clients', type=int, default=0)
 argparser.add_argument('--cds', help='number of CDSes instances', type=int, default=1)
 argparser.add_argument('--dns', help='DNS', action='store_const', const=True, default=False)
 argparser.add_argument('--nfs', help='NFS', action='store_const', const=True, default=False)
@@ -84,6 +85,7 @@ argparser.add_argument('--r3', action='store_const', const=True, default=False,
 argparser.add_argument('--ami-5-override', help='RHEL 5 AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ami-6-override', help='RHEL 6 AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ami-7-override', help='RHEL 7 AMI ID to override the mapping', metavar='ID')
+argparser.add_argument('--ami-8-override', help='RHEL 8 AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ami-atomic-override', help='RHEL Atomic host AMI ID to override the mapping', metavar='ID')
 
 args = argparser.parse_args()
@@ -153,6 +155,8 @@ if args.cli6 > 0:
     json_dict['Description'] += " %s RHEL6 clients" % args.cli6
 if args.cli7 > 0:
     json_dict['Description'] += " %s RHEL7 clients" % args.cli7
+if args.cli8 > 0:
+    json_dict['Description'] += " %s RHEL8 clients" % args.cli8
 if args.atomic_cli > 0:
     json_dict['Description'] += " %s ATOMIC clients" % args.atomic_cli
 if args.gluster:
@@ -173,6 +177,7 @@ if fs_type_f == "rhua":
 json_dict['Mappings'] = {u'RHEL5': {args.region: {}},
                          u'RHEL6': {args.region: {}},
                          u'RHEL7': {args.region: {}},
+                         u'RHEL8': {args.region: {}},
                          u'ATOMIC': {args.region: {}}}
 
 try:
@@ -196,6 +201,13 @@ try:
         with open("RHEL7mapping.json") as mjson:
             rhel7mapping = json.load(mjson)
             json_dict['Mappings']['RHEL7'] = rhel7mapping
+
+    if args.ami_8_override:
+        json_dict['Mappings']['RHEL8'][args.region]['AMI'] = args.ami_8_override
+    else:
+        with open("RHEL8mapping.json") as mjson:
+            rhel8mapping = json.load(mjson)
+            json_dict['Mappings']['RHEL8'] = rhel8mapping
 
     if args.ami_atomic_override:
         json_dict['Mappings']['ATOMIC'][args.region]['AMI'] = args.ami_atomic_override
@@ -326,8 +338,8 @@ else:
                    u'Type': u'AWS::EC2::Instance'}
 
 # clients
-os_dict = {5: "RHEL5", 6: "RHEL6", 7: "RHEL7"}
-for i in (5, 6, 7):
+os_dict = {5: "RHEL5", 6: "RHEL6", 7: "RHEL7", 8: "RHEL8"}
+for i in (5, 6, 7, 8):
     num_cli_ver = args.__getattribute__("cli%i" % i)
     if num_cli_ver:
         for j in range(1, num_cli_ver + 1):
@@ -653,7 +665,7 @@ try:
                     f.write(ssh_key)
                     f.write('\n')
         # cli
-        if args.cli5 or args.cli6 or args.cli7:
+        if args.cli5 or args.cli6 or args.cli7 or args.cli8:
             f.write('\n[CLI]\n')
             for instance in instances_detail:
                 if instance["role"] == "CLI":

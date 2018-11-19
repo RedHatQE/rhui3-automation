@@ -18,7 +18,9 @@ argparser.add_argument('--rhel', help='Description of the ami (f.e. RHEL-7.5_HVM
 
 args = argparser.parse_args()
 
-if args.rhel.startswith("RHEL-7"):
+if args.rhel.startswith("RHEL-8"):
+    mapping = "RHEL8mapping.json"
+elif args.rhel.startswith("RHEL-7"):
     mapping = "RHEL7mapping.json"
 elif args.rhel.startswith("RHEL-6"):
     mapping = "RHEL6mapping.json"
