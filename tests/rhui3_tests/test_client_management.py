@@ -216,14 +216,17 @@ class TestClient(object):
                                  "protected/%s/repodata/repomd.xml" % CUSTOM_PATH,
                                  verify=False)
 
-    @staticmethod
-    def test_16_check_cli_plugins():
+    def test_16_check_cli_plugins(self):
         '''
            check if irrelevant Yum plug-ins are not enabled on the client with the config RPM
         '''
         # for RHBZ#1415681
+        if self.cli_version <= 7:
+            cmd = "yum"
+        else:
+            cmd = "dnf -v"
         Expect.expect_retval(CLI,
-                             "yum repolist enabled 2> /dev/null | " +
+                             "%s repolist enabled 2> /dev/null | " % cmd +
                              "egrep '^Loaded plugins.*(rhnplugin|subscription-manager)'", 1)
 
     @staticmethod
