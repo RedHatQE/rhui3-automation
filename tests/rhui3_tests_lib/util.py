@@ -67,14 +67,14 @@ class Util(object):
     @staticmethod
     def remove_amazon_rhui_conf_rpm(connection):
         '''
-        Remove Amazon RHUI config rpm (owning /etc/yum/pluginconf.d/rhui-lb.conf) from instance
+        Remove Amazon RHUI config rpm (owning /usr/sbin/choose_repo.py) from instance
         downlad the rpm first, though, so the configuration can be restored if needed
         (but don't fail if the download is unsuccessful, just try your luck)
         note that more than one rpm can actually own the file, typically on beta AMIs
         the rpm(s) is/are saved in /root
         '''
         Expect.expect_retval(connection,
-                             "file=/etc/yum/pluginconf.d/rhui-lb.conf; " +
+                             "file=/usr/sbin/choose_repo.py; " +
                              "if [ -f $file ]; then" +
                              "  package=`rpm -qf --queryformat '%{NAME} ' $file`;" +
                              "  yumdownloader $package;" +
