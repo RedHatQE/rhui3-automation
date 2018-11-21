@@ -1,22 +1,23 @@
 ---
 # file: roles/common/tasks/ntp.yml
 # set-up&configure ntp
+# only applicable to RHEL up to 7; cannot install packages on Atomic, chrony is already up on RHEL 8
 
 - name: install ntp
   package: "pkg={{ item }} state=installed"
   with_items: [ntp, ntpdate]
-  when: not atomic | default(False)
+  when: not atomic | default(False) and ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 7
   tags: ntp
 
 - name: configure ntp
   template: src=ntp.conf.j2 dest=/etc/ntp.conf
   notify:
   - restart ntpd
-  when: not atomic | default(False)
+  when: not atomic | default(False) and ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 7
   tags: ntp
 
 - name: enable and run ntpd
   service: name=ntpd state=started enabled=yes
-  when: not atomic | default(False)
+  when: not atomic | default(False) and ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 7
   tags: ntp
 
