@@ -15,6 +15,10 @@ class RHSMRHUI(object):
         rhaccount_file = "/tmp/extra_rhui_files/rhaccount.sh"
         if connection.recv_exit_status("test -f " + rhaccount_file) != 0:
             raise OSError(rhaccount_file + " does not exist")
+        # on RHEL 7.5, update subscription-manager first (due to RHBZ#1554482)
+        rhel_version = Util.get_rhel_version(connection)
+        if rhel_version["major"] == 7 and rhel_version["minor"] == 5:
+            Expect.expect_retval(connection, "yum -y update subscription-manager", timeout=30)
         Expect.expect_retval(connection, "source " + rhaccount_file + " && " +
                              "subscription-manager register --type=rhui " +
                              "--username=$SM_USERNAME --password=$SM_PASSWORD",

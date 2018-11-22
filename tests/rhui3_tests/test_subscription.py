@@ -5,13 +5,11 @@ from os.path import basename
 
 import nose
 import stitches
-from stitches.expect import Expect
 import yaml
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_subman import RHUIManagerSubMan
 from rhui3_tests_lib.subscription import RHSMRHUI
-from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -44,10 +42,6 @@ class TestSubscription(object):
         '''
             register with RHSM
         '''
-        # update subscription-manager first (due to RHBZ#1554482)
-        rhua_os_version = Util.get_rhel_version(CONNECTION)
-        if rhua_os_version["major"] == 7 and rhua_os_version["minor"] == 5:
-            Expect.expect_retval(CONNECTION, "yum -y update subscription-manager", timeout=30)
         RHSMRHUI.register_system(CONNECTION)
 
     @staticmethod
