@@ -8,12 +8,12 @@ Python 2 or 3. Tested on Python 2.6, 2.7, and 3.6.
 
 The latest released RHUI 3 ISO. If you use an older ISO, you will get failures from the test cases that cover bug fixes or features from newer releases.
 
-RHUI deployment with the following hosts:
+RHUI deployment with the following hosts running either RHEL 6 or 7:
 
 * one RHUA instance
 * at least one CDS instance if using NFS, at least three if using Gluster
 * one HAProxy instance
-* one client instance
+* one client instance; it can be running RHEL 6, 7, or 8, regadless of the RHEL version on the RHUA
 * one atomic client instance
 * one test instance
 

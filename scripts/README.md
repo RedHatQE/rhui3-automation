@@ -50,7 +50,7 @@ Default configuration:
   * **--haproxy [number]** - number of HAProxies, `default = 1`
   * **--input-conf [name]** - the name of input conf file, `default = "/etc/rhui_ec2.yaml"`
   * **--output-conf [name]** - the name of output conf file, `default = "hosts_$RHELrelease_$iso.cfg"`
-  * **--cli5/6/7 [number]** - number of CLI machines, `default = 0`
+  * **--cli5/6/7/8 [number]** - number of CLI machines, `default = 0`
   * **--atomic-cli [number]** - number of ATOMIC CLI machines\*, `default = 0`
   * **--test** - if specified, TEST/MASTER machine, `default = 0`
   * **--region [name]** - `default = eu-west-1`
@@ -66,6 +66,17 @@ than 2.6. RHEL 5 has Python 2.4. To avoid failures, the hosts configuration file
 with the RHEL-5 client hostname and other data commented out so that it is all visible to you but
 ignored by `ansible-playbook`. Other than that, you are free to use the launched RHEL-5 client any
 way you want, just be sure to log in as root directly.
+
+Note that RHEL-8 AMIs are missing the unversioned `python` command as well as a working Python
+installation, which Ansible expects on managed hosts. Therefore, if you create a stack with a RHEL-8
+client machine, make sure Python is installed and configured there before you run the deployment
+playbook:
+
+```
+dnf -y update rh-amazon-rhui-client-beta
+dnf -y install python3
+alternatives --set python /usr/bin/python3
+```
 
 Mutually exclusive options: 
 

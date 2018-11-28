@@ -4,11 +4,19 @@ yum_repos:
         version: "6Server-x86_64"
         kind: "Yum"
         path: "content/dist/rhel/rhui/server/6/6Server/x86_64/sap/os"
+        test_package: "vm-dump-metrics"
     7:
         name: "Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI"
         version: "7Server-x86_64"
         kind: "Yum"
         path: "content/dist/rhel/rhui/server/7/7Server/x86_64/sap/os"
+        test_package: "vm-dump-metrics"
+    8:
+        name: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Beta from RHUI (RPMs)"
+        version: ""
+        kind: "Yum"
+        path: "content/beta/rhel8/rhui/8/x86_64/baseos/os"
+        test_package: "tree"
 atomic_repo:
     name: "Red Hat Enterprise Linux Atomic Host (Trees) from RHUI"
     kind: "Atomic"

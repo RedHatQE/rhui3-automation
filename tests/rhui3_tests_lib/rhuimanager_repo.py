@@ -158,7 +158,11 @@ class RHUIManagerRepo(object):
         RHUIManager.select(connection, repolist)
         repolist_mod = list(repolist)
         for repo in repolist:
-            repolist_mod.append(re.sub(r" \([a-zA-Z0-9_-]*\) \([a-zA-Z]*\)", "", repo))
+            # strip " (kind)"
+            repo_stripped = re.sub(r" \([a-zA-Z]*\)$", "", repo)
+            # strip " (version)" if present (if "(RPMs)" isn't there instead)
+            repo_stripped = re.sub(r" \((?!RPMs)[a-zA-Z0-9_-]*\)$", "", repo_stripped)
+            repolist_mod.append(repo_stripped)
         RHUIManager.proceed_with_check(connection,
                                        "The following product repositories will be deployed:",
                                        repolist_mod)

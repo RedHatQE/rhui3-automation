@@ -1,7 +1,9 @@
 ---
 # file: roles/common/handlers/network.yml
 # network configuration update handlers
+# N/A to RHEL 8 as there is no "network" service anymore
 
 # network restart handler
 - name: network restart
   service: name=network state=restarted
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 7

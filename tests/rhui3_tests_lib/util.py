@@ -167,14 +167,16 @@ class Util(object):
         return name.replace("(", r"\(").replace(")", r"\)")
 
     @staticmethod
-    def format_repo(name, version, kind=""):
+    def format_repo(name, version="", kind=""):
         '''
-        helper method to put together a repo name, version, and optionally kind
+        helper method to put together a repo name, version, and kind
         the way RHUI repos are called in rhui-manager
         '''
-        repo = "{0} ({1})".format(name, version)
+        repo = name
+        if version:
+            repo += " (%s)" % version
         if kind:
-            repo += " ({0})".format(kind)
+            repo += " (%s)" % kind
         return repo
 
     @staticmethod

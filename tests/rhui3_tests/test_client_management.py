@@ -29,8 +29,6 @@ CUSTOM_REPO = "custom-i386-x86_64"
 CUSTOM_PATH = CUSTOM_REPO.replace("-", "/")
 CUSTOM_RPMS_DIR = "/tmp/extra_rhui_files"
 
-TEST_PACKAGE = "vm-dump-metrics"
-
 class TestClient(object):
     '''
        class for client tests
@@ -49,6 +47,7 @@ class TestClient(object):
                 self.yum_repo_version = doc["yum_repos"][self.cli_version]["version"]
                 self.yum_repo_kind = doc["yum_repos"][self.cli_version]["kind"]
                 self.yum_repo_path = doc["yum_repos"][self.cli_version]["path"]
+                self.test_package = doc["yum_repos"][self.cli_version]["test_package"]
             except KeyError as version:
                 raise nose.SkipTest("No test repo defined for RHEL %s" % version)
 
@@ -184,6 +183,8 @@ class TestClient(object):
         RHUIManagerSync.wait_till_repo_synced(CONNECTION,
                                               [Util.format_repo(self.yum_repo_name,
                                                                 self.yum_repo_version)])
+        # also wait for the publish Pulp task to complete (takes time in the case of large repos)
+        RHUIManagerSync.wait_till_pulp_tasks_finish(CONNECTION)
 
     def test_13_inst_rpm_custom_repo(self):
         '''
@@ -192,12 +193,11 @@ class TestClient(object):
         test_rpm_name = self.custom_rpm.rsplit('-', 2)[0]
         Expect.expect_retval(CLI, "yum install -y %s --nogpgcheck" % test_rpm_name, timeout=20)
 
-    @staticmethod
-    def test_14_inst_rpm_rh_repo():
+    def test_14_inst_rpm_rh_repo(self):
         '''
            install an RPM from the RH repo
         '''
-        Expect.expect_retval(CLI, "yum install -y " + TEST_PACKAGE, timeout=20)
+        Expect.expect_retval(CLI, "yum install -y %s" % self.test_package, timeout=20)
 
     def test_15_unauthorized_access(self):
         '''
@@ -263,7 +263,7 @@ class TestClient(object):
         RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com"])
         Expect.expect_retval(CONNECTION, "rm -f /root/test_ent_cli*")
         Expect.expect_retval(CONNECTION, "rm -rf /root/test_cli_rpm-3.0/")
-        Util.remove_rpm(CLI, [TEST_PACKAGE, "test_cli_rpm", test_rpm_name])
+        Util.remove_rpm(CLI, [self.test_package, "test_cli_rpm", test_rpm_name])
         RHUIManager.remove_rh_certs(CONNECTION)
 
     @staticmethod
