@@ -30,6 +30,7 @@ class TestClient(object):
 
     def __init__(self):
         self.cli_os_version = Util.get_rhel_version(CLI)["major"]
+        self.cli_supported = self.cli_os_version == 7
 
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
@@ -106,7 +107,7 @@ class TestClient(object):
         '''
            install the Docker client configuration RPM
         '''
-        if self.cli_os_version < 7:
+        if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
         Util.install_pkg_from_rhua(RHUA,
                                    CLI,
@@ -116,7 +117,7 @@ class TestClient(object):
         '''
            restart the Docker service for the configuration to take effect
         '''
-        if self.cli_os_version < 7:
+        if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
         Expect.expect_retval(CLI, "systemctl restart docker")
 
@@ -124,7 +125,7 @@ class TestClient(object):
         '''
            pull the Docker container
         '''
-        if self.cli_os_version < 7:
+        if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
         Expect.expect_retval(CLI, "docker pull %s" % self.docker_container_id, timeout=30)
 
@@ -132,7 +133,7 @@ class TestClient(object):
         '''
            check if the container is now available
         '''
-        if self.cli_os_version < 7:
+        if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
         Expect.ping_pong(CLI, "docker images", "cds.example.com:5000/%s" % self.docker_container_id)
 
@@ -140,7 +141,7 @@ class TestClient(object):
         '''
            run a test command (uname) in the container
         '''
-        if self.cli_os_version < 7:
+        if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
         Expect.ping_pong(CLI, "docker run %s uname" % self.docker_container_id, "Linux")
 
@@ -148,7 +149,7 @@ class TestClient(object):
         '''
            remove the container from RHUA and the client, restart docker, uninstall HAProxy and CDS
         '''
-        if self.cli_os_version >= 7:
+        if self.cli_supported:
             Expect.expect_retval(CLI, "docker rm $(docker ps -a -f ancestor=%s -q)" % \
                                  self.docker_container_id)
             Expect.expect_retval(CLI, "docker rmi %s" % self.docker_container_id)
