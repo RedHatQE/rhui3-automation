@@ -15,7 +15,7 @@ Contents
 * `scripts/`: Scripts to simplify the deployment even more by creating a cloudformation stack with the individual RHUI 3 nodes and a hosts configuration file to use by Ansible.
 * `tests/`: Test suite (test cases and libraries) to verify the functionality of an installed RHUI 3 environment or check for potential regressions in updated RHUI 3 ISOs.
 * `hosts.cfg`: A template for the hosts configuration.
-* `{ATOMIC,RHEL{5,6,7,8}}mapping.json`: IDs of the latest Atomic and RHEL 5, 6, 7 & 8 AMIs. The deployment script uses this data.
+* `{ATOMIC,RHEL{5,6,7{,_arm64},8}}mapping.json`: IDs of the latest Atomic and RHEL 5, 6, 7 & 8 AMIs. The deployment script uses this data.
 
 Usage
 -----

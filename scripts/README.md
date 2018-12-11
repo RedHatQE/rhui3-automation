@@ -51,6 +51,7 @@ Default configuration:
   * **--input-conf [name]** - the name of input conf file, `default = "/etc/rhui_ec2.yaml"`
   * **--output-conf [name]** - the name of output conf file, `default = "hosts_$RHELrelease_$iso.cfg"`
   * **--cli5/6/7/8 [number]** - number of CLI machines, `default = 0`
+  * **--cli7/8-arch [arch]** - CLI machines' architecture, `default = x86_64`
   * **--atomic-cli [number]** - number of ATOMIC CLI machines\*, `default = 0`
   * **--test** - if specified, TEST/MASTER machine, `default = 0`
   * **--region [name]** - `default = eu-west-1`
@@ -77,6 +78,10 @@ dnf -y update rh-amazon-rhui-client-beta
 dnf -y install python3
 alternatives --set python /usr/bin/python3
 ```
+
+If you specify a non-x86\_64 client architecture, a suitable instance type will be selected
+automatically. You may need to supply a VPC and a subnet ID with some instance types,
+e.g. with a1.large, which will be selected for arm64.
 
 Mutually exclusive options: 
 

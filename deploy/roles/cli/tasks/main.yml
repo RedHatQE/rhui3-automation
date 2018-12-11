@@ -8,7 +8,7 @@
   tags: cli
 
 - name: install docker if RHEL7
-  package: name=docker state=present enablerepo=rhui-REGION-rhel-server-extras
+  package: name=docker state=present enablerepo=*extras*
   with_indexed_items: "{{ groups['CLI'] }}"
   when: >
     "'CLI' in groups" and
