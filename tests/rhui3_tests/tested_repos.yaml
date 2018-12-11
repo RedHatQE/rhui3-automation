@@ -52,3 +52,10 @@ EUS_repos:
         name: "RHEL for SAP HANA (for RHEL 7 Server) Extended Update Support (RPMs) from RHUI (7.4-x86_64)"
         path: "content/eus/rhel/rhui/server/7/7.4/x86_64/sap-hana/os"
         test_package: "compat-sap-c++-7"
+ARM_repos:
+    7:
+        name: "Red Hat Satellite Tools 6.3 - Puppet 4 (for RHEL 7 for ARM) (RPMs) from RHUI"
+        version: "7Server-aarch64"
+        kind: "Yum"
+        path: "content/dist/rhel-alt/rhui/server/7/7Server/armv8-a/aarch64/sat-tools/6.3-puppet4/os"
+        test_package: "puppet-agent"

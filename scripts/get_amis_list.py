@@ -32,6 +32,10 @@ else:
     sys.stderr.write("Wrong parameters")
     sys.exit(1)
 
+ami_properties = args.rhel.split("-")
+if ami_properties[3] != "x86_64":
+    mapping = mapping.replace(".", "_%s." % ami_properties[3])
+
 regions = ["ap-northeast-1",
            "ap-northeast-2",
            "ap-south-1", 

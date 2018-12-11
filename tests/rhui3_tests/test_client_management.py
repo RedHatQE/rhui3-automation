@@ -40,16 +40,21 @@ class TestClient(object):
         except IndexError:
             raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR)
         self.cli_version = Util.get_rhel_version(CLI)["major"]
+        arch = Util.get_arch(CLI)
+        if arch == "arm64":
+            repos = "ARM_repos"
+        else:
+            repos = "yum_repos"
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:
-                self.yum_repo_name = doc["yum_repos"][self.cli_version]["name"]
-                self.yum_repo_version = doc["yum_repos"][self.cli_version]["version"]
-                self.yum_repo_kind = doc["yum_repos"][self.cli_version]["kind"]
-                self.yum_repo_path = doc["yum_repos"][self.cli_version]["path"]
-                self.test_package = doc["yum_repos"][self.cli_version]["test_package"]
+                self.yum_repo_name = doc[repos][self.cli_version]["name"]
+                self.yum_repo_version = doc[repos][self.cli_version]["version"]
+                self.yum_repo_kind = doc[repos][self.cli_version]["kind"]
+                self.yum_repo_path = doc[repos][self.cli_version]["path"]
+                self.test_package = doc[repos][self.cli_version]["test_package"]
             except KeyError as version:
-                raise nose.SkipTest("No test repo defined for RHEL %s" % version)
+                raise nose.SkipTest("No test repo defined for RHEL %s on %s" % (version, arch))
 
     @staticmethod
     def setup_class():
