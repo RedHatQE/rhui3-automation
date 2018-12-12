@@ -5,6 +5,9 @@
     "us-west-1": {
         "AMI": "ami-0ec1ad91f200c15a8"
     }, 
+    "eu-north-1": {
+        "AMI": "ami-95b53beb"
+    }, 
     "ap-northeast-2": {
         "AMI": "ami-07be38aae5985872f"
     }, 
