@@ -41,10 +41,12 @@ class TestClient(object):
             raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR)
         self.cli_version = Util.get_rhel_version(CLI)["major"]
         arch = Util.get_arch(CLI)
-        if arch == "arm64":
+        if arch == "aarch64":
             repos = "ARM_repos"
-        else:
+        elif arch == "x86_64":
             repos = "yum_repos"
+        else:
+            raise nose.SkipTest("No test repo defined for %s" % arch)
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:

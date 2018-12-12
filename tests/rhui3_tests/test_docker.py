@@ -32,12 +32,17 @@ class TestClient(object):
         self.cli_os_version = Util.get_rhel_version(CLI)["major"]
         self.cli_supported = self.cli_os_version == 7
 
+        arch = Util.get_arch(CLI)
+
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
 
-        self.docker_container_name = doc["docker_container2"]["name"]
-        self.docker_container_id = doc["docker_container2"]["id"]
-        self.docker_container_displayname = doc["docker_container2"]["displayname"]
+        try:
+            self.docker_container_name = doc["docker_container_rhel7"][arch]["name"]
+            self.docker_container_id = doc["docker_container_rhel7"][arch]["id"]
+            self.docker_container_displayname = doc["docker_container_rhel7"][arch]["displayname"]
+        except KeyError:
+            raise nose.SkipTest("No test container defined for %s" % arch)
 
     @staticmethod
     def setup_class():

@@ -29,6 +29,7 @@ class TestEUSCLI(object):
 
     def __init__(self):
         self.cli_version = Util.get_rhel_version(CLI)["major"]
+        arch = Util.get_arch(CLI)
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:
@@ -39,6 +40,8 @@ class TestEUSCLI(object):
                 self.test_package = doc["EUS_repos"][self.cli_version]["test_package"]
             except KeyError as version:
                 raise nose.SkipTest("No test repo defined for RHEL %s" % version)
+            if not self.repo_id.endswith(arch):
+                raise nose.SkipTest("No test repo defined for %s" % arch)
 
     @staticmethod
     def setup_class():

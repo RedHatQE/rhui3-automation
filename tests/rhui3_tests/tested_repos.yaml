@@ -35,10 +35,15 @@ subscription1:
 docker_container1:
     name: "rhcertification/redhat-certification"
     displayname: "RH Certification Docker"
-docker_container2:
-    name: "rhel7-minimal"
-    id: "rhel7-minimal-from-rhui"
-    displayname: "RHEL 7 Minimal"
+docker_container_rhel7:
+    x86_64:
+        name: "rhel7-minimal"
+        id: "rhel7-minimal-from-rhui"
+        displayname: "RHEL 7 Minimal"
+    aarch64:
+        name: "rhel7-aarch64"
+        id: "rhel7-arm64-from-rhui"
+        displayname: "RHEL 7 ARM64"
 EUS_repos:
     6:
         id: "rhel-sap-hana-for-rhel-6-server-eus-rhui-rpms-6.7-x86_64"

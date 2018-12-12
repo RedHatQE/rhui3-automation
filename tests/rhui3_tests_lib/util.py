@@ -154,13 +154,11 @@ class Util(object):
     @staticmethod
     def get_arch(connection):
         '''
-        get machine architecture; note that aarch64 is presented as arm64 for your convenience.
+        get machine architecture; note that ARM64 is presented as aarch64.
         '''
         _, stdout, _ = connection.exec_command("arch")
         with stdout as output:
             arch = output.read().decode().strip()
-        if arch == "aarch64":
-            arch = "arm64"
         return arch
 
     @staticmethod
