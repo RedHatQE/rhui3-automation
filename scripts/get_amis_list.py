@@ -14,9 +14,13 @@ if subprocess.call("aws configure get aws_access_key_id &> /dev/null", shell=Tru
     sys.exit(1)
 
 argparser = argparse.ArgumentParser(description='Get list of AMIs')
-argparser.add_argument('--rhel', help='Description of the ami (f.e. RHEL-7.5_HVM_GA-20180322-x86_64-1-Hourly2-GP2)', default="RHEL-7.5_HVM_GA-20180322-x86_64-1-Hourly2-GP2")
+argparser.add_argument('rhel', help='Description of the ami (f.e. RHEL-7.5_HVM_GA-20180322-x86_64-1-Hourly2-GP2)', metavar='AMI', nargs='?')
 
 args = argparser.parse_args()
+
+if not args.rhel:
+    argparser.print_help()
+    sys.exit(1)
 
 if args.rhel.startswith("RHEL-8"):
     mapping = "RHEL8mapping.json"
