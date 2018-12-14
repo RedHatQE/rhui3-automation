@@ -24,3 +24,12 @@
     ansible_os_family == "RedHat" and
     ansible_distribution_major_version|int == 7
   tags: cli
+
+- name: install podman-docker if RHEL8
+  package: name=podman-docker state=present
+  with_indexed_items: "{{ groups['CLI'] }}"
+  when: >
+    "'CLI' in groups" and
+    ansible_os_family == "RedHat" and
+    ansible_distribution_major_version|int == 8
+  tags: cli
