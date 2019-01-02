@@ -1,6 +1,6 @@
 Requirements
 ---------------
-* [Ansible](http://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#latest-release-via-dnf-or-yum) version 2.5.0 and later.
+* [Ansible](http://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#latest-release-via-dnf-or-yum) version 2.7.5 and later.
 * Have enough machines ready - check the rest of Read Me for details on various RHUI setups.
 * Have RHUI3 ISO.
 

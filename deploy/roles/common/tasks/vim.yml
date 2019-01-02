@@ -2,11 +2,10 @@
 # file: roles/common/tasks/vim.yml
 # install vim, which may not be installed by default but is so much better than vi
 # N/A to Atomic hosts as packages cannot be installed there
-# additionally, not yet usable with the RHEL 8 AMI due to an ansible-dnf issue with AmazonID
 
 - name: install vim
   package:
     name: vim
     state: present
-  when: not atomic | default(False) and ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 7
+  when: not atomic | default(False)
   tags: vim
