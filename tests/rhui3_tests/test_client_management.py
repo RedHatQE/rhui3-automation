@@ -1,5 +1,6 @@
 '''Client management tests'''
 
+from os import getenv
 from os.path import basename
 import re
 
@@ -23,7 +24,11 @@ logging.basicConfig(level=logging.DEBUG)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-CLI = stitches.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
+# To make this script communicate with a client machine different from cli01.example.com, run:
+# export RHUICLI=hostname
+# in your shell before running this script, replacing "hostname" with the actual client host name.
+# This allows for multiple client machines in one stack.
+CLI = stitches.Connection(getenv("RHUICLI", "cli01.example.com"), "root", "/root/.ssh/id_rsa_test")
 
 CUSTOM_REPO = "custom-i386-x86_64"
 CUSTOM_PATH = CUSTOM_REPO.replace("-", "/")
