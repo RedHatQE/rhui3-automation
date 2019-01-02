@@ -208,3 +208,12 @@ class Util(object):
         with stdout as output:
             rpms = output.read().decode().splitlines()
             return rpms
+
+    @staticmethod
+    def restart_if_present(connection, service):
+        '''
+        restart a systemd service if it exists
+        '''
+        Expect.expect_retval(connection,
+                             "if [ -f /usr/lib/systemd/system/%s.service ]; then " % service +
+                             "systemctl restart %s; fi" % service)
