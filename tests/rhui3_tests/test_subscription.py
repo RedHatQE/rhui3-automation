@@ -23,7 +23,7 @@ class TestSubscription(object):
     def __init__(self):
         with open('/usr/share/rhui3_tests_lib/config/tested_repos.yaml', 'r') as configfile:
             doc = yaml.load(configfile)
-        self.subscription_name_1 = doc['subscription1']['name']
+        self.subscription_name = doc['subscription']['name']
 
     @staticmethod
     def setup_class():
@@ -64,13 +64,13 @@ class TestSubscription(object):
         '''
         avail_sub = RHUIManagerSubMan.subscriptions_list(CONNECTION, "available")
         nose.tools.assert_not_equal(len(avail_sub), 0)
-        nose.tools.assert_equal(self.subscription_name_1, avail_sub[0])
+        nose.tools.assert_equal(self.subscription_name, avail_sub[0])
 
     def test_05_register_sub_in_rhui(self):
         '''
             register the RHUI for CCSP subscription in RHUI
         '''
-        RHUIManagerSubMan.subscriptions_register(CONNECTION, [self.subscription_name_1])
+        RHUIManagerSubMan.subscriptions_register(CONNECTION, [self.subscription_name])
 
     def test_06_check_registered_subs(self):
         '''
@@ -78,13 +78,13 @@ class TestSubscription(object):
         '''
         reg_sub = RHUIManagerSubMan.subscriptions_list(CONNECTION, "registered")
         nose.tools.assert_not_equal(len(reg_sub), 0)
-        nose.tools.assert_equal(self.subscription_name_1, reg_sub[0])
+        nose.tools.assert_equal(self.subscription_name, reg_sub[0])
 
     def test_07_unregister_sub_in_rhui(self):
         '''
             unregister the subscription in RHUI
         '''
-        RHUIManagerSubMan.subscriptions_unregister(CONNECTION, [self.subscription_name_1])
+        RHUIManagerSubMan.subscriptions_unregister(CONNECTION, [self.subscription_name])
         # also delete the cert file
         RHUIManager.remove_rh_certs(CONNECTION)
 

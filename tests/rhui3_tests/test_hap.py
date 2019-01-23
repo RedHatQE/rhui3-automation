@@ -5,6 +5,7 @@ from os.path import basename
 import logging
 import nose
 import stitches
+from stitches.expect import Expect
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, NoSuchInstance
@@ -92,6 +93,30 @@ def test_10_add_hap_uppercase():
     RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["HAP01.example.com"])
     hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
     nose.tools.assert_equal(hap_list, [])
+
+def test_11_delete_unreachable():
+    '''
+    add a Load-balancer, make it unreachable, and see if it can still be deleted from the RHUA
+    '''
+    # for RHBZ#1639996
+    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com")
+    hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
+    nose.tools.assert_not_equal(hap_list, [])
+    # make it unreachable by setting its IP address to some nonsense and also stopping bind
+    tweak_hosts_cmd = r"sed -i.bak 's/^[^ ]*\(.*hap01.example.com\)$/256.0.0.0\1/' /etc/hosts"
+    Expect.expect_retval(CONNECTION, tweak_hosts_cmd)
+    Expect.expect_retval(CONNECTION, "service named stop")
+    # delete it
+    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
+    # check it
+    hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
+    nose.tools.assert_equal(hap_list, [])
+    # undo the DNS changes
+    Expect.expect_retval(CONNECTION, "mv -f /etc/hosts.bak /etc/hosts")
+    Expect.expect_retval(CONNECTION, "service named start")
+    # the node remains configured (haproxy)... unconfigure it properly
+    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com")
+    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
 
 def teardown():
     '''

@@ -6,6 +6,7 @@ import random
 import logging
 import nose
 import stitches
+from stitches.expect import Expect
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, NoSuchInstance
@@ -100,6 +101,32 @@ def test_10_add_cds_uppercase():
     RHUIManagerInstance.delete(CONNECTION, "cds", [cds_up])
     cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
     nose.tools.assert_equal(len(cds_list), 0)
+
+def test_11_delete_unreachable():
+    '''
+    add a CDS, make it unreachable, and see if it can still be deleted from the RHUA
+    '''
+    # for RHBZ#1639996
+    # choose a random CDS hostname from the list
+    cds = random.choice(CDS_HOSTNAMES)
+    RHUIManagerInstance.add_instance(CONNECTION, "cds", cds)
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
+    nose.tools.assert_not_equal(cds_list, [])
+    # make it unreachable by setting its IP address to some nonsense and also stopping bind
+    tweak_hosts_cmd = r"sed -i.bak 's/^[^ ]*\(.*%s\)$/256.0.0.0\1/' /etc/hosts" % cds
+    Expect.expect_retval(CONNECTION, tweak_hosts_cmd)
+    Expect.expect_retval(CONNECTION, "service named stop")
+    # delete it
+    RHUIManagerInstance.delete(CONNECTION, "cds", [cds])
+    # check it
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
+    nose.tools.assert_equal(cds_list, [])
+    # undo the DNS changes
+    Expect.expect_retval(CONNECTION, "mv -f /etc/hosts.bak /etc/hosts")
+    Expect.expect_retval(CONNECTION, "service named start")
+    # the node remains configured (RHUI mount point, httpd)... unconfigure it properly
+    RHUIManagerInstance.add_instance(CONNECTION, "cds", cds)
+    RHUIManagerInstance.delete(CONNECTION, "cds", [cds])
 
 def teardown():
     '''

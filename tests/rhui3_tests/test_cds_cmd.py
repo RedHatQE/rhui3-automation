@@ -204,6 +204,35 @@ def test_19_add_safe_known_key():
     # clean up the SSH key
     Expect.expect_retval(CONNECTION, "ssh-keygen -R %s" % cds)
 
+def test_20_delete_unreachable():
+    '''
+    add a CDS, make it unreachable, and see if it can still be deleted from the RHUA
+    '''
+    # for RHBZ#1639996
+    # choose a random CDS hostname from the list
+    cds = random.choice(CDS_HOSTNAMES)
+    status = RHUICLI.add(CONNECTION, "cds", cds, unsafe=True)
+    nose.tools.ok_(status, msg="unexpected installation status: %s" % status)
+    cds_list = RHUICLI.list(CONNECTION, "cds")
+    nose.tools.eq_(cds_list, [cds])
+    # make it unreachable by setting its IP address to some nonsense and also stopping bind
+    tweak_hosts_cmd = r"sed -i.bak 's/^[^ ]*\(.*%s\)$/256.0.0.0\1/' /etc/hosts" % cds
+    Expect.expect_retval(CONNECTION, tweak_hosts_cmd)
+    Expect.expect_retval(CONNECTION, "service named stop")
+    # delete it
+    status = RHUICLI.delete(CONNECTION, "cds", [cds], force=True)
+    nose.tools.ok_(status, msg="unexpected deletion status: %s" % status)
+    # check it
+    cds_list = RHUICLI.list(CONNECTION, "cds")
+    nose.tools.eq_(cds_list, [])
+    # undo the DNS changes
+    Expect.expect_retval(CONNECTION, "mv -f /etc/hosts.bak /etc/hosts")
+    Expect.expect_retval(CONNECTION, "service named start")
+    # the node remains configured (RHUI mount point, httpd)... unconfigure it properly
+    # not possible until RHBZ#1640002 is fixed
+    # clean up the SSH key
+    Expect.expect_retval(CONNECTION, "ssh-keygen -R %s" % cds)
+
 def teardown():
     '''
     announce the end of the test run

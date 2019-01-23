@@ -27,6 +27,7 @@ Welcome to the RHUI 3 Test Plan!
    sosreport
    subscription
    sync_management
+   updateinfo
    user_management
    zzz_misc
    

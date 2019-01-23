@@ -30,6 +30,7 @@ In addition, you need a ZIP file with the following files in the root of the arc
   * _Red Hat Enterprise Linux Atomic Host (Trees) from RHUI_
   * _Red Hat Enterprise Linux Atomic Host Beta (Source RPMs) from RHUI_
   * _Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI_
+* `rhcert_empty.pem` — This must be a Red Hat content certificate containing no entitlement.
 * `rhcert_expired.pem` — This must be an expired Red Hat content certificate.
 * `rhcert_incompatible.pem` — This must be a Red Hat content certificate containing one or more entitlements that are not compatible with RHUI (containing a non-RHUI repository path) and no compatible entitlement at all.
 * `rhcert_partially_invalid.pem` — This must be a Red Hat content certificate containing one or more entitlements that are not compatible with RHUI (containing a non-RHUI repository path) but also at least one compatible entitlement.
@@ -37,6 +38,7 @@ In addition, you need a ZIP file with the following files in the root of the arc
 * `rhui-rpm-upload-trial-1-1.noarch.rpm` — This package will also be uploaded to a custom repository. It must be signed with the RHUI QE GPG key.
 * `rhui-rpm-upload-tryout-1-1.noarch.rpm` — This package will also be uploaded to a custom repository. It must be signed with a key different from RHUI QE.
 * `test_gpg_key` — This is the RHUI QE public GPG key (0x9F6E93A2).
+* `\*.tar` — These must be tarballs containing some packages and their `updateinfo.xml.gz` files. The contents will be used for updateinfo testing. Exact names are to be specified in `rhui3_tests/tested_repos.yaml`.
 
 Lastly, in order for the subscription test to be able to run, you need a file with valid Red Hat credentials allowing access to RHUI. The file must look like this:
 

@@ -84,13 +84,21 @@ class RHUIManagerCLI(object):
                          timeout=300)
 
     @staticmethod
-    def repo_list(connection, repo_id, repo_name):
+    def repo_list(connection, ids_only=False, redhat_only=False, delimiter=""):
         '''
-        check if the given repo ID and name are listed
+        show repos; can show IDs only, RH repos only, and accepts a delimiter
         '''
-        Expect.ping_pong(connection,
-                         "rhui-manager repo list",
-                         repo_id + " *:: " + Util.esc_parentheses(repo_name))
+        cmd = "rhui-manager repo list"
+        if ids_only:
+            cmd += " --ids_only"
+        if redhat_only:
+            cmd += " --redhat_only"
+        if delimiter:
+            cmd += " --delimiter %s" % delimiter
+        _, stdout, _ = connection.exec_command(cmd)
+        with stdout as output:
+            response = output.read().decode().strip()
+        return response
 
     @staticmethod
     def get_repo_lists(connection):
@@ -212,6 +220,16 @@ class RHUIManagerCLI(object):
         Expect.expect_retval(connection, "rhui-manager repo delete --repo_id %s" % repo_id)
 
     @staticmethod
+    def repo_add_errata(connection, repo_id, updateinfo):
+        '''
+        associate errata metadata with a repo
+        '''
+        Expect.expect_retval(connection,
+                             "rhui-manager repo add_errata " +
+                             "--repo_id %s --updateinfo %s" % (repo_id, updateinfo),
+                             timeout=120)
+
+    @staticmethod
     def packages_list(connection, repo_id, package):
         '''
         check if a package is present in the repo
@@ -229,11 +247,14 @@ class RHUIManagerCLI(object):
                          package + " successfully uploaded")
 
     @staticmethod
-    def repo_labels(connection, repo_label):
+    def repo_labels(connection):
         '''
-        check if the specified repo label is known
+        view repo labels in the RHUA; returns a list of the labels
         '''
-        Expect.ping_pong(connection, "rhui-manager client labels", repo_label)
+        _, stdout, _ = connection.exec_command("rhui-manager client labels")
+        with stdout as output:
+            labels = output.read().decode().splitlines()
+        return labels
 
     @staticmethod
     def client_cert(connection, repo_labels, name, days, directory):
@@ -249,17 +270,35 @@ class RHUIManagerCLI(object):
     def client_rpm(connection, certdata, rpmdata, directory, unprotected_repos=""):
         '''
         generate a client configuration RPM
+        The certdata argument must be a list, and two kinds of data are supported:
+          * key path and cert path (full paths, starting with "/"), or
+          * one or more repo labels and optionally an integer denoting the number of days the cert
+            will be valid for; if unspecified, rhui-manager will use 365. In this case,
+            a certificate will be generated on the fly.
+        The rpmdata argument must be a list with one or two strings:
+          * package name: the name for the RPM
+          * package version: string denoting the version; if unspecified, rhui-manager will use 2.0
         '''
-        cmd = "rhui-manager client rpm " + \
-              "--private_key %s --entitlement_cert %s " % (certdata[0], certdata[1]) + \
-              "--rpm_version %s --rpm_name %s " % (rpmdata[0], rpmdata[1]) + \
-              "--dir %s" % (directory)
+        cmd = "rhui-manager client rpm"
+        if certdata[0].startswith("/"):
+            cmd += " --private_key %s --entitlement_cert %s" % (certdata[0], certdata[1])
+        else:
+            cmd += " --cert"
+            if isinstance(certdata[-1], int):
+                cmd += " --days %s" % certdata.pop()
+            cmd += " --repo_label %s" % ",".join(certdata)
+        cmd += " --rpm_name %s" % rpmdata[0]
+        if len(rpmdata) > 1:
+            cmd += " --rpm_version %s" % rpmdata[1]
+        else:
+            rpmdata.append("2.0")
+        cmd += " --dir %s" % directory
         if unprotected_repos:
-            cmd += " --unprotected_repos " + ",".join(unprotected_repos)
+            cmd += " --unprotected_repos %s" % ",".join(unprotected_repos)
         Expect.ping_pong(connection,
                          cmd,
                          "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-1.noarch.rpm" % \
-                         (directory, rpmdata[1], rpmdata[0], rpmdata[1], rpmdata[0]))
+                         (directory, rpmdata[0], rpmdata[1], rpmdata[0], rpmdata[1]))
 
     @staticmethod
     def subscriptions_list(connection, what="registered", poolonly=False):

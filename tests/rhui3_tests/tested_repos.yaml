@@ -30,7 +30,11 @@ CLI_repo2:
     name: "Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI (x86_64)"
     id: "rhel-atomic-host-rhui-rpms-x86_64"
     label: "rhel-atomic-host-rhui-rpms"
-subscription1:
+CLI_product:
+    name: "Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI"
+    repos_basename: "rhel-atomic-host-rhui-rpms"
+    arches: "aarch64 ppc64le s390x x86_64"
+subscription:
     name: "Red Hat Update Infrastructure and RHEL Add-Ons for Providers"
 docker_container1:
     name: "rhcertification/redhat-certification"
@@ -64,3 +68,18 @@ ARM_repos:
         kind: "Yum"
         path: "content/dist/rhel-alt/rhui/server/7/7Server/armv8-a/aarch64/sat-tools/6.3-puppet4/os"
         test_package: "puppet-agent"
+updateinfo:
+    6:
+        x86_64:
+            repo_name: "Red Hat Hardware Certification Test Suite 6"
+            repo_id: "hts-6"
+            test_package: "hwcert-client-info"
+            old_version: "1.6.5.2-20140611.el6"
+            errata: "RHEA-2014:1805"
+    7:
+        x86_64:
+            repo_name: "Red Hat Storage Console Agent 2.0"
+            repo_id: "rhscon-agent-2"
+            test_package: "rhscon-core-selinux"
+            old_version: "0.0.41-1.el7scon"
+            errata: "RHSA-2016:2082"
