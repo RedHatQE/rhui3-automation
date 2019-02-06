@@ -117,7 +117,15 @@
   shell: 'cd /tmp/extra_rhui_files/ && find . -type f -iname "*\.zip" -exec unzip -o {} \;'
   delegate_to: "{{ item }}"
   with_items: "{{ groups['RHUA']|default([]) }}"
+  register: unzip_files
   when: (extra_files is defined) and (upload_extra_files is success)
+  tags: tests
+
+- name: unpack tarballs with test repos
+  shell: 'cd /tmp/extra_rhui_files/ && for f in *.tar; do tar xf $f; done'
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['RHUA']|default([]) }}"
+  when: (extra_files is defined) and (unzip_files is success)
   tags: tests
 
 - name: upload Red Hat credentials

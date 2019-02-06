@@ -9,7 +9,6 @@ from stitches.expect import Expect
 
 from rhui3_tests_lib.rhui_cmd import RHUICLI
 from rhui3_tests_lib.rhuimanager import RHUIManager
-from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -50,20 +49,19 @@ def test_04_list_hap():
     hap_list = RHUICLI.list(CONNECTION, "haproxy")
     nose.tools.eq_(hap_list, [HA_HOSTNAME])
 
-# currently broken, see RHBZ#1409693
-# def test_05_reinstall_hap():
-#     '''
-#     add the HAProxy Load-balancer again by reinstalling it
-#     '''
-#     status = RHUICLI.reinstall(CONNECTION, "haproxy", HA_HOSTNAME)
-#     nose.tools.ok_(status, msg="unexpected reinstallation status: %s" % status)
-#
-# def test_06_list_hap():
-#     '''
-#     check if the HAProxy Load-balancer is still tracked, and only once
-#     '''
-#     hap_list = RHUICLI.list(CONNECTION, "haproxy")
-#     nose.tools.eq_(hap_list, [HA_HOSTNAME])
+def test_05_reinstall_hap():
+    '''
+    add the HAProxy Load-balancer again by reinstalling it
+    '''
+    status = RHUICLI.reinstall(CONNECTION, "haproxy", HA_HOSTNAME)
+    nose.tools.ok_(status, msg="unexpected reinstallation status: %s" % status)
+
+def test_06_list_hap():
+    '''
+    check if the HAProxy Load-balancer is still tracked, and only once
+    '''
+    hap_list = RHUICLI.list(CONNECTION, "haproxy")
+    nose.tools.eq_(hap_list, [HA_HOSTNAME])
 
 def test_07_readd_hap_noforce():
     '''
@@ -93,29 +91,26 @@ def test_10_list_hap():
     hap_list = RHUICLI.list(CONNECTION, "haproxy")
     nose.tools.eq_(hap_list, [HA_HOSTNAME])
 
-# currently broken, see RHBZ#1409695
-# def test_11_delete_hap_noforce():
-#     '''
-#     check if rhui refuses to delete the node when it's the only/last one and force isn't used
-#     '''
-#     status = RHUICLI.delete(CONNECTION, "haproxy", [HA_HOSTNAME])
-#     nose.tools.ok_(not status, msg="unexpected deletion status: %s" % status)
-#
-# def test_12_list_hap():
-#     '''
-#     check if the HAProxy Load-balancer really hasn't been deleted
-#     '''
-#     hap_list = RHUICLI.list(CONNECTION, "haproxy")
-#     nose.tools.eq_(hap_list, [HA_HOSTNAME])
-#
+def test_11_delete_hap_noforce():
+    '''
+    check if rhui refuses to delete the node when it's the only/last one and force isn't used
+    '''
+    status = RHUICLI.delete(CONNECTION, "haproxy", [HA_HOSTNAME])
+    nose.tools.ok_(not status, msg="unexpected deletion status: %s" % status)
+
+def test_12_list_hap():
+    '''
+    check if the HAProxy Load-balancer really hasn't been deleted
+    '''
+    hap_list = RHUICLI.list(CONNECTION, "haproxy")
+    nose.tools.eq_(hap_list, [HA_HOSTNAME])
+
 def test_13_delete_hap_force():
     '''
-    delete the HAProxy Load-balancer forcibly - actually applying a workaround
+    delete the HAProxy Load-balancer forcibly
     '''
-    # remove the line below and uncomment the rest when RHBZ#1409695 is fixed
-    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [HA_HOSTNAME])
-    # status = RHUICLI.delete(CONNECTION, "haproxy", [HA_HOSTNAME], force=True)
-    # nose.tools.ok_(status, msg="unexpected deletion status: %s" % status)
+    status = RHUICLI.delete(CONNECTION, "haproxy", [HA_HOSTNAME], force=True)
+    nose.tools.ok_(status, msg="unexpected deletion status: %s" % status)
 
 def test_14_list_hap():
     '''
@@ -151,7 +146,8 @@ def test_17_add_hap_changed_case():
     nose.tools.ok_(status, msg="unexpected %s addition status: %s" % (hap_up, status))
     hap_list = RHUICLI.list(CONNECTION, "haproxy")
     nose.tools.eq_(hap_list, [hap_up])
-    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [hap_up])
+    status = RHUICLI.delete(CONNECTION, "haproxy", [hap_up], force=True)
+    nose.tools.ok_(status, msg="unexpected deletion status: %s" % status)
 
 def test_18_add_safe_unknown_key():
     '''
@@ -179,7 +175,35 @@ def test_19_add_safe_known_key():
     nose.tools.ok_(status, msg="unexpected addition status: %s" % status)
     hap_list = RHUICLI.list(CONNECTION, "haproxy")
     nose.tools.eq_(hap_list, [HA_HOSTNAME])
-    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [HA_HOSTNAME])
+    status = RHUICLI.delete(CONNECTION, "haproxy", [HA_HOSTNAME], force=True)
+    nose.tools.ok_(status, msg="unexpected deletion status: %s" % status)
+    # clean up the SSH key
+    Expect.expect_retval(CONNECTION, "ssh-keygen -R %s" % HA_HOSTNAME)
+
+def test_20_delete_unreachable():
+    '''
+    add a Load-balancer, make it unreachable, and see if it can still be deleted from the RHUA
+    '''
+    # for RHBZ#1639996
+    status = RHUICLI.add(CONNECTION, "haproxy", HA_HOSTNAME, unsafe=True)
+    nose.tools.ok_(status, msg="unexpected installation status: %s" % status)
+    hap_list = RHUICLI.list(CONNECTION, "haproxy")
+    nose.tools.eq_(hap_list, [HA_HOSTNAME])
+    # make it unreachable but setting its IP address to some nonsense and also stopping bind
+    tweak_hosts_cmd = r"sed -i.bak 's/^[^ ]*\(.*%s\)$/256.0.0.0\1/' /etc/hosts" % HA_HOSTNAME
+    Expect.expect_retval(CONNECTION, tweak_hosts_cmd)
+    Expect.expect_retval(CONNECTION, "service named stop")
+    # delete it
+    status = RHUICLI.delete(CONNECTION, "haproxy", [HA_HOSTNAME], force=True)
+    nose.tools.ok_(status, msg="unexpected deletion status: %s" % status)
+    # check it
+    hap_list = RHUICLI.list(CONNECTION, "haproxy")
+    nose.tools.eq_(hap_list, [])
+    # undo the DNS changes
+    Expect.expect_retval(CONNECTION, "mv -f /etc/hosts.bak /etc/hosts")
+    Expect.expect_retval(CONNECTION, "service named start")
+    # the node remains configured (haproxy)... unconfigure it properly
+    # not possible until RHBZ#1640002 is fixed
     # clean up the SSH key
     Expect.expect_retval(CONNECTION, "ssh-keygen -R %s" % HA_HOSTNAME)
 

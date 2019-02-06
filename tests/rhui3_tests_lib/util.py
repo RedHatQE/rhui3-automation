@@ -87,7 +87,7 @@ class Util(object):
         '''
         Remove installed rpms from cli
         '''
-        Expect.expect_retval(connection, "rpm -e " + ' '.join(rpmlist))
+        Expect.expect_retval(connection, "rpm -e " + ' '.join(rpmlist), timeout=60)
 
     @staticmethod
     def install_pkg_from_rhua(rhua_connection, connection, pkgpath):

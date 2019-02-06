@@ -35,8 +35,7 @@ class TestClient(object):
 
     def __init__(self):
         self.cli_os_version = Util.get_rhel_version(CLI)["major"]
-        self.cli_supported = self.cli_os_version == 7
-        # add 8 as another supported version when RHBZ#1659385 is fixed
+        self.cli_supported = self.cli_os_version in [7, 8]
 
         arch = Util.get_arch(CLI)
 

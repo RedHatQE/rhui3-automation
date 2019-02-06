@@ -295,7 +295,7 @@ class RHUIManagerRepo(object):
         Expect.expect(connection, "will be uploaded:")
         Expect.enter(connection, path)
         RHUIManager.proceed_with_check(connection, "The following RPMs will be uploaded:", content)
-        RHUIManager.quit(connection)
+        RHUIManager.quit(connection, timeout=60)
 
     @staticmethod
     def check_for_package(connection, reponame, package):

@@ -32,16 +32,16 @@ class TestCLI(object):
     '''
 
     def __init__(self):
-        with open('/usr/share/rhui3_tests_lib/config/tested_repos.yaml', 'r') as configfile:
+        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
 
-        self.yum_repo_name_1 = doc['CLI_repo1']['name']
-        self.yum_repo_id_1 = doc['CLI_repo1']['id']
-        self.yum_repo_label_1 = doc['CLI_repo1']['label']
-        self.yum_repo_name_2 = doc['CLI_repo2']['name']
-        self.yum_repo_id_2 = doc['CLI_repo2']['id']
-        self.yum_repo_label_2 = doc['CLI_repo2']['label']
-        self.subscription_name_1 = doc['subscription1']['name']
+        self.yum_repo_names = [doc["CLI_repo1"]["name"], doc["CLI_repo2"]["name"]]
+        self.yum_repo_ids = [doc["CLI_repo1"]["id"], doc["CLI_repo2"]["id"]]
+        self.yum_repo_labels = [doc["CLI_repo1"]["label"], doc["CLI_repo2"]["label"]]
+        self.product_name = doc["CLI_product"]["name"]
+        self.product_repos = ["%s-%s" % (doc["CLI_product"]["repos_basename"], arch)
+                              for arch in doc["CLI_product"]["arches"].split()]
+        self.subscription_name = doc['subscription']['name']
 
     @staticmethod
     def setup_class():
@@ -58,9 +58,8 @@ class TestCLI(object):
     @staticmethod
     def test_02_check_empty_repo_list():
         '''check if the repo list is empty'''
-        repolist = RHUIManagerCLI.get_repo_lists(CONNECTION)
-        nose.tools.ok_(not repolist["redhat"] and not repolist["custom"],
-                       msg="there are some repos already: %s" % repolist)
+        repolist = RHUIManagerCLI.repo_list(CONNECTION, True)
+        nose.tools.ok_(not repolist, msg="there are some repos already: %s" % repolist)
 
     @staticmethod
     def test_03_create_custom_repos():
@@ -89,8 +88,12 @@ class TestCLI(object):
     @staticmethod
     def test_05_check_custom_repos():
         '''check if the custom repos were actually created'''
-        RHUIManagerCLI.repo_list(CONNECTION, CUSTOM_REPOS[0], CUSTOM_REPOS[0])
-        RHUIManagerCLI.repo_list(CONNECTION, CUSTOM_REPOS[1], CR_NAMES[1])
+        # try a delimiter this time
+        delimiter = ","
+        repos_expected = delimiter.join(sorted(CUSTOM_REPOS))
+        repos_actual = RHUIManagerCLI.repo_list(CONNECTION, True, False, delimiter)
+        nose.tools.eq_(repos_expected, repos_actual)
+        # ^ also checks if the repo IDs are sorted
 
     @staticmethod
     def test_06_upload_rpm():
@@ -123,25 +126,25 @@ class TestCLI(object):
 
     def test_11_check_unused_product(self):
         '''check if a repo is available'''
-        RHUIManagerCLI.repo_unused(CONNECTION, self.yum_repo_name_1)
+        RHUIManagerCLI.repo_unused(CONNECTION, self.yum_repo_names[0])
 
     def test_12_add_rh_repo_by_id(self):
         '''add a Red Hat repo by its ID'''
-        RHUIManagerCLI.repo_add_by_repo(CONNECTION, [self.yum_repo_id_2])
+        RHUIManagerCLI.repo_add_by_repo(CONNECTION, [self.yum_repo_ids[1]])
 
     def test_13_add_rh_repo_by_product(self):
         '''add a Red Hat repo by its product name'''
-        RHUIManagerCLI.repo_add(CONNECTION, self.yum_repo_name_1)
+        RHUIManagerCLI.repo_add(CONNECTION, self.yum_repo_names[0])
 
     def test_14_repo_list(self):
         '''check the added repos'''
-        RHUIManagerCLI.repo_list(CONNECTION, self.yum_repo_id_1, self.yum_repo_name_1)
-        RHUIManagerCLI.repo_list(CONNECTION, self.yum_repo_id_2, self.yum_repo_name_2)
+        repolist_actual = RHUIManagerCLI.repo_list(CONNECTION, True, True).splitlines()
+        nose.tools.eq_(self.yum_repo_ids, repolist_actual)
 
     def test_15_no_unexpected_repos(self):
         '''check if no stray repo was added'''
-        repolist_expected = {"redhat": sorted([[self.yum_repo_id_1, self.yum_repo_name_1],
-                                               [self.yum_repo_id_2, self.yum_repo_name_2]]),
+        repolist_expected = {"redhat": sorted([[self.yum_repo_ids[0], self.yum_repo_names[0]],
+                                               [self.yum_repo_ids[1], self.yum_repo_names[1]]]),
                              "custom": sorted([[CUSTOM_REPOS[0], CUSTOM_REPOS[0]],
                                                [CUSTOM_REPOS[1], CR_NAMES[1]]])}
         repolist_actual = RHUIManagerCLI.get_repo_lists(CONNECTION)
@@ -149,24 +152,26 @@ class TestCLI(object):
 
     def test_16_start_syncing_repo(self):
         '''sync one of the repos'''
-        RHUIManagerCLI.repo_sync(CONNECTION, self.yum_repo_id_2, self.yum_repo_name_2)
+        RHUIManagerCLI.repo_sync(CONNECTION, self.yum_repo_ids[1], self.yum_repo_names[1])
 
     def test_17_repo_info(self):
         '''verify that the repo name is part of the information about the specified repo ID'''
-        RHUIManagerCLI.repo_info(CONNECTION, self.yum_repo_id_2, self.yum_repo_name_2)
+        RHUIManagerCLI.repo_info(CONNECTION, self.yum_repo_ids[1], self.yum_repo_names[1])
 
     def test_18_check_package_in_repo(self):
         '''check a random package in the repo'''
-        RHUIManagerCLI.packages_list(CONNECTION, self.yum_repo_id_2, "ostree")
+        RHUIManagerCLI.packages_list(CONNECTION, self.yum_repo_ids[1], "ostree")
 
     def test_19_list_labels(self):
         '''check repo labels'''
-        RHUIManagerCLI.repo_labels(CONNECTION, self.yum_repo_label_1)
+        actual_labels = RHUIManagerCLI.repo_labels(CONNECTION)
+        nose.tools.ok_(all(repo in actual_labels for repo in self.yum_repo_labels),
+                       msg="%s not found in %s" % (self.yum_repo_labels, actual_labels))
 
     def test_20_generate_certificate(self):
         '''generate an entitlement certificate'''
         RHUIManagerCLI.client_cert(CONNECTION,
-                                   [self.yum_repo_label_1, self.yum_repo_label_2],
+                                   self.yum_repo_labels,
                                    "atomic_and_my",
                                    365,
                                    "/tmp")
@@ -188,7 +193,7 @@ class TestCLI(object):
         '''create a client configuration RPM'''
         RHUIManagerCLI.client_rpm(CONNECTION,
                                   ["/tmp/atomic_and_my.key", "/tmp/atomic_and_my.crt"],
-                                  ["1.0", "atomic_and_my"],
+                                  ["atomic_and_my", "1.0"],
                                   "/tmp",
                                   [CUSTOM_REPOS[0]])
 
@@ -253,7 +258,7 @@ class TestCLI(object):
     def test_31_check_reg_pool_for_rhui(self):
         '''check if the registered subscription's description is RHUI for CCSP'''
         list_reg = RHUIManagerCLI.subscriptions_list(CONNECTION)
-        nose.tools.ok_(self.subscription_name_1 in list_reg,
+        nose.tools.ok_(self.subscription_name in list_reg,
                        msg="Expected subscription not registered in RHUI! Got: " + list_reg)
 
     @staticmethod
@@ -271,7 +276,7 @@ class TestCLI(object):
 
     def test_34_resync_repo(self):
         '''sync the repo again'''
-        RHUIManagerCLI.repo_sync(CONNECTION, self.yum_repo_id_2, self.yum_repo_name_2)
+        RHUIManagerCLI.repo_sync(CONNECTION, self.yum_repo_ids[1], self.yum_repo_names[1])
 
     @staticmethod
     def test_35_resync_no_warning():
@@ -314,22 +319,40 @@ class TestCLI(object):
         # for RHBZ#1588931 & RHBZ#1584527
         # delete currently used certificates and repos first
         RHUIManager.remove_rh_certs(CONNECTION)
-        for repo in CUSTOM_REPOS + [self.yum_repo_id_1, self.yum_repo_id_2]:
+        for repo in CUSTOM_REPOS + self.yum_repo_ids:
             RHUIManagerCLI.repo_delete(CONNECTION, repo)
-        repolist = RHUIManagerCLI.get_repo_lists(CONNECTION)
-        nose.tools.ok_(not repolist["redhat"] and not repolist["custom"],
-                       msg="can't continue as some repos remain: %s" % repolist)
+        repolist = RHUIManagerCLI.repo_list(CONNECTION, True)
+        nose.tools.ok_(not repolist, msg="can't continue as some repos remain: %s" % repolist)
         # try uploading the cert now
         RHUIManagerCLI.cert_upload(CONNECTION,
                                    "/tmp/extra_rhui_files/rhcert_partially_invalid.pem",
                                    "Red Hat Enterprise Linux 7 Server from RHUI")
         # the RHUI log must contain the fact that an invalid path was found in the cert
         Expect.ping_pong(CONNECTION, "tail /root/.rhui/rhui.log", "Invalid entitlement path")
+        RHUIManager.remove_rh_certs(CONNECTION)
+
+    @staticmethod
+    def test_41_upload_empty_cert():
+        '''check that an empty certificate is rejected (no traceback)'''
+        # for RHBZ#1497028
+        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_empty.pem",
+                                   "does not contain any entitlements")
+
+    def test_42_multi_repo_product(self):
+        '''check that all repos in a multi-repo product get added'''
+        # for RHBZ#1651638
+        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_atomic.pem", "Atomic")
+        RHUIManagerCLI.repo_add(CONNECTION, self.product_name)
+        repolist_actual = RHUIManagerCLI.repo_list(CONNECTION, True).splitlines()
+        nose.tools.eq_(self.product_repos, repolist_actual)
+        # ^ also checks if the repolist is sorted
+        for repo in self.product_repos:
+            RHUIManagerCLI.repo_delete(CONNECTION, repo)
+        RHUIManager.remove_rh_certs(CONNECTION)
 
     @staticmethod
     def test_99_cleanup():
-        '''cleanup: remove certs and other files'''
-        RHUIManager.remove_rh_certs(CONNECTION)
+        '''cleanup: remove temporary files'''
         Expect.ping_pong(CONNECTION, "rm -rf /tmp/atomic_and_my* ; " +
                          "ls /tmp/atomic_and_my* 2>&1",
                          "No such file or directory")

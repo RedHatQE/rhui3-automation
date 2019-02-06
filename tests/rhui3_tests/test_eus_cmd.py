@@ -12,7 +12,6 @@ import yaml
 from rhui3_tests_lib.rhui_cmd import RHUICLI
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_cmdline import RHUIManagerCLI
-from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
 from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
@@ -58,7 +57,7 @@ class TestEUSCLI(object):
         RHUIManager.initial_run(RHUA)
 
     @staticmethod
-    def test_02_add_hap():
+    def test_02_add_cds():
         '''
         add a CDS
         '''
@@ -98,46 +97,25 @@ class TestEUSCLI(object):
         '''
         RHUIManagerCLI.repo_sync(RHUA, self.repo_id, self.repo_name)
 
-    def test_07_generate_certificate(self):
+    def test_08_create_cli_config_rpm(self):
         '''
-        generate an entitlement certificate
+        create an entitlement certificate and a client configuration RPM (in one step)
         '''
-        RHUIManagerCLI.client_cert(RHUA,
-                                   [self.repo_label],
-                                   CONF_RPM_NAME,
-                                   365,
-                                   "/tmp")
+        RHUIManagerCLI.client_rpm(RHUA, [self.repo_label], [CONF_RPM_NAME], "/tmp")
 
     @staticmethod
-    def test_08_create_cli_config_rpm():
-        '''
-        create a client configuration RPM
-        '''
-        RHUIManagerCLI.client_rpm(RHUA,
-                                  ["/tmp/%s.key" % CONF_RPM_NAME,
-                                   "/tmp/%s.crt" % CONF_RPM_NAME],
-                                  ["1.0",
-                                   CONF_RPM_NAME],
-                                  "/tmp")
-
-    @staticmethod
-    def test_09_rm_amazon_rhui_cf_rpm():
-        '''
-        remove Amazon RHUI configuration from the client
-        '''
-        Util.remove_amazon_rhui_conf_rpm(CLI)
-
-    @staticmethod
-    def test_10_install_conf_rpm():
+    def test_09_install_conf_rpm():
         '''
         install the client configuration RPM
         '''
+        # remove Amazon RHUI configuration from the client first
+        Util.remove_amazon_rhui_conf_rpm(CLI)
         Util.install_pkg_from_rhua(RHUA,
                                    CLI,
-                                   "/tmp/%s-1.0/build/RPMS/noarch/%s-1.0-1.noarch.rpm" % \
+                                   "/tmp/%s-2.0/build/RPMS/noarch/%s-2.0-1.noarch.rpm" % \
                                    (CONF_RPM_NAME, CONF_RPM_NAME))
 
-    def test_11_set_eus_release(self):
+    def test_10_set_eus_release(self):
         '''
         set the tested EUS release in Yum configuration
         '''
@@ -146,7 +124,7 @@ class TestEUSCLI(object):
         eus_release = self.repo_id.split("-")[-2]
         Expect.expect_retval(CLI, "rhui-set-release --set %s" % eus_release)
 
-    def test_12_check_package_url(self):
+    def test_11_check_package_url(self):
         '''
         check if Yum is now working with the EUS URL
         '''
@@ -158,7 +136,7 @@ class TestEUSCLI(object):
                          "https://cds.example.com/pulp/repos/%s//?%s" % \
                          (self.repo_path, test_package_escaped))
 
-    def test_13_install_test_rpm(self):
+    def test_12_install_test_rpm(self):
         '''
         install the test package (from the test repo)
         '''
@@ -170,11 +148,11 @@ class TestEUSCLI(object):
         '''clean up'''
         RHUIManagerCLI.repo_delete(RHUA, self.repo_id)
         RHUIManager.remove_rh_certs(RHUA)
-        # HAProxy deletion in the CLI is currently broken (RHBZ#1409695):
-        # RHUICLI.delete(RHUA, "haproxy", ["hap01.example.com"], force=True)
-        # work around that:
-        RHUIManagerInstance.delete(RHUA, "loadbalancers", ["hap01.example.com"])
+        RHUICLI.delete(RHUA, "haproxy", ["hap01.example.com"], force=True)
         RHUICLI.delete(RHUA, "cds", ["cds01.example.com"], force=True)
+        Expect.expect_retval(RHUA,
+                             "if [ -f ~/.ssh/known_hosts ]; then " +
+                             "ssh-keygen -R cds01.example.com; ssh-keygen -R hap01.example.com; fi")
         Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % CONF_RPM_NAME)
         Expect.expect_retval(CLI, "rhui-set-release --unset")
         Util.remove_rpm(CLI, [self.test_package, CONF_RPM_NAME])

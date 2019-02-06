@@ -152,6 +152,17 @@ class TestEntitlement(object):
                                  RHUIManagerEntitlements.upload_rh_certificate,
                                  CONNECTION,
                                  "/this_file_cant_be_there")
+    @staticmethod
+    def test_16_upload_empty_cert():
+        '''
+           upload a certificate that contains no entitlements
+        '''
+        # for RHBZ#1497028
+        nose.tools.assert_raises(IncompatibleCertificate,
+                                 RHUIManagerEntitlements.upload_rh_certificate,
+                                 CONNECTION,
+                                 "/tmp/extra_rhui_files/rhcert_empty.pem")
+
 
     @staticmethod
     def teardown_class():
