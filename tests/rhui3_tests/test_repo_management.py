@@ -33,18 +33,19 @@ class TestRepo(object):
         self.custom_rpms = Util.get_rpms_in_dir(CONNECTION, CUSTOM_RPMS_DIR)
         if not self.custom_rpms:
             raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR)
-        rhel_version = Util.get_rhel_version(CONNECTION)["major"]
+        version = Util.get_rhel_version(CONNECTION)["major"]
+        arch = Util.get_arch(CONNECTION)
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:
-                self.yum_repo_name = doc["yum_repos"][rhel_version]["name"]
-                self.yum_repo_version = doc["yum_repos"][rhel_version]["version"]
-                self.yum_repo_kind = doc["yum_repos"][rhel_version]["kind"]
-                self.yum_repo_path = doc["yum_repos"][rhel_version]["path"]
+                self.yum_repo_name = doc["yum_repos"][version][arch]["name"]
+                self.yum_repo_version = doc["yum_repos"][version][arch]["version"]
+                self.yum_repo_kind = doc["yum_repos"][version][arch]["kind"]
+                self.yum_repo_path = doc["yum_repos"][version][arch]["path"]
                 self.docker_container_name = doc["docker_container1"]["name"]
                 self.docker_container_displayname = doc["docker_container1"]["displayname"]
-            except KeyError as version:
-                raise nose.SkipTest("No test repo defined for RHEL %s" % version)
+            except KeyError:
+                raise nose.SkipTest("No test repo defined for RHEL %s on %s" % (version, arch))
 
     @staticmethod
     def setup_class():

@@ -1,22 +1,37 @@
 yum_repos:
     6:
-        name: "Red Hat Enterprise Linux for SAP (RHEL 6 Server) (RPMs) from RHUI"
-        version: "6Server-x86_64"
-        kind: "Yum"
-        path: "content/dist/rhel/rhui/server/6/6Server/x86_64/sap/os"
-        test_package: "vm-dump-metrics"
+        x86_64:
+            name: "Red Hat Enterprise Linux for SAP (RHEL 6 Server) (RPMs) from RHUI"
+            version: "6Server-x86_64"
+            kind: "Yum"
+            path: "content/dist/rhel/rhui/server/6/6Server/x86_64/sap/os"
+            test_package: "vm-dump-metrics"
     7:
-        name: "Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI"
-        version: "7Server-x86_64"
-        kind: "Yum"
-        path: "content/dist/rhel/rhui/server/7/7Server/x86_64/sap/os"
-        test_package: "vm-dump-metrics"
+        x86_64:
+            name: "Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI"
+            version: "7Server-x86_64"
+            kind: "Yum"
+            path: "content/dist/rhel/rhui/server/7/7Server/x86_64/sap/os"
+            test_package: "vm-dump-metrics"
+        aarch64:
+            name: "Red Hat Satellite Tools 6.3 - Puppet 4 (for RHEL 7 for ARM) (RPMs) from RHUI"
+            version: "7Server-aarch64"
+            kind: "Yum"
+            path: "content/dist/rhel-alt/rhui/server/7/7Server/armv8-a/aarch64/sat-tools/6.3-puppet4/os"
+            test_package: "puppet-agent"
     8:
-        name: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Beta from RHUI (RPMs)"
-        version: ""
-        kind: "Yum"
-        path: "content/beta/rhel8/rhui/8/x86_64/baseos/os"
-        test_package: "tree"
+        x86_64:
+            name: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Beta from RHUI (RPMs)"
+            version: ""
+            kind: "Yum"
+            path: "content/beta/rhel8/rhui/8/x86_64/baseos/os"
+            test_package: "tree"
+        aarch64:
+            name: "Red Hat Enterprise Linux 8 for ARM 64 - Supplementary Beta (RPMs) from RHUI"
+            version: ""
+            kind: "Yum"
+            path: "content/beta/rhel8/rhui/8/aarch64/supplementary/os"
+            test_package: "zhongyi-song-fonts"
 atomic_repo:
     name: "Red Hat Enterprise Linux Atomic Host (Trees) from RHUI"
     kind: "Atomic"
@@ -61,13 +76,6 @@ EUS_repos:
         name: "RHEL for SAP HANA (for RHEL 7 Server) Extended Update Support (RPMs) from RHUI (7.4-x86_64)"
         path: "content/eus/rhel/rhui/server/7/7.4/x86_64/sap-hana/os"
         test_package: "compat-sap-c++-7"
-ARM_repos:
-    7:
-        name: "Red Hat Satellite Tools 6.3 - Puppet 4 (for RHEL 7 for ARM) (RPMs) from RHUI"
-        version: "7Server-aarch64"
-        kind: "Yum"
-        path: "content/dist/rhel-alt/rhui/server/7/7Server/armv8-a/aarch64/sat-tools/6.3-puppet4/os"
-        test_package: "puppet-agent"
 updateinfo:
     6:
         x86_64:

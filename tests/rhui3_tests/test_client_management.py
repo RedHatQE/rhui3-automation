@@ -44,24 +44,18 @@ class TestClient(object):
             self.custom_rpm = Util.get_rpms_in_dir(CONNECTION, CUSTOM_RPMS_DIR)[0]
         except IndexError:
             raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR)
-        self.cli_version = Util.get_rhel_version(CLI)["major"]
+        self.version = Util.get_rhel_version(CLI)["major"]
         arch = Util.get_arch(CLI)
-        if arch == "aarch64":
-            repos = "ARM_repos"
-        elif arch == "x86_64":
-            repos = "yum_repos"
-        else:
-            raise nose.SkipTest("No test repo defined for %s" % arch)
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:
-                self.yum_repo_name = doc[repos][self.cli_version]["name"]
-                self.yum_repo_version = doc[repos][self.cli_version]["version"]
-                self.yum_repo_kind = doc[repos][self.cli_version]["kind"]
-                self.yum_repo_path = doc[repos][self.cli_version]["path"]
-                self.test_package = doc[repos][self.cli_version]["test_package"]
-            except KeyError as version:
-                raise nose.SkipTest("No test repo defined for RHEL %s on %s" % (version, arch))
+                self.yum_repo_name = doc["yum_repos"][self.version][arch]["name"]
+                self.yum_repo_version = doc["yum_repos"][self.version][arch]["version"]
+                self.yum_repo_kind = doc["yum_repos"][self.version][arch]["kind"]
+                self.yum_repo_path = doc["yum_repos"][self.version][arch]["path"]
+                self.test_package = doc["yum_repos"][self.version][arch]["test_package"]
+            except KeyError:
+                raise nose.SkipTest("No test repo defined for RHEL %s on %s" % (self.version, arch))
 
     @staticmethod
     def setup_class():
@@ -233,7 +227,7 @@ class TestClient(object):
            check if irrelevant Yum plug-ins are not enabled on the client with the config RPM
         '''
         # for RHBZ#1415681
-        if self.cli_version <= 7:
+        if self.version <= 7:
             cmd = "yum"
         else:
             cmd = "dnf -v"
