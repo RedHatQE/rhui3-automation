@@ -1,5 +1,6 @@
 '''Tests for working with a custom GPG key in a custom repo'''
 
+from os import getenv
 from os.path import basename
 
 import logging

@@ -1,9 +1,10 @@
 '''EUS Tests (for the CLI)'''
 
-import logging
+from os import getenv
 from os.path import basename
 import re
 
+import logging
 import nose
 import stitches
 from stitches.expect import Expect
