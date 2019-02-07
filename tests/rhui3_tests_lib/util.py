@@ -83,11 +83,17 @@ class Util(object):
                              timeout=60)
 
     @staticmethod
-    def remove_rpm(connection, rpmlist):
+    def remove_rpm(connection, rpmlist, pedantic=False):
         '''
-        Remove installed rpms from cli
+        Remove RPMs from a remote host.
+        If "pedantic", fail if the rpmlist contains one or more packages that are not installed.
+        Otherwise, ignore such packages, remove whatever *is* installed (if anything).
         '''
-        Expect.expect_retval(connection, "rpm -e " + ' '.join(rpmlist), timeout=60)
+        installed = [rpm for rpm in rpmlist if connection.recv_exit_status("rpm -q %s" % rpm) == 0]
+        if installed:
+            Expect.expect_retval(connection, "rpm -e %s" % ' '.join(installed), timeout=60)
+        if pedantic and installed != rpmlist:
+            raise OSError("%s: not installed, could not remove" % (set(rpmlist) - set(installed)))
 
     @staticmethod
     def install_pkg_from_rhua(rhua_connection, connection, pkgpath):
