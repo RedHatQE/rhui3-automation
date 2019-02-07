@@ -17,7 +17,11 @@ from rhui3_tests_lib.util import Util
 logging.basicConfig(level=logging.DEBUG)
 
 RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-CLI = stitches.Connection("cli01.example.com", "root", "/root/.ssh/id_rsa_test")
+# To make this script communicate with a client machine different from cli01.example.com, run:
+# export RHUICLI=hostname
+# in your shell before running this script, replacing "hostname" with the actual client host name.
+# This allows for multiple client machines in one stack.
+CLI = stitches.Connection(getenv("RHUICLI", "cli01.example.com"), "root", "/root/.ssh/id_rsa_test")
 
 CONF_RPM_NAME = "eus-rhui"
 
