@@ -56,9 +56,9 @@ argparser.add_argument('--iso', help='iso version', default="iso")
 argparser.add_argument('--cli5', help='number of RHEL5 clients', type=int, default=0)
 argparser.add_argument('--cli6', help='number of RHEL6 clients', type=int, default=0)
 argparser.add_argument('--cli7', help='number of RHEL7 clients', type=int, default=0)
-argparser.add_argument('--cli7-arch', help='RHEL 7 clients\' architecture', default='x86_64', metavar='ARCH')
+argparser.add_argument('--cli7-arch', help='RHEL 7 clients\' architectures (comma-separated list)', default='x86_64', metavar='ARCH')
 argparser.add_argument('--cli8', help='number of RHEL8 clients', type=int, default=0)
-argparser.add_argument('--cli8-arch', help='RHEL 8 clients\' architecture', default='x86_64', metavar='ARCH')
+argparser.add_argument('--cli8-arch', help='RHEL 8 clients\' architectures (comma-separated list)', default='x86_64', metavar='ARCH')
 argparser.add_argument('--cds', help='number of CDSes instances', type=int, default=1)
 argparser.add_argument('--dns', help='DNS', action='store_const', const=True, default=False)
 argparser.add_argument('--nfs', help='NFS', action='store_const', const=True, default=False)
@@ -346,22 +346,24 @@ for i in (5, 6, 7, 8):
     num_cli_ver = args.__getattribute__("cli%i" % i)
     if num_cli_ver:
         os = os_dict[i]
-        try:
-            cli_arch = args.__getattribute__("cli%i_arch" % i)
-        except AttributeError:
-            cli_arch = "x86_64"
-        try:
-            instance_type = instance_types[cli_arch]
-        except KeyError:
-            logging.error("Unknown architecture: %s" % cli_arch)
-            sys.exit(1)
-        if cli_arch == "x86_64":
-            image_id = {u'Fn::FindInMap': [os, {u'Ref': u'AWS::Region'}, u'AMI']}
-        else:
-            with open("RHEL%smapping_%s.json" % (i, cli_arch)) as mjson:
-               image_ids =  json.load(mjson)
-               image_id = image_ids[args.region]["AMI"]
         for j in range(1, num_cli_ver + 1):
+            try:
+                cli_arch = args.__getattribute__("cli%i_arch" % i).split(",")[j-1]
+                if not cli_arch:
+                    cli_arch = "x86_64"
+            except (AttributeError, IndexError):
+                cli_arch = "x86_64"
+            try:
+                instance_type = instance_types[cli_arch]
+            except KeyError:
+                logging.error("Unknown architecture: %s" % cli_arch)
+                sys.exit(1)
+            if cli_arch == "x86_64":
+                image_id = {u'Fn::FindInMap': [os, {u'Ref': u'AWS::Region'}, u'AMI']}
+            else:
+                with open("RHEL%smapping_%s.json" % (i, cli_arch)) as mjson:
+                   image_ids =  json.load(mjson)
+                   image_id = image_ids[args.region]["AMI"]
             json_dict['Resources']["cli%inr%i" % (i, j)] = \
                 {u'Properties': {u'ImageId': image_id,
                                    u'InstanceType': instance_type,
