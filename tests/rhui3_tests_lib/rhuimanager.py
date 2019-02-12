@@ -221,3 +221,12 @@ class RHUIManager(object):
         '''
         Expect.enter(connection, "find /etc/pki/rhui/redhat/ -name '*.pem' -delete")
         Expect.expect(connection, "root@")
+
+    @staticmethod
+    def cacert_expiration(connection):
+        '''
+        check if the CA certificate expiration date is OK
+        '''
+        Expect.ping_pong(connection,
+                         "rhui-manager status",
+                         "Entitlement CA certificate expiration date.*OK")

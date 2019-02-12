@@ -122,7 +122,7 @@ class TestCLI(object):
     @staticmethod
     def test_10_check_certificate_exp():
         '''check if the certificate expiration date is OK'''
-        RHUIManagerCLI.cert_expiration(CONNECTION)
+        RHUIManager.cacert_expiration(CONNECTION)
 
     def test_11_check_unused_product(self):
         '''check if a repo is available'''

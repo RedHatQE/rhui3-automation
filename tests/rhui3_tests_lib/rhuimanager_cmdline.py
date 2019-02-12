@@ -56,15 +56,6 @@ class RHUIManagerCLI(object):
         Expect.ping_pong(connection, "rhui-manager repo unused", Util.esc_parentheses(repo))
 
     @staticmethod
-    def cert_expiration(connection):
-        '''
-        check if the certificate expiration date is OK
-        '''
-        Expect.ping_pong(connection,
-                         "rhui-manager status",
-                         "Entitlement CA certificate expiration date.*OK")
-
-    @staticmethod
     def repo_add(connection, repo):
         '''
         add a repo specified by its product name
