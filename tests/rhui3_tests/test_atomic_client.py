@@ -1,6 +1,7 @@
 '''Atomic client tests (RHEL 7+ only)'''
 
 from os.path import basename
+import socket
 
 import logging
 import nose
@@ -19,8 +20,9 @@ from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
+AH = "atomiccli.example.com"
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-ATOMIC_CLI = stitches.Connection("atomiccli.example.com", "root", "/root/.ssh/id_rsa_test")
+ATOMIC_CLI = stitches.Connection(AH, "root", "/root/.ssh/id_rsa_test")
 
 
 class TestClient(object):
@@ -29,16 +31,21 @@ class TestClient(object):
     '''
 
     def __init__(self):
-        self.rhua_os_version = Util.get_rhel_version(CONNECTION)["major"]
-        if self.rhua_os_version < 7:
-            raise nose.exc.SkipTest('Not supported on RHEL ' + str(self.rhua_os_version))
+        rhua_os_version = Util.get_rhel_version(CONNECTION)["major"]
+        if rhua_os_version < 7:
+            raise nose.exc.SkipTest("Not supported on RHEL %s" % rhua_os_version)
+        try:
+            socket.gethostbyname(AH)
+            self.ah_exists = True
+        except socket.error:
+            self.ah_exists = False
 
-        with open('/usr/share/rhui3_tests_lib/config/tested_repos.yaml', 'r') as configfile:
+        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
 
-        self.atomic_repo_name = doc['atomic_repo']['name']
-        self.atomic_repo_remote = doc['atomic_repo']['remote']
-        self.atomic_repo_ref = doc['atomic_repo']['ref']
+        self.atomic_repo_name = doc["atomic_repo"]["name"]
+        self.atomic_repo_remote = doc["atomic_repo"]["remote"]
+        self.atomic_repo_ref = doc["atomic_repo"]["ref"]
 
     @staticmethod
     def setup_class():
@@ -49,13 +56,15 @@ class TestClient(object):
 
     @staticmethod
     def test_01_initial_run():
-        '''log in to RHUI'''
+        '''
+           log in to RHUI
+        '''
         RHUIManager.initial_run(CONNECTION)
 
     @staticmethod
     def test_02_add_cds():
         '''
-            add a CDS
+           add a CDS
         '''
         cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
         nose.tools.assert_equal(cds_list, [])
@@ -64,7 +73,7 @@ class TestClient(object):
     @staticmethod
     def test_03_add_hap():
         '''
-            add an HAProxy Load-balancer
+           add an HAProxy Load-balancer
         '''
         hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
         nose.tools.assert_equal(hap_list, [])
@@ -73,7 +82,7 @@ class TestClient(object):
     @staticmethod
     def test_04_upload_atomic_cert():
         '''
-            upload the Atomic cert
+           upload the Atomic cert
         '''
         entlist = RHUIManagerEntitlements.upload_rh_certificate(CONNECTION,
                                                                 "/tmp/extra_rhui_files/" +
@@ -126,12 +135,14 @@ class TestClient(object):
                                               [Util.format_repo(self.atomic_repo_name,
                                                                 atomic_repo_version)])
 
-    @staticmethod
-    def test_10_install_atomic_pkg():
+    def test_10_install_atomic_pkg(self):
         '''
            install the Atomic client configuration package on the Atomic host
         '''
-        Util.install_pkg_from_rhua(CONNECTION, ATOMIC_CLI, "/root/test_atomic_pkg.tar.gz")
+        if self.ah_exists:
+            Util.install_pkg_from_rhua(CONNECTION, ATOMIC_CLI, "/root/test_atomic_pkg.tar.gz")
+        else:
+            raise nose.exc.SkipTest("No known Atomic host")
 
     def test_11_sync_again(self):
         '''
@@ -155,34 +166,43 @@ class TestClient(object):
         '''
            pull Atomic content
         '''
-        Expect.expect_retval(ATOMIC_CLI,
-                             "ostree pull {0}:{1}".format(self.atomic_repo_remote,
-                                                          self.atomic_repo_ref),
-                             timeout=200)
+        if self.ah_exists:
+            Expect.expect_retval(ATOMIC_CLI,
+                                 "ostree pull {0}:{1}".format(self.atomic_repo_remote,
+                                                              self.atomic_repo_ref),
+                                 timeout=200)
+        else:
+            raise nose.exc.SkipTest("No known Atomic host")
 
     def test_14_check_fetched_file(self):
         '''
            check if the repo data was fetched on the client
         '''
-        Expect.expect_retval(ATOMIC_CLI,
-                             "test -f /sysroot/ostree/repo/refs/remotes/" +
-                             "{0}/{1}".format(self.atomic_repo_remote,
-                                              self.atomic_repo_ref))
+        if self.ah_exists:
+            Expect.expect_retval(ATOMIC_CLI,
+                                 "test -f /sysroot/ostree/repo/refs/remotes/" +
+                                 "{0}/{1}".format(self.atomic_repo_remote,
+                                                  self.atomic_repo_ref))
+        else:
+            raise nose.exc.SkipTest("No known Atomic host")
 
-    @staticmethod
-    def test_15_check_registry_config():
+    def test_15_check_registry_config(self):
         '''
            check if Docker registry configuration was modified
         '''
-        _, stdout, _ = ATOMIC_CLI.exec_command("cat /etc/containers/registries.conf")
-        with stdout as cfgfile:
-            cfg = pytoml.load(cfgfile)
-        nose.tools.ok_("cds.example.com:5000" in cfg["registries"]["search"]["registries"],
-                       msg="unexpected configuration: " + str(cfg))
+        if self.ah_exists:
+            _, stdout, _ = ATOMIC_CLI.exec_command("cat /etc/containers/registries.conf")
+            with stdout as cfgfile:
+                cfg = pytoml.load(cfgfile)
+            nose.tools.ok_("cds.example.com:5000" in cfg["registries"]["search"]["registries"],
+                           msg="unexpected configuration: %s" % cfg)
+
+        else:
+            raise nose.exc.SkipTest("No known Atomic host")
 
     def test_99_cleanup(self):
         '''
-           remove the repo, uninstall CDS and HAProxy, delete the configuration package and RH cert
+           remove the repo and RH cert, uninstall CDS and HAProxy, delete the ostree configuration
         '''
         RHUIManagerRepo.delete_all_repos(CONNECTION)
         nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
@@ -190,10 +210,10 @@ class TestClient(object):
         RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com"])
         Expect.expect_retval(CONNECTION, "rm -f /root/test_atomic_ent_cli*")
         Expect.expect_retval(CONNECTION, "rm -f /root/test_atomic_pkg.tar.gz")
-        Expect.expect_retval(ATOMIC_CLI,
-                             "ostree remote delete " + self.atomic_repo_remote)
-        Expect.expect_retval(ATOMIC_CLI, "mv -f /etc/containers/registries.conf{.backup,}")
         RHUIManager.remove_rh_certs(CONNECTION)
+        if self.ah_exists:
+            Expect.expect_retval(ATOMIC_CLI, "ostree remote delete %s" % self.atomic_repo_remote)
+            Expect.expect_retval(ATOMIC_CLI, "mv -f /etc/containers/registries.conf{.backup,}")
 
     @staticmethod
     def teardown_class():
