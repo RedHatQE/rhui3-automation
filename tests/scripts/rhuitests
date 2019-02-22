@@ -68,6 +68,7 @@ if [[ $2 != quiet ]]; then
 fi
 
 if [[ $1 == client ]]; then
+    export RHUISKIPSETUP=1
     if [[ $2 == quiet ]]; then
         rhuitestsetup > /dev/null
         setup_ecode=$?
@@ -88,7 +89,6 @@ fi
 
 output=/tmp/$(basename $0)_$1_output_$(date +%F-%T).txt
 identity=~/.ssh/id_rsa_test
-export RHUISKIPSETUP=1
 export PYTHONUNBUFFERED=1
 
 if [[ $1 == all ]]; then
@@ -97,7 +97,7 @@ if [[ $1 == all ]]; then
         result=$?
     else
         nosetests -vs 2>&1 | tee $output
-        result=$?
+        result=${PIPESTATUS[0]}
     fi
 elif [[ $1 == client ]]; then
     result=0
@@ -109,15 +109,16 @@ elif [[ $1 == client ]]; then
             ((result++))
             continue
         fi
-        echo "Using $client, ie. $client_info" >> $output
         export RHUICLI=$client
         if [[ $2 == quiet ]]; then
+            echo "Using $client, ie. $client_info" >> $output
             nosetests -vs $tests &>> $output
             ((result+=$?))
         else
+            echo "Using $client, ie. $client_info" | tee -a $output
             nosetests -vs $tests 2>&1 | tee -a $output
+            ((result+=${PIPESTATUS[0]}))
             echo
-            ((result+=$?))
         fi
     done
 elif [[ $1 ]]; then
@@ -126,7 +127,7 @@ elif [[ $1 ]]; then
         result=$?
     else
         nosetests -vs $test 2>&1 | tee $output
-        result=$?
+        result=${PIPESTATUS[0]}
     fi
 fi
 
