@@ -1,0 +1,154 @@
+#!/bin/bash
+# Find and run RHUI tests: all or those that involve a client machine.
+# Client tests will run on all cliN.example.com machines found in /etc/hosts,
+# unless a specific hostname is defined in the RHUICLI environment variable.
+
+tests_dir=/usr/share/rhui3_tests_lib/rhui3_tests
+if ! test -d $tests_dir; then
+  echo "Cannot proceed: $tests_dir does not exist."
+  exit 1
+fi
+cd $tests_dir
+if [[ $1 == all ]]; then
+    contents=$(ls)
+    if ! [[ $contents ]]; then
+        echo "No test cases found. The installation of rhui3_tests_lib is broken."
+        exit 1
+    fi
+    tests_pretty="all tests"
+elif [[ $1 == client ]]; then
+    tests=$(grep -l RHUICLI=hostname test_*.py)
+    if [ $? -ne 0 ]; then
+        echo "No client test cases found. The installation of rhui3_tests_lib is broken."
+        exit 1
+    fi
+    tests_list=(`echo $tests`)
+    tests_pretty=${tests_list[0]}
+    for ((i=1; i<${#tests_list[*]}; i++)); do
+        tests_pretty="$tests_pretty, ${tests_list[$i]}"
+    done
+
+    if [[ $RHUICLI ]]; then
+        clients=$RHUICLI
+        clients_pretty=$RHUICLI
+    else
+        clients=$(egrep -o 'cli[0-9]+\.example\.com' /etc/hosts)
+        if [ $? -ne 0 ]; then
+            echo "No clients found. Add at least one."
+            exit 1
+        fi
+        clients_list=(`echo $clients`)
+        clients_pretty=${clients_list[0]}
+        for ((i=1; i<${#clients_list[*]}; i++)); do
+            clients_pretty="$clients_pretty, ${clients_list[$i]}"
+        done
+    fi
+elif [[ $1 ]]; then
+    if test -f test_$1.py; then
+        test=test_$1.py
+        tests_pretty=$test
+    else
+        echo "$PWD/test_$1.py does not exist. Check the spelling, and make sure the rhui3_tests_lib installation is all right."
+        exit 1
+    fi
+else
+    echo "Usage: $(basename $0) all|client|NAME [quiet]"
+    exit 1
+fi
+
+if [[ $2 != quiet ]]; then
+    echo '*** RHUI Tests ***'
+    echo -n "Plan: run $tests_pretty"
+    if [[ $1 == client ]]; then
+        echo " on $clients_pretty."
+    else
+        echo
+    fi
+    echo
+fi
+
+if [[ $1 == client ]]; then
+    if [[ $2 == quiet ]]; then
+        rhuitestsetup > /dev/null
+        setup_ecode=$?
+    else
+        echo '*** Setup ***'
+        rhuitestsetup
+        setup_ecode=$?
+    fi
+    if [ $setup_ecode -ne 0 ]; then
+        echo "Cannot proceed: setup failed."
+        exit 1
+    fi
+    if [[ $2 != quiet ]]; then
+        echo '*** Done ***'
+        echo
+    fi
+fi
+
+output=/tmp/$(basename $0)_$1_output_$(date +%F-%T).txt
+identity=~/.ssh/id_rsa_test
+export RHUISKIPSETUP=1
+export PYTHONUNBUFFERED=1
+
+if [[ $1 == all ]]; then
+    if [[ $2 == quiet ]]; then
+        nosetests -vs &> $output
+        result=$?
+    else
+        nosetests -vs 2>&1 | tee $output
+        result=$?
+    fi
+elif [[ $1 == client ]]; then
+    result=0
+    for client in $clients; do
+        client_info=$(ssh -i $identity -o StrictHostKeyChecking=no -q $client \
+            "echo OS: \$(< /etc/redhat-release), arch: \$(arch).")
+        if [ $? -ne 0 ]; then
+            echo "Skipping $client, which is unreachable."
+            ((result++))
+            continue
+        fi
+        echo "Using $client, ie. $client_info" >> $output
+        export RHUICLI=$client
+        if [[ $2 == quiet ]]; then
+            nosetests -vs $tests &>> $output
+            ((result+=$?))
+        else
+            nosetests -vs $tests 2>&1 | tee -a $output
+            echo
+            ((result+=$?))
+        fi
+    done
+elif [[ $1 ]]; then
+    if [[ $2 == quiet ]]; then
+        nosetests -vs $test &> $output
+        result=$?
+    else
+        nosetests -vs $test 2>&1 | tee $output
+        result=$?
+    fi
+fi
+
+if [ $result -gt 0 ]; then
+    echo 'An issue occurred!'
+fi
+
+if test -s $output; then
+    echo "report saved as: $output"
+    rhuireport $output
+else
+    echo 'No output captured!'
+fi
+
+if [[ $1 == client ]]; then
+    if [[ $2 == quiet ]]; then
+        rhuitestcleanup > /dev/null
+    else
+        echo
+        echo '*** Cleanup ***'
+        rhuitestcleanup
+        echo '*** Done ***'
+        echo '*** End of RHUI Tests ***'
+    fi
+fi

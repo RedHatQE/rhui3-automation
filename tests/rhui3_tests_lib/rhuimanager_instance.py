@@ -60,7 +60,10 @@ class RHUIManagerInstance(object):
         if state == 2:
             # cds or haproxy of the same hostname is already being tracked
             if not update:
-                # but we don't wish to update its config: raise
+                # but we don't wish to update its config: say no, quit rhui-manager, and raise
+                # an exception
+                Expect.enter(connection, "n")
+                RHUIManager.quit(connection)
                 raise InstanceAlreadyExistsError("%s already tracked but update wasn't required" % \
                                                  hostname)
             else:

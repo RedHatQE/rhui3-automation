@@ -1,0 +1,26 @@
+#!/usr/bin/python
+'''Remove certificates and unregister CDS and HAProxy nodes. '''
+
+import stitches
+
+from rhui3_tests_lib.rhuimanager import RHUIManager
+from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, NoSuchInstance
+
+CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+CDS = "cds01.example.com"
+HA = "hap01.example.com"
+
+print("Removing entitlement certificates.")
+RHUIManager.remove_rh_certs(CONNECTION)
+
+print("Unregistering the CDS.")
+try:
+    RHUIManagerInstance.delete(CONNECTION, "cds", [CDS])
+except NoSuchInstance:
+    print("Not registered, never mind.")
+
+print("Unregistering the HAProxy load balancer.")
+try:
+    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [HA])
+except NoSuchInstance:
+    print("Not registered, never mind.")

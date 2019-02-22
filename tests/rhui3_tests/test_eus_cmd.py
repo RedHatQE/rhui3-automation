@@ -1,5 +1,11 @@
 '''EUS Tests (for the CLI)'''
 
+# To skip the upload of an entitlement certificate and the registration of CDS and HAProxy nodes --
+# because you want to save time in each client test case and do this beforehand -- run:
+# export RHUISKIPSETUP=1
+# in your shell before running this script.
+# The cleanup will be skipped, too, so you ought to clean up eventually.
+
 from os import getenv
 from os.path import basename
 import re
@@ -59,14 +65,16 @@ class TestEUSCLI(object):
         '''
         log in to RHUI
         '''
-        RHUIManager.initial_run(RHUA)
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManager.initial_run(RHUA)
 
     @staticmethod
     def test_02_add_cds():
         '''
         add a CDS
         '''
-        RHUICLI.add(RHUA, "cds", "cds01.example.com", unsafe=True)
+        if not getenv("RHUISKIPSETUP"):
+            RHUICLI.add(RHUA, "cds", "cds01.example.com", unsafe=True)
         # check that
         cds_list = RHUICLI.list(RHUA, "cds")
         nose.tools.eq_(cds_list, ["cds01.example.com"])
@@ -76,7 +84,8 @@ class TestEUSCLI(object):
         '''
         add an HAProxy Load-Balancer
         '''
-        RHUICLI.add(RHUA, "haproxy", "hap01.example.com", unsafe=True)
+        if not getenv("RHUISKIPSETUP"):
+            RHUICLI.add(RHUA, "haproxy", "hap01.example.com", unsafe=True)
         # check that
         hap_list = RHUICLI.list(RHUA, "haproxy")
         nose.tools.eq_(hap_list, ["hap01.example.com"])
@@ -86,9 +95,10 @@ class TestEUSCLI(object):
         '''
         upload an entitlement certificate
         '''
-        RHUIManagerCLI.cert_upload(RHUA,
-                                   "/tmp/extra_rhui_files/rhcert.pem",
-                                   "Extended Update Support")
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManagerCLI.cert_upload(RHUA,
+                                       "/tmp/extra_rhui_files/rhcert.pem",
+                                       "Extended Update Support")
 
     def test_05_add_repo(self):
         '''
@@ -134,12 +144,14 @@ class TestEUSCLI(object):
         check if Yum is now working with the EUS URL
         '''
         # the name of the test package contains plus signs, which must be escaped in REs
-        # also, the URL can be .../os/NVR or .../os//NVR, so let's tolerate the extra slash
+        # also, the URL can be .../os/...NVR or .../os//...NVR, so let's tolerate the extra slash
         test_package_escaped = re.escape(self.test_package)
+        # packages are now (early 2019) in .../Packages/<first letter>/
+        first_letter = self.test_package[0]
         Expect.ping_pong(CLI,
                          "yumdownloader --url %s" % test_package_escaped,
-                         "https://cds.example.com/pulp/repos/%s//?%s" % \
-                         (self.repo_path, test_package_escaped))
+                         "https://cds.example.com/pulp/repos/%s//?Packages/%s/%s" % \
+                         (self.repo_path, first_letter, test_package_escaped))
 
     def test_12_install_test_rpm(self):
         '''
@@ -151,16 +163,18 @@ class TestEUSCLI(object):
 
     def test_99_cleanup(self):
         '''clean up'''
-        RHUIManagerCLI.repo_delete(RHUA, self.repo_id)
-        RHUIManager.remove_rh_certs(RHUA)
-        RHUICLI.delete(RHUA, "haproxy", ["hap01.example.com"], force=True)
-        RHUICLI.delete(RHUA, "cds", ["cds01.example.com"], force=True)
-        Expect.expect_retval(RHUA,
-                             "if [ -f ~/.ssh/known_hosts ]; then " +
-                             "ssh-keygen -R cds01.example.com; ssh-keygen -R hap01.example.com; fi")
-        Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % CONF_RPM_NAME)
         Expect.expect_retval(CLI, "rhui-set-release --unset")
         Util.remove_rpm(CLI, [self.test_package, CONF_RPM_NAME])
+        RHUIManagerCLI.repo_delete(RHUA, self.repo_id)
+        Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % CONF_RPM_NAME)
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManager.remove_rh_certs(RHUA)
+            RHUICLI.delete(RHUA, "haproxy", ["hap01.example.com"], force=True)
+            RHUICLI.delete(RHUA, "cds", ["cds01.example.com"], force=True)
+            Expect.expect_retval(RHUA,
+                                 "if [ -f ~/.ssh/known_hosts ]; then " +
+                                 "ssh-keygen -R cds01.example.com; " +
+                                 "ssh-keygen -R hap01.example.com; fi")
 
     @staticmethod
     def teardown_class():

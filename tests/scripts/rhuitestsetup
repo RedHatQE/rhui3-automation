@@ -1,0 +1,30 @@
+#!/usr/bin/python
+'''Log in to RHUI, upload a certificate, and add a CDS and a HAProxy node. '''
+
+import stitches
+
+from rhui3_tests_lib.rhuimanager import RHUIManager
+from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements
+from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, InstanceAlreadyExistsError
+
+CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+CDS = "cds01.example.com"
+HA = "hap01.example.com"
+
+print("Logging in to RHUI.")
+RHUIManager.initial_run(CONNECTION)
+
+print("Uploading an entitlement certificate.")
+RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
+
+print("Adding a CDS (%s)." % CDS)
+try:
+    RHUIManagerInstance.add_instance(CONNECTION, "cds", CDS)
+except InstanceAlreadyExistsError:
+    print("Already added, never mind.")
+
+print("Adding an HAProxy load balancer (%s)." % HA)
+try:
+    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", HA)
+except InstanceAlreadyExistsError:
+    print("Already added, never mind.")
