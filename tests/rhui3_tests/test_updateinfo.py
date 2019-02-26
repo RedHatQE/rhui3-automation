@@ -1,5 +1,11 @@
 '''Update Info Tests'''
 
+# To skip the upload of an entitlement certificate and the registration of CDS and HAProxy nodes --
+# because you want to save time in each client test case and do this beforehand -- run:
+# export RHUISKIPSETUP=1
+# in your shell before running this script.
+# The cleanup will be skipped, too, so you ought to clean up eventually.
+
 from os import getenv
 from os.path import basename
 
@@ -53,21 +59,24 @@ class TestClient(object):
         '''
            log in to RHUI
         '''
-        RHUIManager.initial_run(RHUA)
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManager.initial_run(RHUA)
 
     @staticmethod
     def test_02_add_cds():
         '''
            add a CDS
         '''
-        RHUIManagerInstance.add_instance(RHUA, "cds", "cds01.example.com")
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManagerInstance.add_instance(RHUA, "cds", "cds01.example.com")
 
     @staticmethod
     def test_03_add_hap():
         '''
            add an HAProxy Load-balancer
         '''
-        RHUIManagerInstance.add_instance(RHUA, "loadbalancers", "hap01.example.com")
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManagerInstance.add_instance(RHUA, "loadbalancers", "hap01.example.com")
 
     def test_04_add_repo(self):
         '''
@@ -170,13 +179,14 @@ class TestClient(object):
         '''
            remove the repo, uninstall hap, cds, cli rpm artefacts; remove rpms from cli
         '''
-        RHUIManagerRepo.delete_all_repos(RHUA)
-        # the errata must be removed in the DB directly:
-        Expect.expect_retval(RHUA, "mongo pulp_database --eval 'db.units_erratum.remove()'")
-        RHUIManagerInstance.delete(RHUA, "loadbalancers", ["hap01.example.com"])
-        RHUIManagerInstance.delete(RHUA, "cds", ["cds01.example.com"])
-        Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % self.test["repo_id"])
         Util.remove_rpm(CLI, [self.test["test_package"], self.test["repo_id"]])
+        # the errata must be removed in the DB directly:
+        Expect.expect_retval(RHUA, "mongo pulp_database --eval 'db.units_erratum.remove({})'")
+        RHUIManagerRepo.delete_all_repos(RHUA)
+        Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % self.test["repo_id"])
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManagerInstance.delete(RHUA, "loadbalancers", ["hap01.example.com"])
+            RHUIManagerInstance.delete(RHUA, "cds", ["cds01.example.com"])
 
     @staticmethod
     def teardown_class():

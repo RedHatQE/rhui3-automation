@@ -1,0 +1,30 @@
+#!/bin/bash
+# Upload the given report file to the web server on the RHUA so it can be fetched from there easily.
+# (That's possible thanks to the fact that Apache on the RHUA also listens on port 80 but there's
+# no content there.)
+
+if ! [[ $1 ]]; then
+    echo "No report given. Please run $(basename $0) report_file."
+    exit 1
+fi
+
+if ! test -f $1; then
+    echo "$1 is not a valid file name."
+    exit 1
+fi
+
+identity=~/.ssh/id_rsa_test
+rhua=rhua.example.com
+# if in AWS, get the public RHUA hostname using the instance metadata
+# otherwise, default to the constant, which may or may not be usable, but at least we tried
+rhua_public_hostname=$(ssh -i $identity -o StrictHostKeyChecking=no -q $rhua \
+    "curl -s http://169.254.169.254/latest/meta-data/public-hostname" || echo $rhua)
+
+scp -i $identity -q $1 $rhua:/var/www/html
+
+if [ $? -eq 0 ]; then
+    echo "report saved as: http://$rhua_public_hostname/$(basename $1)"
+else
+    echo "report could not be made available on the web"
+    exit 1
+fi

@@ -135,6 +135,14 @@
   when: rhaccount is defined
   tags: tests
 
-- name: run tests suite
-  shell: PYTHONUNBUFFERED=1 nosetests -vs /usr/share/rhui3_tests_lib/rhui3_tests &>>/tmp/rhui3test.log
+- name: run tests
+  command: "rhuitests {{ tests }} quiet"
+  register: testreport
+  when: tests is defined
+  tags: run_tests
+
+- name: print test report locations
+  debug:
+    var: testreport.stdout_lines
+  when: tests is defined
   tags: run_tests

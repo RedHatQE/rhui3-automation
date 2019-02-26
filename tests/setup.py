@@ -46,5 +46,5 @@ setup(name='rhui3_tests_lib',
           'Intended Audience :: Developers',
           'Development Status :: 5 - Production/Stable'
       ],
-      scripts=glob('scripts/*.py') + glob('scripts/*.sh')
+      scripts=glob('scripts/*')
      )

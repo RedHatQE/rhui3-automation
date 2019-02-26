@@ -1,5 +1,11 @@
 '''Client management tests'''
 
+# To skip the upload of an entitlement certificate and the registration of CDS and HAProxy nodes --
+# because you want to save time in each client test case and do this beforehand -- run:
+# export RHUISKIPSETUP=1
+# in your shell before running this script.
+# The cleanup will be skipped, too, so you ought to clean up eventually.
+
 from os import getenv
 from os.path import basename
 import re
@@ -65,35 +71,39 @@ class TestClient(object):
         print("*** Running %s: *** " % basename(__file__))
 
     @staticmethod
-    def test_01_repo_setup():
+    def test_01_init():
         '''log in to RHUI'''
-        RHUIManager.initial_run(CONNECTION)
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManager.initial_run(CONNECTION)
 
     @staticmethod
     def test_02_upload_rh_certificate():
         '''
            upload a new or updated Red Hat content certificate
         '''
-        entlist = RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
-        nose.tools.assert_not_equal(len(entlist), 0)
+        if not getenv("RHUISKIPSETUP"):
+            entlist = RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
+            nose.tools.assert_not_equal(len(entlist), 0)
 
     @staticmethod
     def test_03_add_cds():
         '''
             add a CDS
         '''
-        cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
-        nose.tools.assert_equal(cds_list, [])
-        RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds01.example.com")
+        if not getenv("RHUISKIPSETUP"):
+            cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
+            nose.tools.assert_equal(cds_list, [])
+            RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds01.example.com")
 
     @staticmethod
     def test_04_add_hap():
         '''
             add an HAProxy Load-balancer
         '''
-        hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
-        nose.tools.assert_equal(hap_list, [])
-        RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com")
+        if not getenv("RHUISKIPSETUP"):
+            hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
+            nose.tools.assert_equal(hap_list, [])
+            RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com")
 
     def test_05_add_upload_sync_stuff(self):
         '''
@@ -265,12 +275,13 @@ class TestClient(object):
         test_rpm_name = self.custom_rpm.rsplit('-', 2)[0]
         RHUIManagerRepo.delete_all_repos(CONNECTION)
         nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
-        RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
-        RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com"])
         Expect.expect_retval(CONNECTION, "rm -f /root/test_ent_cli*")
         Expect.expect_retval(CONNECTION, "rm -rf /root/test_cli_rpm-3.0/")
         Util.remove_rpm(CLI, [self.test_package, "test_cli_rpm", test_rpm_name])
-        RHUIManager.remove_rh_certs(CONNECTION)
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
+            RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com"])
+            RHUIManager.remove_rh_certs(CONNECTION)
 
     @staticmethod
     def teardown_class():

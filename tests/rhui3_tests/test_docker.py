@@ -1,12 +1,19 @@
 '''Docker Container Management Tests'''
 
+# To skip the upload of an entitlement certificate and the registration of CDS and HAProxy nodes --
+# because you want to save time in each client test case and do this beforehand -- run:
+# export RHUISKIPSETUP=1
+# in your shell before running this script.
+# The cleanup will be skipped, too, so you ought to clean up eventually.
+
 from os import getenv
 from os.path import basename
+import time
 
 import logging
 import nose
 import stitches
-from stitches.expect import Expect
+from stitches.expect import Expect, ExpectFailed
 import yaml
 
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -59,21 +66,24 @@ class TestClient(object):
     @staticmethod
     def test_01_init():
         '''log in to RHUI'''
-        RHUIManager.initial_run(RHUA)
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManager.initial_run(RHUA)
 
     @staticmethod
     def test_02_add_cds():
         '''
             add a CDS
         '''
-        RHUIManagerInstance.add_instance(RHUA, "cds", "cds01.example.com")
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManagerInstance.add_instance(RHUA, "cds", "cds01.example.com")
 
     @staticmethod
     def test_03_add_hap():
         '''
             add an HAProxy Load-balancer
         '''
-        RHUIManagerInstance.add_instance(RHUA, "loadbalancers", "hap01.example.com")
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManagerInstance.add_instance(RHUA, "loadbalancers", "hap01.example.com")
 
     def test_04_add_container(self):
         '''
@@ -128,7 +138,14 @@ class TestClient(object):
         '''
         if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
-        Expect.expect_retval(CLI, "docker pull %s" % self.docker_container_id, timeout=30)
+        cmd = "docker pull %s" % self.docker_container_id
+        # in some cases the container is synced but pulling fails mysteriously
+        # if that happens, try again in a minute
+        try:
+            Expect.expect_retval(CLI, cmd, timeout=30)
+        except ExpectFailed:
+            time.sleep(60)
+            Expect.expect_retval(CLI, cmd, timeout=30)
 
     def test_10_check_image(self):
         '''
@@ -158,8 +175,9 @@ class TestClient(object):
             Util.restart_if_present(CLI, "docker")
         Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % CONF_RPM_NAME)
         RHUIManagerRepo.delete_all_repos(RHUA)
-        RHUIManagerInstance.delete(RHUA, "loadbalancers", ["hap01.example.com"])
-        RHUIManagerInstance.delete(RHUA, "cds", ["cds01.example.com"])
+        if not getenv("RHUISKIPSETUP"):
+            RHUIManagerInstance.delete(RHUA, "loadbalancers", ["hap01.example.com"])
+            RHUIManagerInstance.delete(RHUA, "cds", ["cds01.example.com"])
 
     @staticmethod
     def teardown_class():
