@@ -68,13 +68,11 @@ with the RHEL-5 client hostname and other data commented out so that it is all v
 ignored by `ansible-playbook`. Other than that, you are free to use the launched RHEL-5 client any
 way you want, just be sure to log in as root directly.
 
-Note that RHEL-8 AMIs are missing the unversioned `python` command as well as a working Python
-installation, which Ansible expects on managed hosts. Therefore, if you create a stack with a RHEL-8
-client machine, make sure Python is installed and configured there before you run the deployment
-playbook:
+Note that RHEL-8 AMIs are missing the unversioned `python` command. This does not affect
+the deployment because the _platform Python_ is used with RHEL-8 hosts. However, if you want to use
+the `(/usr/bin/)python` executable on a RHEL-8 client, run the following commands there beforehand:
 
 ```
-dnf -y update rh-amazon-rhui-client-beta
 dnf -y install python3
 alternatives --set python /usr/bin/python3
 ```

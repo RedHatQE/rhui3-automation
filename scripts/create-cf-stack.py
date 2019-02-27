@@ -700,6 +700,10 @@ try:
                         f.write('ansible_ssh_user=ec2-user ansible_become=True ')
                     f.write('ansible_ssh_private_key_file=')
                     f.write(ssh_key)
+                    # https://www.ansible.com/blog/integrating-ansible-and-red-hat-enterprise-linux-8-beta
+                    # remove when Ansible 2.8 is released
+                    if instance["OS"] == "RHEL8":
+                        f.write(' ansible_python_interpreter=/usr/libexec/platform-python')
                     f.write('\n')
         # atomic_cli
         if args.atomic_cli:

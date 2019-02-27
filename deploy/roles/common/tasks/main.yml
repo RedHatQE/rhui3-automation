@@ -4,7 +4,7 @@
 # set up custom DNS if requested
 # disable (or remove) cloud-init
 # install vim
-- include: upgrade_all_pkg.yml
+- include: upgrade.yml
 - include: ntp.yml
 - include: hosts.yml
 - include: dns_override.yml
