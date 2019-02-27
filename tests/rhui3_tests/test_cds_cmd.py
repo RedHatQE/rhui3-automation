@@ -8,6 +8,7 @@ import nose
 import stitches
 from stitches.expect import Expect
 
+from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhui_cmd import RHUICLI
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.util import Util
@@ -215,19 +216,18 @@ def test_20_delete_unreachable():
     nose.tools.ok_(status, msg="unexpected installation status: %s" % status)
     cds_list = RHUICLI.list(CONNECTION, "cds")
     nose.tools.eq_(cds_list, [cds])
-    # make it unreachable by setting its IP address to some nonsense and also stopping bind
-    tweak_hosts_cmd = r"sed -i.bak 's/^[^ ]*\(.*%s\)$/256.0.0.0\1/' /etc/hosts" % cds
-    Expect.expect_retval(CONNECTION, tweak_hosts_cmd)
-    Expect.expect_retval(CONNECTION, "service named stop")
+
+    Helpers.break_hostname(CONNECTION, cds)
+
     # delete it
     status = RHUICLI.delete(CONNECTION, "cds", [cds], force=True)
     nose.tools.ok_(status, msg="unexpected deletion status: %s" % status)
     # check it
     cds_list = RHUICLI.list(CONNECTION, "cds")
     nose.tools.eq_(cds_list, [])
-    # undo the DNS changes
-    Expect.expect_retval(CONNECTION, "mv -f /etc/hosts.bak /etc/hosts")
-    Expect.expect_retval(CONNECTION, "service named start")
+
+    Helpers.unbreak_hostname(CONNECTION)
+
     # the node remains configured (RHUI mount point, httpd)... unconfigure it properly
     # not possible until RHBZ#1640002 is fixed
     # clean up the SSH key

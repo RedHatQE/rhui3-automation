@@ -7,6 +7,7 @@ import nose
 import stitches
 from stitches.expect import Expect
 
+from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhui_cmd import RHUICLI
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
@@ -189,19 +190,18 @@ def test_20_delete_unreachable():
     nose.tools.ok_(status, msg="unexpected installation status: %s" % status)
     hap_list = RHUICLI.list(CONNECTION, "haproxy")
     nose.tools.eq_(hap_list, [HA_HOSTNAME])
-    # make it unreachable but setting its IP address to some nonsense and also stopping bind
-    tweak_hosts_cmd = r"sed -i.bak 's/^[^ ]*\(.*%s\)$/256.0.0.0\1/' /etc/hosts" % HA_HOSTNAME
-    Expect.expect_retval(CONNECTION, tweak_hosts_cmd)
-    Expect.expect_retval(CONNECTION, "service named stop")
+
+    Helpers.break_hostname(CONNECTION, HA_HOSTNAME)
+
     # delete it
     status = RHUICLI.delete(CONNECTION, "haproxy", [HA_HOSTNAME], force=True)
     nose.tools.ok_(status, msg="unexpected deletion status: %s" % status)
     # check it
     hap_list = RHUICLI.list(CONNECTION, "haproxy")
     nose.tools.eq_(hap_list, [])
-    # undo the DNS changes
-    Expect.expect_retval(CONNECTION, "mv -f /etc/hosts.bak /etc/hosts")
-    Expect.expect_retval(CONNECTION, "service named start")
+
+    Helpers.unbreak_hostname(CONNECTION)
+
     # the node remains configured (haproxy)... unconfigure it properly
     # not possible until RHBZ#1640002 is fixed
     # clean up the SSH key
