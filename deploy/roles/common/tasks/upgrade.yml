@@ -2,7 +2,7 @@
 # update packages prior to rhui installation: the RHEL-8 Beta client configuration and/or all
 
 - name: upgrade rh-amazon-rhui-client-beta on RHEL 8
-  package: name=rh-amazon-rhui-client-beta state=latest update_cache=yes
+  dnf: name=rh-amazon-rhui-client-beta state=latest update_cache=yes update_only=yes
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8
   tags: upgrade_beta_client_pkg
 

@@ -215,7 +215,10 @@ class TestClient(object):
         '''
         Expect.expect_retval(CLI, "yum install -y %s" % self.test_package, timeout=20)
         # but make sure the RPM is taken from the RHUI
-        Util.check_package_url(CLI, self.test_package, self.yum_repo_path)
+        # not usable with RHEL 8 Beta (RHBZ#1639827); remove the check when RHEL 8.0 is released
+        if self.version < 8 or \
+           CLI.recv_exit_status("[[ `rpm -q --qf '%{VERSION}' dnf` == 4.0.4 ]]"):
+            Util.check_package_url(CLI, self.test_package, self.yum_repo_path)
 
     def test_15_unauthorized_access(self):
         '''
