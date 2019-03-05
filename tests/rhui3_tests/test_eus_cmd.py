@@ -8,7 +8,6 @@
 
 from os import getenv
 from os.path import basename
-import re
 
 import logging
 import nose
@@ -143,14 +142,7 @@ class TestEUSCLI(object):
         '''
         check if Yum is now working with the EUS URL
         '''
-        # the name of the test package contains plus signs, which must be escaped in REs
-        # in modern pulp-rpm versions, packages are in .../Packages/<first letter (lowercase)>/
-        # also, the URL can be .../os/...NVR or .../os//...NVR, so let's tolerate both cases
-        test_package_escaped = re.escape(self.test_package)
-        Expect.ping_pong(CLI,
-                         "yumdownloader --url %s" % test_package_escaped,
-                         "https://cds.example.com/pulp/repos/%s/.*/%s" % \
-                         (self.repo_path, test_package_escaped))
+        Util.check_package_url(CLI, self.test_package, self.repo_path)
 
     def test_12_install_test_rpm(self):
         '''

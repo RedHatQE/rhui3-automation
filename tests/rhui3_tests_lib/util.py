@@ -223,3 +223,19 @@ class Util(object):
         Expect.expect_retval(connection,
                              "if [ -f /usr/lib/systemd/system/%s.service ]; then " % service +
                              "systemctl restart %s; fi" % service)
+
+    @staticmethod
+    def check_package_url(connection, package, path="", lb_hostname="cds.example.com"):
+        '''
+        verify that the package is available from the RHUI (and not from an unwanted repo)
+        '''
+        # The name of the test package may contain characters which must be escaped in REs.
+        # In modern pulp-rpm versions, packages are in .../Packages/<first letter (lowercase)>/,
+        # and the URL can be .../os/...NVR or .../os//...NVR, so let's tolerate anything between
+        # the path and the package name. The path is optional, though; if you don't know it or
+        # don't care about it, call this method with the mandatory arguments only.
+        package_escaped = re.escape(package)
+        Expect.ping_pong(connection,
+                         "yumdownloader --url %s" % package_escaped,
+                         "https://%s/pulp/repos/%s.*%s" % \
+                         (lb_hostname, path, package_escaped))

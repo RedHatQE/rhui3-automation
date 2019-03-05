@@ -214,6 +214,8 @@ class TestClient(object):
            install an RPM from the RH repo
         '''
         Expect.expect_retval(CLI, "yum install -y %s" % self.test_package, timeout=20)
+        # but make sure the RPM is taken from the RHUI
+        Util.check_package_url(CLI, self.test_package, self.yum_repo_path)
 
     def test_15_unauthorized_access(self):
         '''
