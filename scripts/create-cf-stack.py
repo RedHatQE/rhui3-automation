@@ -48,6 +48,7 @@ class SyncSSHClient(SSHClient):
         chan.close()
         return status
 
+instance_types = {"arm64": "a1.large", "x86_64": "m3.large"}
 
 argparser = argparse.ArgumentParser(description='Create CloudFormation stack')
 argparser.add_argument('--rhua', help='RHEL version for RHUI setup (RHEL6, RHEL7)', default="RHEL6")
@@ -148,6 +149,13 @@ if args.atomic_cli:
     if args.rhua != "RHEL7":
         logging.error("ATOMIC clients need 'RHEL7' for RHUI setup")
         sys.exit(1)
+
+if args.cli7 == -1:
+    args.cli7 = len(instance_types)
+    args.cli7_arch = ",".join(instance_types.keys())
+if args.cli8 == -1:
+    args.cli8 = len(instance_types)
+    args.cli8_arch = ",".join(instance_types.keys())
 
 json_dict['Description'] = 'RHUI with %s CDSes' % args.cds
 json_dict['Description'] += " %s HAProxy" % args.haproxy
@@ -341,7 +349,6 @@ else:
 
 # clients
 os_dict = {5: "RHEL5", 6: "RHEL6", 7: "RHEL7", 8: "RHEL8"}
-instance_types = {"arm64": "a1.large", "x86_64": "m3.large"}
 for i in (5, 6, 7, 8):
     num_cli_ver = args.__getattribute__("cli%i" % i)
     if num_cli_ver:

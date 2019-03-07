@@ -50,8 +50,8 @@ Default configuration:
   * **--haproxy [number]** - number of HAProxies, `default = 1`
   * **--input-conf [name]** - the name of input conf file, `default = "/etc/rhui_ec2.yaml"`
   * **--output-conf [name]** - the name of output conf file, `default = "hosts_$RHELrelease_$iso.cfg"`
-  * **--cli5/6/7/8 [number]** - number of CLI machines, `default = 0`
-  * **--cli7/8-arch [arch]** - CLI machines' architecture, `default = x86_64`
+  * **--cli5/6/7/8 [number]** - number of CLI machines, `default = 0`, use `-1` to get machines for all architectures (one machine per architecture)
+  * **--cli7/8-arch [arch]** - CLI machines' architectures (comma-separated list), `default = x86_64 for all of them`, `cli`_N_ set to `-1` will populate the list with all architectures automatically, so this parameter is unnecessary then
   * **--atomic-cli [number]** - number of ATOMIC CLI machines\*, `default = 0`
   * **--test** - if specified, TEST/MASTER machine, `default = 0`
   * **--region [name]** - `default = eu-west-1`
@@ -121,6 +121,10 @@ There is an extra 100 GB volume attached to each CDS machine.
 * `scripts/create-cf-stack.py --rhua RHEL7 --dns --cds 2 --cli6 1 --cli7 1 --input-conf /etc/rhui_amazon.yaml --output-conf my_new_hosts_config_file.cfg --iso 20160809`
   * RHEL7 NFS configuration
   * 1xRHUA=NFS, 1xDNS, 2xCDS, 1xCLI6, 1xCLI7, 1xHAProxy
+* `scripts/create-cf-stack.py --input-conf rhui_ec2.yaml --rhua RHEL7 --iso rhel8clients --cli8 -1 --test --vpcid vpc-012345678 --subnetid subnet-89abcdef`
+  * RHEL7 NFS configuration
+  * custom input configuration file in the current working directory
+  * 1xRHUA=NFS=DNS, 1xCDS, 1xHAProxy, 2xCLI8 (x86_64 and ARM64), 1xTEST, custom VPC and subnet (needed by the `a1` instance type used with ARM64)
 
 #### Input configuration file
 
