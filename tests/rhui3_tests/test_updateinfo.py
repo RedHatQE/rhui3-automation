@@ -82,9 +82,23 @@ class TestClient(object):
         '''
            add a custom repo
         '''
+        # custom GPG key can have a name, or it can be set to "nokey" (not used with the packages),
+        # or it can be undefined altogether, in which case the packages are supposedly signed by RH
+        try:
+            if self.test["gpg_key"] == "nokey":
+                custom_gpg = None
+            else:
+                custom_gpg = "/tmp/extra_rhui_files/%s/%s" % \
+                             (self.test["repo_id"], self.test["gpg_key"])
+            redhat_gpg = "n"
+        except KeyError:
+            custom_gpg = None
+            redhat_gpg = "y"
         RHUIManagerRepo.add_custom_repo(RHUA,
                                         self.test["repo_id"],
-                                        self.test["repo_name"])
+                                        self.test["repo_name"],
+                                        redhat_gpg=redhat_gpg,
+                                        custom_gpg=custom_gpg)
 
     def test_05_upload_packages(self):
         '''
@@ -145,9 +159,11 @@ class TestClient(object):
         '''
            check if the expected update info is found
         '''
+        # yum should print Update ID : RHXA-YYYY:NNNNN
+        # dnf should print Update ID: RHXA-YYYY:NNNNN
         Expect.ping_pong(CLI,
                          "yum updateinfo info",
-                         "Update ID : %s" % self.test["errata"])
+                         "Update ID ?: %s" % self.test["errata"])
 
     def test_12_compare_n_of_updates(self):
         '''

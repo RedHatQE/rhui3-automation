@@ -91,3 +91,18 @@ updateinfo:
             test_package: "rhscon-core-selinux"
             old_version: "0.0.41-1.el7scon"
             errata: "RHSA-2016:2082"
+    8:
+        x86_64:
+            repo_name: "Simple Errata (from Pulp Demo Repos)"
+            repo_id: "pulp-test_simple_errata"
+            gpg_key: "nokey"
+            test_package: "test-package"
+            old_version: "0.1-1.el6"
+            errata: "RHEA-2010:0001"
+        aarch64:
+            repo_name: "Errata Install (from Pulp Demo Repos)"
+            repo_id: "pulp-test_errata_install"
+            gpg_key: "nokey"
+            test_package: "grinder_test_package"
+            old_version: "2.0-1.fc14"
+            errata: "RHEA-2013:9999"
