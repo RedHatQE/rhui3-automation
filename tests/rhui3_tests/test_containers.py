@@ -1,4 +1,4 @@
-'''Docker Container Management Tests'''
+'''Container Management Tests'''
 
 # To skip the upload of an entitlement certificate and the registration of CDS and HAProxy nodes --
 # because you want to save time in each client test case and do this beforehand -- run:
@@ -32,12 +32,12 @@ RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 # This allows for multiple client machines in one stack.
 CLI = stitches.Connection(getenv("RHUICLI", "cli01.example.com"), "root", "/root/.ssh/id_rsa_test")
 
-CONF_RPM_NAME = "docker-rhui"
+CONF_RPM_NAME = "containers-rhui"
 CONF_RPM_PATH = "/tmp/%s-2.0/build/RPMS/noarch/%s-2.0-1.noarch.rpm" % (CONF_RPM_NAME, CONF_RPM_NAME)
 
 class TestClient(object):
     '''
-       class for Docker container tests
+       class for container tests
     '''
 
     def __init__(self):
@@ -50,9 +50,9 @@ class TestClient(object):
             doc = yaml.load(configfile)
 
         try:
-            self.docker_container_name = doc["docker_container_rhel7"][arch]["name"]
-            self.docker_container_id = doc["docker_container_rhel7"][arch]["id"]
-            self.docker_container_displayname = doc["docker_container_rhel7"][arch]["displayname"]
+            self.container_name = doc["container_rhel7"][arch]["name"]
+            self.container_id = doc["container_rhel7"][arch]["id"]
+            self.container_displayname = doc["container_rhel7"][arch]["displayname"]
         except KeyError:
             raise nose.SkipTest("No test container defined for %s" % arch)
 
@@ -87,58 +87,58 @@ class TestClient(object):
 
     def test_04_add_container(self):
         '''
-           add a Docker container
+           add a container
         '''
-        RHUIManagerRepo.add_docker_container(RHUA,
-                                             self.docker_container_name,
-                                             self.docker_container_id,
-                                             self.docker_container_displayname)
+        RHUIManagerRepo.add_container(RHUA,
+                                      self.container_name,
+                                      self.container_id,
+                                      self.container_displayname)
 
     def test_05_display_container(self):
         '''
-           check detailed information on the Docker container
+           check detailed information on the container
         '''
         RHUIManagerRepo.check_detailed_information(RHUA,
-                                                   [self.docker_container_displayname,
+                                                   [self.container_displayname,
                                                     "https://cds.example.com/pulp/docker/%s/" % \
-                                                    self.docker_container_id],
+                                                    self.container_id],
                                                    [False],
                                                    [True, None, True],
                                                    0)
 
     def test_06_sync_container(self):
         '''
-           sync the Docker container
+           sync the container
         '''
-        RHUIManagerSync.sync_repo(RHUA, [self.docker_container_displayname])
-        RHUIManagerSync.wait_till_repo_synced(RHUA, [self.docker_container_displayname])
+        RHUIManagerSync.sync_repo(RHUA, [self.container_displayname])
+        RHUIManagerSync.wait_till_repo_synced(RHUA, [self.container_displayname])
 
     @staticmethod
-    def test_07_create_docker_cli_rpm():
+    def test_07_create_cli_rpm():
         '''
-           create a Docker client configuration RPM
+           create a client configuration RPM
         '''
-        RHUIManagerClient.create_docker_conf_rpm(RHUA, "/tmp", CONF_RPM_NAME)
+        RHUIManagerClient.create_container_conf_rpm(RHUA, "/tmp", CONF_RPM_NAME)
         Expect.expect_retval(RHUA, "test -f %s" % CONF_RPM_PATH)
 
-    def test_08_install_docker_cli_rpm(self):
+    def test_08_install_cli_rpm(self):
         '''
-           install the Docker client configuration RPM
+           install the client configuration RPM
         '''
         if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
         Util.install_pkg_from_rhua(RHUA, CLI, CONF_RPM_PATH)
-        # restart the Docker service for the configuration to take effect
-        # (systemd-based Docker clients only)
+        # restart the docker service for the configuration to take effect
+        # (only clients running the docker service)
         Util.restart_if_present(CLI, "docker")
 
     def test_09_pull_image(self):
         '''
-           pull the Docker container
+           pull the container image
         '''
         if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
-        cmd = "docker pull %s" % self.docker_container_id
+        cmd = "docker pull %s" % self.container_id
         # in some cases the container is synced but pulling fails mysteriously
         # if that happens, try again in a minute
         try:
@@ -149,11 +149,11 @@ class TestClient(object):
 
     def test_10_check_image(self):
         '''
-           check if the container is now available
+           check if the container image is now available
         '''
         if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
-        Expect.ping_pong(CLI, "docker images", "cds.example.com:5000/%s" % self.docker_container_id)
+        Expect.ping_pong(CLI, "docker images", "cds.example.com:5000/%s" % self.container_id)
 
     def test_11_run_command(self):
         '''
@@ -161,7 +161,7 @@ class TestClient(object):
         '''
         if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
-        Expect.ping_pong(CLI, "docker run %s uname" % self.docker_container_id, "Linux")
+        Expect.ping_pong(CLI, "docker run %s uname" % self.container_id, "Linux")
 
     def test_99_cleanup(self):
         '''
@@ -169,8 +169,8 @@ class TestClient(object):
         '''
         if self.cli_supported:
             Expect.expect_retval(CLI, "docker rm $(docker ps -a -f ancestor=%s -q)" % \
-                                 self.docker_container_id)
-            Expect.expect_retval(CLI, "docker rmi %s" % self.docker_container_id)
+                                 self.container_id)
+            Expect.expect_retval(CLI, "docker rmi %s" % self.container_id)
             Util.remove_rpm(CLI, [CONF_RPM_NAME])
             Util.restart_if_present(CLI, "docker")
         Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % CONF_RPM_NAME)

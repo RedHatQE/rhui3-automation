@@ -127,8 +127,8 @@ Network Ports:
 * CDS to RHUA 8140/TCP for puppet
 * HAProxy to RHUA 8140/TCP for puppet
 * clients to CDS or HAProxy 443/TCP
-* clients to CDS or HAProxy 5000/TCP for docker
+* clients to CDS or HAProxy 5000/TCP for containers
 * HAProxy to CDS 443/TCP
-* HAProxy to CDS 5000/TCP for docker
+* HAProxy to CDS 5000/TCP for containers
 * NFS port 2049/TCP on the NFS server
 * glusterfs ports 24007/TCP, 49152-4/TCP

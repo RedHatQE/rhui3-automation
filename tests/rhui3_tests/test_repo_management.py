@@ -42,8 +42,8 @@ class TestRepo(object):
                 self.yum_repo_version = doc["yum_repos"][version][arch]["version"]
                 self.yum_repo_kind = doc["yum_repos"][version][arch]["kind"]
                 self.yum_repo_path = doc["yum_repos"][version][arch]["path"]
-                self.docker_container_name = doc["docker_container1"]["name"]
-                self.docker_container_displayname = doc["docker_container1"]["displayname"]
+                self.container_name = doc["container1"]["name"]
+                self.container_displayname = doc["container1"]["displayname"]
             except KeyError:
                 raise nose.SkipTest("No test repo defined for RHEL %s on %s" % (version, arch))
 
@@ -194,29 +194,29 @@ class TestRepo(object):
         RHUIManagerRepo.delete_all_repos(CONNECTION)
         nose.tools.ok_(not RHUIManagerRepo.list(CONNECTION))
 
-    def test_14_add_docker_container(self):
-        '''add a Docker container'''
-        RHUIManagerRepo.add_docker_container(CONNECTION,
-                                             self.docker_container_name,
-                                             "",
-                                             self.docker_container_displayname)
+    def test_14_add_container(self):
+        '''add a container'''
+        RHUIManagerRepo.add_container(CONNECTION,
+                                      self.container_name,
+                                      "",
+                                      self.container_displayname)
         repo_list = RHUIManagerRepo.list(CONNECTION)
-        nose.tools.ok_(self.docker_container_displayname in repo_list,
+        nose.tools.ok_(self.container_displayname in repo_list,
                        msg="The container wasn't added. Actual repolist: %s" % repo_list)
 
-    def test_15_display_docker_cont(self):
-        '''check detailed information on the Docker container'''
+    def test_15_display_container(self):
+        '''check detailed information on the container'''
         RHUIManagerRepo.check_detailed_information(CONNECTION,
-                                                   [self.docker_container_displayname,
+                                                   [self.container_displayname,
                                                     "https://cds.example.com/pulp/docker/%s/" % \
-                                                    self.docker_container_name.replace("/", "_")],
+                                                    self.container_name.replace("/", "_")],
                                                    [False],
                                                    [True, None, True],
                                                    0)
 
     @staticmethod
-    def test_16_delete_docker_container():
-        '''delete the Docker container'''
+    def test_16_delete_container():
+        '''delete the container'''
         RHUIManagerRepo.delete_all_repos(CONNECTION)
         nose.tools.ok_(not RHUIManagerRepo.list(CONNECTION))
 

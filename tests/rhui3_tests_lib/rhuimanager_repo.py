@@ -169,9 +169,9 @@ class RHUIManagerRepo(object):
         RHUIManager.quit(connection)
 
     @staticmethod
-    def add_docker_container(connection, containername, containerid="", displayname=""):
+    def add_container(connection, containername, containerid="", displayname=""):
         '''
-        add a new Red Hat docker container
+        add a new Red Hat container
         '''
         RHUIManager.screen(connection, "repo")
         Expect.enter(connection, "ad")

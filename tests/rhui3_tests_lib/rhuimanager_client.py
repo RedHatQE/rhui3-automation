@@ -55,9 +55,9 @@ class RHUIManagerClient(object):
         Expect.enter(connection, "q")
 
     @staticmethod
-    def create_docker_conf_rpm(connection, dirname, rpmname, rpmversion="", dockerport=""):
+    def create_container_conf_rpm(connection, dirname, rpmname, rpmversion="", port=""):
         '''
-        create a docker client configuration RPM
+        create a container client configuration RPM
         '''
         RHUIManager.screen(connection, "client")
         Expect.enter(connection, "d")
@@ -68,7 +68,7 @@ class RHUIManagerClient(object):
         Expect.expect(connection, "Version of the configuration RPM.*:")
         Expect.enter(connection, rpmversion)
         Expect.expect(connection, "Port to serve Docker content on .*:")
-        Expect.enter(connection, dockerport)
+        Expect.enter(connection, port)
         if not rpmversion:
             rpmversion = "2.0"
         Expect.expect(connection,
@@ -77,7 +77,7 @@ class RHUIManagerClient(object):
         Expect.enter(connection, "q")
 
     @staticmethod
-    def create_atomic_conf_pkg(connection, dirname, tarname, certpath, certkey, dockerport=""):
+    def create_atomic_conf_pkg(connection, dirname, tarname, certpath, certkey, port=""):
         '''
         create an atomic client configuration package (RHEL 7+ only)
         '''
@@ -92,7 +92,7 @@ class RHUIManagerClient(object):
         Expect.expect(connection, "Full path to the private key.*:")
         Expect.enter(connection, certkey)
         Expect.expect(connection, "Port to serve Docker content on .*:")
-        Expect.enter(connection, dockerport)
+        Expect.enter(connection, port)
         Expect.expect(connection,
                       "Location: %s/%s.tar.gz" % \
                       (dirname, tarname))

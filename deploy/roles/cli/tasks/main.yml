@@ -7,7 +7,7 @@
   when: "'CLI' in groups and item.1 == inventory_hostname"
   tags: cli
 
-- name: install docker if RHEL7
+- name: install the docker package if RHEL7
   package: name=docker state=present enablerepo=*extras*
   with_indexed_items: "{{ groups['CLI'] }}"
   when: >
@@ -16,7 +16,7 @@
     ansible_distribution_major_version|int == 7
   tags: cli
   
-- name: enable and run docker
+- name: enable and run the docker service
   service: name=docker state=started enabled=yes
   with_indexed_items: "{{ groups['CLI'] }}"
   when: >
@@ -25,7 +25,7 @@
     ansible_distribution_major_version|int == 7
   tags: cli
 
-- name: install podman-docker if RHEL8
+- name: install the podman-docker package if RHEL8
   package: name=podman-docker state=present
   with_indexed_items: "{{ groups['CLI'] }}"
   when: >

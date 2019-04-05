@@ -19,7 +19,7 @@ Inbound rules:
   80 TCP (HTTP)
   443 TCP (HTTPS)
   2049 TCP (NFS)
-  5000 TCP (docker)
+  5000 TCP (containers)
   5671 TCP (Qpid)
   8140 TCP (puppet)
   24007 TCP (gluster)

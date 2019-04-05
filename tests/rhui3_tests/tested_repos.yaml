@@ -51,10 +51,10 @@ CLI_product:
     arches: "aarch64 ppc64le s390x x86_64"
 subscription:
     name: "Red Hat Update Infrastructure and RHEL Add-Ons for Providers"
-docker_container1:
+container1:
     name: "rhcertification/redhat-certification"
-    displayname: "RH Certification Docker"
-docker_container_rhel7:
+    displayname: "RH Certification Container"
+container_rhel7:
     x86_64:
         name: "rhel7-minimal"
         id: "rhel7-minimal-from-rhui"

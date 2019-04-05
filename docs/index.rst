@@ -16,7 +16,7 @@ Welcome to the RHUI 3 Test Plan!
    cds_cmd
    client_management
    cmdline
-   docker
+   containers
    entitlements
    eus_cmd
    gpg

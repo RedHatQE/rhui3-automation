@@ -188,7 +188,7 @@ class TestClient(object):
 
     def test_15_check_registry_config(self):
         '''
-           check if Docker registry configuration was modified
+           check if container registry configuration was modified
         '''
         if self.ah_exists:
             _, stdout, _ = ATOMIC_CLI.exec_command("cat /etc/containers/registries.conf")
