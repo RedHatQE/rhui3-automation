@@ -283,6 +283,8 @@ json_dict['Resources'] = \
                         u'Type': u'AWS::EC2::SecurityGroup'}}
 
 # nfs == rhua
+# add a 100 GB volume for RHUI repos if using NFS
+# add a 50 GB volume for MongoDB either way; MongoDB can be greedy
 if (fs_type == "rhua"):
     json_dict['Resources']["rhua"] = \
      {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
@@ -293,6 +295,10 @@ if (fs_type == "rhua"):
                                             {
                                               "DeviceName" : "/dev/sdb",
                                               "Ebs" : {"VolumeSize" : "100"}
+                                            },
+                                            {
+                                              "DeviceName" : "/dev/sdm",
+                                              "Ebs" : {"VolumeSize" : "50"}
                                             },
                                  ],
                                u'Tags': [{u'Key': u'Name',
@@ -307,6 +313,12 @@ else:
                                u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
+                                 u'BlockDeviceMappings' : [
+                                            {
+                                              "DeviceName" : "/dev/sdm",
+                                              "Ebs" : {"VolumeSize" : "50"}
+                                            },
+                                 ],
                                u'Tags': [{u'Key': u'Name',
                                           u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'rhua']]}},
                                          {u'Key': u'Role', u'Value': u'RHUA'},

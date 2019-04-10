@@ -12,8 +12,22 @@
   package: name=nfs-utils state=present
   tags: nfs
 
-- name: create volume
+- name: create storage volume directory
   file: path=/export state=directory
+  tags: nfs
+
+- name: format storage volume device
+  filesystem:
+    fstype: xfs
+    dev: /dev/xvdb
+  tags: nfs
+
+- name: mount storage volume filesystem
+  mount:
+    path: /export
+    src: /dev/xvdb
+    fstype: xfs
+    state: mounted
   tags: nfs
 
 - name: start rpcbind service

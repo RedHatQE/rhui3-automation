@@ -6,6 +6,7 @@
   tags: rhua
 
 - include: ssh.yml
+- include: mongodb.yml
 
 - name: install rhui-installer
   package: name=rhui-installer state=present
