@@ -1,0 +1,17 @@
+---
+# file: roles/rhua/tasks/mongodb.yml
+# format and mount a separate volume for MongoDB
+
+- name: format MongoDB volume device
+  filesystem:
+    fstype: xfs
+    dev: /dev/xvdm
+  tags: rhua
+
+- name: mount MongoDB volume filesystem
+  mount:
+    path: /var/lib/mongodb
+    src: /dev/xvdm
+    fstype: xfs
+    state: mounted
+  tags: rhua
