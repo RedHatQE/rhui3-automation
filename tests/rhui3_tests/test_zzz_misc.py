@@ -94,6 +94,23 @@ def test_05_celery_selinux():
         output = "Nothing to do"
     Expect.ping_pong(RHUA, "grep celery /var/log/audit/audit.log | audit2allow", output)
 
+def test_06_pulp_server_rpm_v():
+    '''
+        verify that /etc/pki/pulp/rsa_pub.key is installed correctly
+    '''
+    # for RHBZ#1578266
+    Expect.expect_retval(RHUA, "rpm -V pulp-server | grep -q /etc/pki/pulp/rsa_pub.key", 1)
+
+def test_07_check_migrate_py():
+    '''
+        check if the migration script in the RHUI ISO is up to date
+    '''
+    # for RHBZ#1278954
+    Expect.expect_retval(RHUA,
+                         "mount /tmp/iso && " +
+                         "grep DEFAULT_ENTITLEMENT /tmp/iso/migrate/migrate.py && " +
+                         "umount /tmp/iso")
+
 def teardown():
     '''
        announce the end of the test run
