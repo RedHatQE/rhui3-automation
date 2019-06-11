@@ -8,5 +8,5 @@
 
 - name: upgrade all packages
   package: name=* state=latest update_cache=yes
-  when:  upgrade_all_pkg is defined and upgrade_all_pkg | bool
+  when:  upgrade_all_pkg is defined and upgrade_all_pkg | bool and not atomic | default(False)
   tags: upgrade_all_pkg
