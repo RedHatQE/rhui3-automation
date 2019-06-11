@@ -38,13 +38,15 @@ atomic_repo:
     remote: "rhui-rhel-atomic-host-rhui-ostree"
     ref: "rhel-atomic-host/7/x86_64/standard"
 CLI_repo1:
-    name: "Red Hat Enterprise Linux Atomic Host Beta (Source RPMs) from RHUI"
-    id: "rhel-atomic-host-beta-rhui-source-rpms"
-    label: "rhel-atomic-host-beta-rhui-source-rpms"
+    name: "Red Hat Enterprise Linux Atomic Host (Trees) from RHUI"
+    id: "rhel-atomic-host-rhui-ostree--rhel-atomic-host-7-x86_64-standard"
+    label: "rhel-atomic-host-rhui-ostree"
+    path: "content/dist/rhel/rhui/atomic/7/7Server/x86_64/ostree/repo"
 CLI_repo2:
     name: "Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI (x86_64)"
     id: "rhel-atomic-host-rhui-rpms-x86_64"
     label: "rhel-atomic-host-rhui-rpms"
+    path: "content/dist/rhel/rhui/atomic/7/7Server/x86_64/os"
 CLI_product:
     name: "Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI"
     repos_basename: "rhel-atomic-host-rhui-rpms"

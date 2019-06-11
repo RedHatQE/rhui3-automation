@@ -92,40 +92,6 @@ class RHUIManagerCLI(object):
         return response
 
     @staticmethod
-    def get_repo_lists(connection):
-        '''
-        get repo lists; dict with two lists: Red Hat and custom, with nested [id, name] lists
-        '''
-        _, stdout, _ = connection.exec_command("rhui-manager repo list")
-        with stdout as output:
-            rawlist = output.read().decode().splitlines()
-
-        # the first RH repo is on the 5th line (if there's a RH repo at all)
-        first_rh_repo_index = 4
-        # find the position of the last RH repo
-        for index in range(first_rh_repo_index, len(rawlist) - 3):
-            if rawlist[index] == "":
-                last_rh_repo_index = index - 1
-                break
-        # the first custom repo is 4 lines below the last RH repo
-        first_custom_repo_index = last_rh_repo_index + 4
-        # the last custom repo is 2 lines above the end of the output
-        last_custom_repo_index = len(rawlist) - 2
-
-        # parse the repo IDs and names
-        rhrepos = []
-        for index in range(first_rh_repo_index, last_rh_repo_index + 1):
-            tmplist = rawlist[index].split("::")
-            rhrepos.append([tmplist[0].strip(), tmplist[1].strip()])
-        customrepos = []
-        for index in range(first_custom_repo_index, last_custom_repo_index + 1):
-            tmplist = rawlist[index].split("::")
-            customrepos.append([tmplist[0].strip(), tmplist[1].strip()])
-
-        repodict = {"redhat": rhrepos, "custom": customrepos}
-        return repodict
-
-    @staticmethod
     def repo_sync(connection, repo_id, repo_name):
         '''
         sync a repo
@@ -286,6 +252,31 @@ class RHUIManagerCLI(object):
         cmd += " --dir %s" % directory
         if unprotected_repos:
             cmd += " --unprotected_repos %s" % ",".join(unprotected_repos)
+        Expect.ping_pong(connection,
+                         cmd,
+                         "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-1.noarch.rpm" % \
+                         (directory, rpmdata[0], rpmdata[1], rpmdata[0], rpmdata[1]))
+
+    @staticmethod
+    def client_content_source(connection, certdata, rpmdata, directory):
+        '''
+        generate an alternate source config rpm
+        (very similar to client_rpm() -- see the usage described there)
+        '''
+        cmd = "rhui-manager client content_source"
+        if certdata[0].startswith("/"):
+            cmd += " --private_key %s --entitlement_cert %s" % (certdata[0], certdata[1])
+        else:
+            cmd += " --cert"
+            if isinstance(certdata[-1], int):
+                cmd += " --days %s" % certdata.pop()
+            cmd += " --repo_label %s" % ",".join(certdata)
+        cmd += " --rpm_name %s" % rpmdata[0]
+        if len(rpmdata) > 1:
+            cmd += " --rpm_version %s" % rpmdata[1]
+        else:
+            rpmdata.append("2.0")
+        cmd += " --dir %s" % directory
         Expect.ping_pong(connection,
                          cmd,
                          "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-1.noarch.rpm" % \
