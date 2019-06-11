@@ -194,7 +194,7 @@ class TestCLI(object):
     def test_22_ensure_gpgcheck_config():
         '''ensure that GPG checking is enabled in the client configuration'''
         Expect.expect_retval(CONNECTION,
-                             r"grep -q '^gpgcheck\s*=\s*1$' " +
+                             r"grep '^gpgcheck\s*=\s*1$' " +
                              "/tmp/atomic_and_my-1.0/build/BUILD/atomic_and_my-1.0/rh-cloud.repo")
 
     def test_23_create_acs_config_rpm(self):
@@ -297,12 +297,12 @@ class TestCLI(object):
     def test_35_resync_no_warning():
         '''check if the syncs did not cause known unnecessary warnings'''
         # for RHBZ#1506872
-        Expect.expect_retval(CONNECTION, "grep -q 'pulp.*metadata:WARNING' /var/log/messages", 1)
+        Expect.expect_retval(CONNECTION, "grep 'pulp.*metadata:WARNING' /var/log/messages", 1)
         # for RHBZ#1579294
-        Expect.expect_retval(CONNECTION, "grep -q 'pulp.*publish:WARNING' /var/log/messages", 1)
+        Expect.expect_retval(CONNECTION, "grep 'pulp.*publish:WARNING' /var/log/messages", 1)
         # for RHBZ#1487523
         Expect.expect_retval(CONNECTION,
-                             "grep -q 'pulp.*Purging duplicate NEVRA can' /var/log/messages", 1)
+                             "grep 'pulp.*Purging duplicate NEVRA can' /var/log/messages", 1)
 
     @staticmethod
     def test_36_list_repos():
@@ -316,13 +316,13 @@ class TestCLI(object):
         '''check if non-RPM repos were ignored'''
         # for RHBZ#1199426
         Expect.expect_retval(CONNECTION,
-                             "egrep -q 'Containers|Images|ISOs|Kickstart' /tmp/repos.stdout", 1)
+                             "egrep 'Containers|Images|ISOs|Kickstart' /tmp/repos.stdout", 1)
 
     @staticmethod
     def test_38_check_pygiwarning():
         '''check if PyGIWarning was not issued'''
         # for RHBZ#1450430
-        Expect.expect_retval(CONNECTION, "grep -q PyGIWarning /tmp/repos.stderr", 1)
+        Expect.expect_retval(CONNECTION, "grep PyGIWarning /tmp/repos.stderr", 1)
 
     def test_39_check_repo_sorting(self):
         '''check if repo lists are sorted'''

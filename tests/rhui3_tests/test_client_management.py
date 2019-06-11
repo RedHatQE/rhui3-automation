@@ -247,7 +247,7 @@ class TestClient(object):
         else:
             cmd = "dnf -v"
         Expect.expect_retval(CLI,
-                             "%s repolist enabled 2> /dev/null | " % cmd +
+                             "%s repolist enabled | " % cmd +
                              "egrep '^Loaded plugins.*(rhnplugin|subscription-manager)'", 1)
 
     @staticmethod

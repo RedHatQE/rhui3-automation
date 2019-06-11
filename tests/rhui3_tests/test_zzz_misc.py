@@ -30,12 +30,12 @@ def test_01_sha1():
     '''
     # for RHBZ#1411451
     Expect.expect_retval(RHUA,
-                         "grep -q 'Signature Algorithm: sha1' " +
+                         "grep 'Signature Algorithm: sha1' " +
                          "/etc/pki/katello-certs-tools/certs/*.crt " +
                          "/etc/puppet/rhui-secrets/cds-cert.crt",
                          1)
     Expect.expect_retval(RHUA,
-                         "grep -q 'Signature Algorithm: sha256' " +
+                         "grep 'Signature Algorithm: sha256' " +
                          "/etc/pki/katello-certs-tools/certs/*.crt " +
                          "/etc/puppet/rhui-secrets/cds-cert.crt")
 
@@ -80,7 +80,7 @@ def test_04_fabric_crypto_req():
         check if the fabric package requires python-crypto
     '''
     # for RHBZ#1615907
-    Expect.expect_retval(RHUA, "rpm -qR fabric | grep -q python-crypto")
+    Expect.expect_retval(RHUA, "rpm -qR fabric | grep python-crypto")
 
 def test_05_celery_selinux():
     '''
@@ -99,7 +99,7 @@ def test_06_pulp_server_rpm_v():
         verify that /etc/pki/pulp/rsa_pub.key is installed correctly
     '''
     # for RHBZ#1578266
-    Expect.expect_retval(RHUA, "rpm -V pulp-server | grep -q /etc/pki/pulp/rsa_pub.key", 1)
+    Expect.expect_retval(RHUA, "rpm -V pulp-server | grep /etc/pki/pulp/rsa_pub.key", 1)
 
 def test_07_check_migrate_py():
     '''

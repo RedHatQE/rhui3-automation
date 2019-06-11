@@ -132,7 +132,7 @@ def test_12_check_gpg_sig():
     '''
        check the signature in the installed package
     '''
-    Expect.expect_retval(CLI, "rpm -qi %s | grep -q ^Signature.*%s$" % (SIGNED_PACKAGE, SIG))
+    Expect.expect_retval(CLI, "rpm -qi %s | grep ^Signature.*%s$" % (SIGNED_PACKAGE, SIG))
 
 def test_13_check_gpg_pubkey():
     '''
