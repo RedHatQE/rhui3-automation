@@ -12,6 +12,7 @@ Welcome to the RHUI 3 Test Plan!
    :caption: Contents:
    
    atomic_client
+   atomic_host_checks
    cds
    cds_cmd
    client_management
