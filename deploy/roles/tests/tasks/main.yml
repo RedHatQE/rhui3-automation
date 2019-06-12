@@ -56,6 +56,10 @@
   package: name=openssl-devel state=present enablerepo=*
   tags: tests
 
+- name: install bash-completion to simplify test execution
+  package: name=bash-completion state=present
+  tags: tests
+
 - name: use HTTPS in the pypi URL in setuptools if RHEL 6
   lineinfile:
     path: /usr/lib/python2.6/site-packages/setuptools/command/easy_install.py
