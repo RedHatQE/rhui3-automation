@@ -21,15 +21,7 @@ See the [RHUI deployment readme file ](https://github.com/RedHatQE/rhui3-automat
 
 In addition, you need a ZIP file with the following files in the root of the archive:
 
-* `rhcert.pem` — This must be a valid Red Hat content certificate allowing access to the following products:
-  * _Red Hat Enterprise Linux for SAP (RHEL 6 Server) (RPMs) from RHUI_
-  * _Red Hat Enterprise Linux for SAP (RHEL 7 Server) (RPMs) from RHUI_
-  * _Red Hat Satellite Tools 6.3 - Puppet 4 (for RHEL 7 for ARM) (RPMs) from RHUI_
-  * _Red Hat Enterprise Linux 8 for x86_64 - BaseOS Beta from RHUI (RPMs)_
-* `rhcert_atomic.pem` — This must be a valid Red Hat content certificate allowing access to the following products:
-  * _Red Hat Enterprise Linux Atomic Host (Trees) from RHUI_
-  * _Red Hat Enterprise Linux Atomic Host Beta (Source RPMs) from RHUI_
-  * _Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI_
+* `rhcert.pem`, `rhcert_atomic.pem` — These must be valid Red Hat content certificates allowing access to the products that provide the repositories configured in `rhui3_tests/tested_repos.yaml`.
 * `rhcert_empty.pem` — This must be a Red Hat content certificate containing no entitlement.
 * `rhcert_expired.pem` — This must be an expired Red Hat content certificate.
 * `rhcert_incompatible.pem` — This must be a Red Hat content certificate containing one or more entitlements that are not compatible with RHUI (containing a non-RHUI repository path) and no compatible entitlement at all.

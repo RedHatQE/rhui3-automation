@@ -21,17 +21,17 @@ yum_repos:
             test_package: "puppet-agent"
     8:
         x86_64:
-            name: "Red Hat Enterprise Linux 8 for x86_64 - BaseOS Beta from RHUI (RPMs)"
-            version: ""
+            name: "Red Hat Enterprise Linux 8 for x86_64 - High Availability (RPMs) from RHUI"
+            version: "8"
             kind: "Yum"
-            path: "content/beta/rhel8/rhui/8/x86_64/baseos/os"
-            test_package: "tree"
+            path: "content/dist/rhel8/rhui/8/x86_64/highavailability/os"
+            test_package: "clufter-common"
         aarch64:
-            name: "Red Hat Enterprise Linux 8 for ARM 64 - Supplementary Beta (RPMs) from RHUI"
-            version: ""
+            name: "Red Hat Enterprise Linux 8 for ARM 64 - BaseOS (RPMs) from RHUI"
+            version: "8"
             kind: "Yum"
-            path: "content/beta/rhel8/rhui/8/aarch64/supplementary/os"
-            test_package: "zhongyi-song-fonts"
+            path: "/content/dist/rhel8/rhui/8/aarch64/baseos/os"
+            test_package: "tree"
 atomic_repo:
     name: "Red Hat Enterprise Linux Atomic Host (Trees) from RHUI"
     kind: "Atomic"
