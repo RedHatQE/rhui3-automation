@@ -239,3 +239,10 @@ class Util(object):
                          "yumdownloader --url %s" % package_escaped,
                          "https://%s/pulp/repos/%s.*%s" % \
                          (lb_hostname, path, package_escaped))
+
+    @staticmethod
+    def cert_expired(connection, cert):
+        '''
+        check if the certificate has already expired, return true if so
+        '''
+        return connection.recv_exit_status("openssl x509 -checkend -noout -in %s" % cert) == 1

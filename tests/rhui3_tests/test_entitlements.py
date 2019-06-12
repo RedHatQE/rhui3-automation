@@ -12,6 +12,7 @@ from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements, \
                                                     IncompatibleCertificate, \
                                                     MissingCertificate
 from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
+from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -132,9 +133,10 @@ class TestEntitlement(object):
            upload a certificate containing a mix of valid and invalid repos
         '''
         # for RHBZ#1588931 & RHBZ#1584527
-        RHUIManagerEntitlements.upload_rh_certificate(CONNECTION,
-                                                      "/tmp/extra_rhui_files/" +
-                                                      "rhcert_partially_invalid.pem")
+        cert = "/tmp/extra_rhui_files/rhcert_partially_invalid.pem"
+        if Util.cert_expired(CONNECTION, cert):
+            raise nose.exc.SkipTest("The given certificate has already expired.")
+        RHUIManagerEntitlements.upload_rh_certificate(CONNECTION, cert)
 
     @staticmethod
     def test_14_remove_semi_bad_cert():

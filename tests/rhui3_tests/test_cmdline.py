@@ -16,6 +16,7 @@ from rhui3_tests_lib.rhuimanager_cmdline import RHUIManagerCLI, \
                                                 CustomRepoAlreadyExists, \
                                                 CustomRepoGpgKeyNotFound
 from rhui3_tests_lib.subscription import RHSMRHUI
+from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -341,8 +342,11 @@ class TestCLI(object):
         repolist = RHUIManagerCLI.repo_list(CONNECTION, True)
         nose.tools.ok_(not repolist, msg="can't continue as some repos remain: %s" % repolist)
         # try uploading the cert now
+        cert = "/tmp/extra_rhui_files/rhcert_partially_invalid.pem"
+        if Util.cert_expired(CONNECTION, cert):
+            raise nose.exc.SkipTest("The given certificate has already expired.")
         RHUIManagerCLI.cert_upload(CONNECTION,
-                                   "/tmp/extra_rhui_files/rhcert_partially_invalid.pem",
+                                   cert,
                                    "Red Hat Enterprise Linux 7 Server from RHUI")
         # the RHUI log must contain the fact that an invalid path was found in the cert
         Expect.ping_pong(CONNECTION, "tail /root/.rhui/rhui.log", "Invalid entitlement path")
