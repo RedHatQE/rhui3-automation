@@ -55,6 +55,7 @@ Default configuration:
   * **--atomic-cli [number]** - number of ATOMIC CLI machines\*, `default = 0`
   * **--test** - if specified, TEST/MASTER machine, `default = 0`
   * **--region [name]** - `default = eu-west-1`
+  * **--ansible-ssh-extra-args [args]** - optional SSH arguments for Ansible
   
 \* ATOMIC CLI machines can be run only with RHEL7 RHUI setup
 

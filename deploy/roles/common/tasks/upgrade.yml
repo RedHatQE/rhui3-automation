@@ -1,6 +1,29 @@
 # file: roles/common/upgrade.yml
 
+- name: create a yum repo file for an unreleased RHEL 7 compose
+  yum_repository:
+    name: rhel7_beta
+    description: Unreleased RHEL 7 Compose
+    baseurl: "{{ rhel7_beta_baseurl }}"
+    gpgcheck: no
+  when: rhel7_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7
+  tags: rhel7_beta
+
+- name: create a yum repo file for an unreleased RHEL 8 compose
+  yum_repository:
+    name: rhel8_beta
+    description: Unreleased RHEL 8 Compose
+    baseurl: "{{ rhel8_beta_baseurl }}"
+    gpgcheck: no
+  when: rhel8_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8
+  tags: rhel8_beta
+
 - name: upgrade all packages
   package: name=* state=latest update_cache=yes
   when:  upgrade_all_pkg is defined and upgrade_all_pkg | bool and not atomic | default(False)
   tags: upgrade_all_pkg
+
+- name: reboot after upgrading
+  reboot:
+  when: upgrade_all_pkg is defined and upgrade_all_pkg | bool and reboot is defined and reboot | bool and not atomic | default(False)
+  tags: reboot
