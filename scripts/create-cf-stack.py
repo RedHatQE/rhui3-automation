@@ -90,6 +90,7 @@ argparser.add_argument('--ami-6-override', help='RHEL 6 AMI ID to override the m
 argparser.add_argument('--ami-7-override', help='RHEL 7 AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ami-8-override', help='RHEL 8 AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ami-atomic-override', help='RHEL Atomic host AMI ID to override the mapping', metavar='ID')
+argparser.add_argument('--ansible-ssh-extra-args', help='Extra arguments for SSH connections established by Ansible', metavar='ARGS')
 
 args = argparser.parse_args()
 
@@ -643,6 +644,8 @@ try:
                 f.write(' ')
                 f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                 f.write(ssh_key)
+                if args.ansible_ssh_extra_args:
+                    f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                 f.write('\n')
         # rhua as nfs
         if fs_type == "rhua":
@@ -653,6 +656,8 @@ try:
                     f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
+                    if args.ansible_ssh_extra_args:
+                        f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
         # nfs
         elif fs_type == "nfs":
@@ -663,6 +668,8 @@ try:
                     f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
+                    if args.ansible_ssh_extra_args:
+                        f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
         # gluster
         else:
@@ -673,6 +680,8 @@ try:
                     f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
+                    if args.ansible_ssh_extra_args:
+                        f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
         # cdses
         f.write('\n[CDS]\n')
@@ -682,6 +691,8 @@ try:
                 f.write(' ')
                 f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                 f.write(ssh_key)
+                if args.ansible_ssh_extra_args:
+                    f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                 f.write('\n')
         # dns
         f.write('\n[DNS]\n')
@@ -692,6 +703,8 @@ try:
                     f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
+                    if args.ansible_ssh_extra_args:
+                        f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
         else:
             for instance in instances_detail:
@@ -700,6 +713,8 @@ try:
                     f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
+                    if args.ansible_ssh_extra_args:
+                        f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
         # cli
         if args.cli5 or args.cli6 or args.cli7 or args.cli8:
@@ -723,6 +738,8 @@ try:
                     # remove when Ansible 2.8 is released
                     if instance["OS"] == "RHEL8":
                         f.write(' ansible_python_interpreter=/usr/libexec/platform-python')
+                    if args.ansible_ssh_extra_args:
+                        f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
         # atomic_cli
         if args.atomic_cli:
@@ -733,6 +750,8 @@ try:
                     f.write(' ')
                     f.write('atomic=True ansible_ssh_user=cloud-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
+                    if args.ansible_ssh_extra_args:
+                        f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
         # test
         if args.test:
@@ -743,6 +762,8 @@ try:
                     f.write(' ')
                     f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                     f.write(ssh_key)
+                    if args.ansible_ssh_extra_args:
+                        f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
         # haproxy
         f.write('\n[HAPROXY]\n')
@@ -752,6 +773,8 @@ try:
                 f.write(' ')
                 f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
                 f.write(ssh_key)
+                if args.ansible_ssh_extra_args:
+                    f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                 f.write('\n')
 
 

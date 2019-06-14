@@ -19,7 +19,10 @@ Optional variables:
 
 - `common_custom_rpm`=~/Path/To/Your/rh-amazon-rhui-client-rhs30.rpm to setup Gluster
 - `haproxy_rpm`=~/Path/To/Your/haproxy.rpm to setup HAProxy on RHEL6
-- `upgrade_all_pkg`=yes|no|True|TRUE|false to update ALL packages (taking obsoletes into account) prior to RHUI installation. Mind that it might take more than several minutes.
+- `rhel7_beta_baseurl`=URL to create a Yum repo file containing a RHEL 7 compose which wouldn't normally be available on RHEL 7 hosts
+- `rhel8_beta_baseurl`=URL to create a Yum repo file containing a RHEL 8 compose which wouldn't normally be available on RHEL 8 hosts
+- `upgrade_all_pkg`=True to update ALL packages (taking obsoletes into account) prior to RHUI installation. Mind that it might take more than several minutes. Useful when using one or both of the variables above.
+- `reboot`=True to reboot after upgrading (e.g. for a new kernel to boot, for apps to load with a new glibc, etc.). The `upgrade_all_pkg` variable must be `True` at the same time.
 
 This is RHUI3.x [Ansible](https://www.ansible.com) deployment automation.
 Managed roles:

@@ -92,11 +92,15 @@ identity=~/.ssh/id_rsa_test
 export PYTHONUNBUFFERED=1
 
 if [[ $1 == all ]]; then
+    rhua_info=$(ssh -i $identity -o StrictHostKeyChecking=no -q rhua.example.com "cat /etc/redhat-release")
+    client_info=$(ssh -i $identity -o StrictHostKeyChecking=no -q cli01.example.com "cat /etc/redhat-release")
     if [[ $2 == quiet ]]; then
-        nosetests -vs &> $output
+        echo "The RHUA is running on $rhua_info. The client is running on $client_info." > $output
+        nosetests -vs &>> $output
         result=$?
     else
-        nosetests -vs 2>&1 | tee $output
+        echo "The RHUA is running on $rhua_info. The client is running on $client_info." | tee $output
+        nosetests -vs 2>&1 | tee -a $output
         result=${PIPESTATUS[0]}
     fi
 elif [[ $1 == client ]]; then
