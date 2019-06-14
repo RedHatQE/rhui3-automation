@@ -168,7 +168,7 @@ class TestClient(object):
            remove the container from the client and the RHUA, uninstall HAProxy and CDS
         '''
         if self.cli_supported:
-            Expect.expect_retval(CLI, "docker rm $(docker ps -a -f ancestor=%s -q)" % \
+            Expect.expect_retval(CLI, "docker rm -f $(docker ps -a -f ancestor=%s -q)" % \
                                  self.container_id)
             Expect.expect_retval(CLI, "docker rmi %s" % self.container_id)
             Util.remove_rpm(CLI, [CONF_RPM_NAME])
