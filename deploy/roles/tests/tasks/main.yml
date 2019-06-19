@@ -139,6 +139,15 @@
   when: rhaccount is defined
   tags: tests
 
+# this is to allow the nodes to install packages from a tunneled repo if using --tags run_tests
+# ie. if no previous task is run, which would initiate the connections to the nodes otherwise
+- name: make sure connections to RHUI nodes are established before running tests on RHEL 7 Beta
+  command: "true"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['RHUA']|default([]) + groups['CDS']|default([]) + groups['HAPROXY']|default([]) }}"
+  when: tests is defined and rhel7_beta_baseurl is defined and "'localhost:' in rhel7_beta_baseurl"
+  tags: run_tests
+
 - name: run tests
   command: "rhuitests {{ tests }} quiet"
   register: testreport
