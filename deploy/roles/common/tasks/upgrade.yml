@@ -6,24 +6,50 @@
     description: Unreleased RHEL 7 Compose
     baseurl: "{{ rhel7_beta_baseurl }}"
     gpgcheck: no
-  when: rhel7_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7
+  when: rhel7_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7 and not atomic | default(False)
   tags: rhel7_beta
 
-- name: create a yum repo file for an unreleased RHEL 8 compose
+- name: create a yum repo file for an unreleased RHEL 8 compose - BaseOS
   yum_repository:
-    name: rhel8_beta
-    description: Unreleased RHEL 8 Compose
+    file: rhel8_beta
+    name: rhel8_beta_baseos
+    description: Unreleased RHEL 8 Compose - BaseOS
     baseurl: "{{ rhel8_beta_baseurl }}"
     gpgcheck: no
   when: rhel8_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8
   tags: rhel8_beta
 
-- name: upgrade all packages
+- name: create a yum repo file for an unreleased RHEL 8 compose - AppStream
+  yum_repository:
+    file: rhel8_beta
+    name: rhel8_beta_appstream
+    description: Unreleased RHEL 8 Compose - AppStream
+    baseurl: "{{ rhel8_beta_baseurl | replace('BaseOS', 'AppStream')}}"
+    gpgcheck: no
+  when: rhel8_beta_baseurl is defined and "'BaseOS' in rhel8_beta_baseurl" and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8
+  tags: rhel8_beta
+
+- name: upgrade all packages on all machines
   package: name=* state=latest update_cache=yes
   when:  upgrade_all_pkg is defined and upgrade_all_pkg | bool and not atomic | default(False)
   tags: upgrade_all_pkg
 
-- name: reboot after upgrading
+- name: upgrade to RHEL 7 Beta
+  package: name=* state=latest update_cache=yes
+  when: rhel7_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7 and not atomic | default(False)
+  tags: rhel7_beta
+
+- name: upgrade to RHEL 8 Beta
+  package: name=* state=latest update_cache=yes
+  when: rhel8_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8
+  tags: rhel8_beta
+
+- name: reboot RHEL 7 machines after upgrading to Beta
   reboot:
-  when: upgrade_all_pkg is defined and upgrade_all_pkg | bool and reboot is defined and reboot | bool and not atomic | default(False)
-  tags: reboot
+  when: rhel7_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7 and not atomic | default(False)
+  tags: rhel7_beta
+
+- name: reboot RHEL 8 machines after upgrading to Beta
+  reboot:
+  when: rhel8_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8
+  tags: rhel8_beta

@@ -122,8 +122,9 @@ class TestEUSCLI(object):
         '''
         install the client configuration RPM
         '''
-        # remove Amazon RHUI configuration from the client first
+        # get rid of undesired repos first
         Util.remove_amazon_rhui_conf_rpm(CLI)
+        Util.disable_beta_repos(CLI)
         Util.install_pkg_from_rhua(RHUA,
                                    CLI,
                                    "/tmp/%s-2.0/build/RPMS/noarch/%s-2.0-1.noarch.rpm" % \

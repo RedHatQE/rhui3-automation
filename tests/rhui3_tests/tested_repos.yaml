@@ -30,7 +30,7 @@ yum_repos:
             name: "Red Hat Enterprise Linux 8 for ARM 64 - BaseOS (RPMs) from RHUI"
             version: "8"
             kind: "Yum"
-            path: "/content/dist/rhel8/rhui/8/aarch64/baseos/os"
+            path: "content/dist/rhel8/rhui/8/aarch64/baseos/os"
             test_package: "tree"
 atomic_repo:
     name: "Red Hat Enterprise Linux Atomic Host (Trees) from RHUI"

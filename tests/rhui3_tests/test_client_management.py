@@ -173,17 +173,13 @@ class TestClient(object):
         nose.tools.eq_(sigs_expected, sigs_actual)
 
     @staticmethod
-    def test_10_rm_amazon_rhui_cf_rpm():
-        '''
-           remove Amazon RHUI configuration from the client
-        '''
-        Util.remove_amazon_rhui_conf_rpm(CLI)
-
-    @staticmethod
-    def test_11_install_conf_rpm():
+    def test_10_install_conf_rpm():
         '''
            install the client configuration RPM
         '''
+        # get rid of undesired repos first
+        Util.remove_amazon_rhui_conf_rpm(CLI)
+        Util.disable_beta_repos(CLI)
         Util.install_pkg_from_rhua(CONNECTION,
                                    CLI,
                                    "/root/test_cli_rpm-3.0/build/RPMS/noarch/" +
@@ -192,7 +188,7 @@ class TestClient(object):
         # verify the installation by checking the client configuration RPM version
         Expect.expect_retval(CLI, "[ `rpm -q --queryformat \"%{VERSION}\" test_cli_rpm` = '3.0' ]")
 
-    def test_12_check_repo_sync_status(self):
+    def test_11_check_repo_sync_status(self):
         '''
            check if RH repos have been synced so RPMs can be installed from them
         '''
@@ -202,14 +198,14 @@ class TestClient(object):
         # also wait for the publish Pulp task to complete (takes time in the case of large repos)
         RHUIManagerSync.wait_till_pulp_tasks_finish(CONNECTION)
 
-    def test_13_inst_rpm_custom_repo(self):
+    def test_12_inst_rpm_custom_repo(self):
         '''
            install an RPM from the custom repo
         '''
         test_rpm_name = self.custom_rpm.rsplit('-', 2)[0]
         Expect.expect_retval(CLI, "yum install -y %s --nogpgcheck" % test_rpm_name, timeout=20)
 
-    def test_14_inst_rpm_rh_repo(self):
+    def test_13_inst_rpm_rh_repo(self):
         '''
            install an RPM from the RH repo
         '''
@@ -217,7 +213,7 @@ class TestClient(object):
         # but make sure the RPM is taken from the RHUI
         Util.check_package_url(CLI, self.test_package, self.yum_repo_path)
 
-    def test_15_unauthorized_access(self):
+    def test_14_unauthorized_access(self):
         '''
            verify that RHUI repo content cannot be fetched without an entitlement certificate
         '''
@@ -234,7 +230,7 @@ class TestClient(object):
                                  "protected/%s/repodata/repomd.xml" % CUSTOM_PATH,
                                  verify=False)
 
-    def test_16_check_cli_plugins(self):
+    def test_15_check_cli_plugins(self):
         '''
            check if irrelevant Yum plug-ins are not enabled on the client with the config RPM
         '''
@@ -248,7 +244,7 @@ class TestClient(object):
                              "egrep '^Loaded plugins.*(rhnplugin|subscription-manager)'", 1)
 
     @staticmethod
-    def test_17_release_handling():
+    def test_16_release_handling():
         '''
            check EUS release handling (working with /etc/yum/vars/releasever on the client)
         '''

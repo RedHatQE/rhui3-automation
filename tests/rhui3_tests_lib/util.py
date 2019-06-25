@@ -83,6 +83,17 @@ class Util(object):
                              timeout=60)
 
     @staticmethod
+    def disable_beta_repos(connection):
+        '''
+        Disable RHEL Beta repos that might have been created during the deployment
+        if testing RHUI on/with an unreleased compose.
+        '''
+        Expect.expect_retval(connection,
+                             "if [ -f /etc/yum.repos.d/rhel*_beta.repo ]; then" +
+                             "  yum-config-manager --disable 'rhel*_beta*';" +
+                             "fi")
+
+    @staticmethod
     def remove_rpm(connection, rpmlist, pedantic=False):
         '''
         Remove RPMs from a remote host.

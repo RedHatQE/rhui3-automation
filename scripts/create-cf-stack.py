@@ -735,9 +735,10 @@ try:
                     f.write('ansible_ssh_private_key_file=')
                     f.write(ssh_key)
                     # https://docs.ansible.com/ansible/latest/porting_guides/porting_guide_2.8.html#python-interpreter-discovery
-                    # uncomment if using Ansible older than 2.8
-                    #if instance["OS"] == "RHEL8":
-                    #    f.write(' ansible_python_interpreter=/usr/libexec/platform-python')
+                    # shouldn't be needed anymore
+                    # however, still needed for tasks delegated to RHEL 8 hosts; needs investigation
+                    if instance["OS"] == "RHEL8":
+                        f.write(' ansible_python_interpreter=/usr/libexec/platform-python')
                     if args.ansible_ssh_extra_args:
                         f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')

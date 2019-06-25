@@ -108,39 +108,36 @@ def test_08_create_cli_rpm():
                                       "/tmp/%s.key" % REPO,
                                       REPO)
 
-def test_09_rm_amazon_rhui_cf_rpm():
-    '''
-       remove Amazon RHUI configuration from the client
-    '''
-    Util.remove_amazon_rhui_conf_rpm(CLI)
-
-def test_10_install_conf_rpm():
+def test_09_install_conf_rpm():
     '''
        install the client configuration RPM
     '''
+    # get rid of undesired repos first
+    Util.remove_amazon_rhui_conf_rpm(CLI)
+    Util.disable_beta_repos(CLI)
     Util.install_pkg_from_rhua(RHUA,
                                CLI,
                                "/tmp/%s-2.0/build/RPMS/noarch/%s-2.0-1.noarch.rpm" % (REPO, REPO))
 
-def test_11_install_signed_pkg():
+def test_10_install_signed_pkg():
     '''
        install the signed package from the custom repo (will import the GPG key)
     '''
     Expect.expect_retval(CLI, "yum -y install %s" % SIGNED_PACKAGE)
 
-def test_12_check_gpg_sig():
+def test_11_check_gpg_sig():
     '''
        check the signature in the installed package
     '''
     Expect.expect_retval(CLI, "rpm -qi %s | grep ^Signature.*%s$" % (SIGNED_PACKAGE, SIG))
 
-def test_13_check_gpg_pubkey():
+def test_12_check_gpg_pubkey():
     '''
        check if the public GPG key was imported
     '''
     Expect.expect_retval(CLI, "rpm -q gpg-pubkey-%s" % SIG)
 
-def test_14_install_unsigned_pkg():
+def test_13_install_unsigned_pkg():
     '''
        try installing the unsigned package, should not work
     '''
@@ -149,15 +146,16 @@ def test_14_install_unsigned_pkg():
                      "Package %s-1-1.noarch.rpm is not signed" % UNSIGNED_PACKAGE)
     Expect.expect_retval(CLI, "rpm -q %s" % UNSIGNED_PACKAGE, 1)
 
-def test_15_install_2nd_signed_pkg():
+def test_14_install_2nd_signed_pkg():
     '''
        try installing the package signed with the key unknown to the client, should not work
     '''
-    rhel = Util.get_rhel_version(CLI)["major"]
-    if rhel <= 7:
-        output = "The GPG keys.*%s.*are not correct for this package" % REPO
-    else:
+    # dnf in RHEL 8.0 produces a different message
+    rhel = Util.get_rhel_version(CLI)
+    if rhel["major"] == 8 and rhel["minor"] == 0:
         output = "Public key for %s-1-1.noarch.rpm is not installed" % SIGNED_PACKAGE_SIG2
+    else:
+        output = "The GPG keys.*%s.*are not correct for this package" % REPO
     Expect.ping_pong(CLI,
                      "yum -y install %s" % SIGNED_PACKAGE_SIG2,
                      output)

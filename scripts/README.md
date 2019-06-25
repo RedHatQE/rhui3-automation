@@ -70,11 +70,7 @@ ignored by `ansible-playbook`. Other than that, you are free to use the launched
 way you want, just be sure to log in as root directly.
 
 Note that RHEL-8 AMIs are missing the unversioned `python` command. This does not affect
-the deployment because the _platform Python_ is automatically found in the case of RHEL 8 hosts as
-long as you are running Ansible 2.8 and later. If you are still running an older version and want
-to use RHEL 8 in the stack, uncomment the code below the link to the Ansible 2.8 Porting Guide
-in the script. (Do not push this change to git, though.)
-```
+the deployment because the _platform Python_ is automatically set in the case of RHEL 8 hosts.
 
 If you specify a non-x86\_64 client architecture, a suitable instance type will be selected
 automatically. You may need to supply a VPC and a subnet ID with some instance types,
