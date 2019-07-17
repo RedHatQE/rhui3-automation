@@ -28,7 +28,7 @@ class RHUIManagerClient(object):
 
     @staticmethod
     def create_conf_rpm(connection, dirname, certpath, certkey, rpmname, rpmversion="",
-                        unprotected_repos=None):
+                        rpmrelease="", unprotected_repos=None):
         '''
         create a client configuration RPM from an entitlement certificate
         '''
@@ -40,6 +40,8 @@ class RHUIManagerClient(object):
         Expect.enter(connection, rpmname)
         Expect.expect(connection, "Version of the configuration RPM.*:")
         Expect.enter(connection, rpmversion)
+        Expect.expect(connection, "Release of the configuration RPM.*:")
+        Expect.enter(connection, rpmrelease)
         Expect.expect(connection, "Full path to the entitlement certificate.*:")
         Expect.enter(connection, certpath)
         Expect.expect(connection,
@@ -49,13 +51,16 @@ class RHUIManagerClient(object):
             RHUIManager.select(connection, unprotected_repos)
         if not rpmversion:
             rpmversion = "2.0"
+        if not rpmrelease:
+            rpmrelease = "1"
         Expect.expect(connection,
-                      "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-1.noarch.rpm" % \
-                      (dirname, rpmname, rpmversion, rpmname, rpmversion))
+                      "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-%s.noarch.rpm" % \
+                      (dirname, rpmname, rpmversion, rpmname, rpmversion, rpmrelease))
         Expect.enter(connection, "q")
 
     @staticmethod
-    def create_container_conf_rpm(connection, dirname, rpmname, rpmversion="", port=""):
+    def create_container_conf_rpm(connection, dirname, rpmname, rpmversion="", rpmrelease="",
+                                  port=""):
         '''
         create a container client configuration RPM
         '''
@@ -67,13 +72,17 @@ class RHUIManagerClient(object):
         Expect.enter(connection, rpmname)
         Expect.expect(connection, "Version of the configuration RPM.*:")
         Expect.enter(connection, rpmversion)
+        Expect.expect(connection, "Release of the configuration RPM.*:")
+        Expect.enter(connection, rpmrelease)
         Expect.expect(connection, "Port to serve Docker content on .*:")
         Expect.enter(connection, port)
         if not rpmversion:
             rpmversion = "2.0"
+        if not rpmrelease:
+            rpmrelease = "1"
         Expect.expect(connection,
-                      "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-1.noarch.rpm" % \
-                      (dirname, rpmname, rpmversion, rpmname, rpmversion))
+                      "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-%s.noarch.rpm" % \
+                      (dirname, rpmname, rpmversion, rpmname, rpmversion, rpmrelease))
         Expect.enter(connection, "q")
 
     @staticmethod

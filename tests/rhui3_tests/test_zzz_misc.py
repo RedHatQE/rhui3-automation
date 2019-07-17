@@ -108,8 +108,15 @@ def test_07_check_migrate_py():
     # for RHBZ#1278954
     Expect.expect_retval(RHUA,
                          "mount /tmp/iso && " +
-                         "grep DEFAULT_ENTITLEMENT /tmp/iso/migrate/migrate.py && " +
-                         "umount /tmp/iso")
+                         "grep DEFAULT_ENTITLEMENT /tmp/iso/migrate/migrate.py")
+    Expect.expect_retval(RHUA, "umount /tmp/iso")
+
+def test_08_qpid_linearstore():
+    '''
+        check if the qpid-cpp-server-linearstore package is available
+    '''
+    # for RHBZ#1702254
+    Expect.expect_retval(RHUA, "yum list qpid-cpp-server-linearstore", timeout=30)
 
 def teardown():
     '''

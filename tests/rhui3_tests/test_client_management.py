@@ -146,10 +146,12 @@ class TestClient(object):
                                           "/root/test_ent_cli.crt",
                                           "/root/test_ent_cli.key",
                                           "test_cli_rpm",
-                                          "3.0")
+                                          "3.0",
+                                          "1.rhui")
+        # check if the rpm was created
         Expect.expect_retval(CONNECTION,
                              "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/" +
-                             "test_cli_rpm-3.0-1.noarch.rpm")
+                             "test_cli_rpm-3.0-1.rhui.noarch.rpm")
 
     @staticmethod
     def test_08_ensure_gpgcheck_conf():
@@ -183,7 +185,7 @@ class TestClient(object):
         Util.install_pkg_from_rhua(CONNECTION,
                                    CLI,
                                    "/root/test_cli_rpm-3.0/build/RPMS/noarch/" +
-                                   "test_cli_rpm-3.0-1.noarch.rpm")
+                                   "test_cli_rpm-3.0-1.rhui.noarch.rpm")
 
         # verify the installation by checking the client configuration RPM version
         Expect.expect_retval(CLI, "[ `rpm -q --queryformat \"%{VERSION}\" test_cli_rpm` = '3.0' ]")

@@ -15,9 +15,10 @@ from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
-CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-
 CDS_HOSTNAMES = Util.get_cds_hostnames()
+
+CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+CDS = [stitches.Connection(host, "root", "/root/.ssh/id_rsa_test") for host in CDS_HOSTNAMES]
 
 def setup():
     '''
@@ -229,9 +230,32 @@ def test_20_delete_unreachable():
     Helpers.unbreak_hostname(CONNECTION)
 
     # the node remains configured (RHUI mount point, httpd)... unconfigure it properly
-    # not possible until RHBZ#1640002 is fixed
+    # do so by adding and deleting it again
+    RHUICLI.add(CONNECTION, "cds", cds, unsafe=True)
+    RHUICLI.delete(CONNECTION, "cds", [cds], force=True)
+
     # clean up the SSH key
     Expect.expect_retval(CONNECTION, "ssh-keygen -R %s" % cds)
+
+def test_21_check_cleanup():
+    '''
+    check if Apache was stopped and the remote file system unmounted on all CDSs
+    '''
+    # for RHBZ#1640002
+    service = "httpd"
+    mdir = "/var/lib/rhui/remote_share"
+    dirty_hosts = dict()
+    errors = []
+
+    dirty_hosts["httpd"] = [cds.hostname for cds in CDS if Helpers.check_service(cds, service)]
+    dirty_hosts["mount"] = [cds.hostname for cds in CDS if Helpers.check_mountpoint(cds, mdir)]
+
+    if dirty_hosts["httpd"]:
+        errors.append("Apache is still running on %s" % dirty_hosts["httpd"])
+    if dirty_hosts["mount"]:
+        errors.append("The remote file system is still mounted on %s" % dirty_hosts["mount"])
+
+    nose.tools.ok_(not errors, msg=errors)
 
 def teardown():
     '''
