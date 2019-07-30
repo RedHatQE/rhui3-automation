@@ -252,7 +252,13 @@ class RHUIManagerRepo(object):
         '''
         RHUIManager.screen(connection, "repo")
         Expect.enter(connection, "d")
-        Expect.expect(connection, "Enter value .*:", 360)
+        status = Expect.expect_list(connection,
+                                    [(re.compile(".*No repositories.*", re.DOTALL), 1),
+                                     (re.compile(".*Enter value.*", re.DOTALL), 2)],
+                                    360)
+        if status == 1:
+            RHUIManager.quit(connection)
+            return
         Expect.enter(connection, "a")
         Expect.expect(connection, "Enter value .*:")
         Expect.enter(connection, "c")
