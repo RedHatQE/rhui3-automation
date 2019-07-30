@@ -257,3 +257,10 @@ class Util(object):
         check if the certificate has already expired, return true if so
         '''
         return connection.recv_exit_status("openssl x509 -checkend -noout -in %s" % cert) == 1
+
+    @staticmethod
+    def fetch(connection, source, dest):
+        '''
+        fetch a file from the remote host
+        '''
+        connection.sftp.get(source, dest)

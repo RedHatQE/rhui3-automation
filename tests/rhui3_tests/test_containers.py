@@ -33,7 +33,7 @@ RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 CLI = stitches.Connection(getenv("RHUICLI", "cli01.example.com"), "root", "/root/.ssh/id_rsa_test")
 
 CONF_RPM_NAME = "containers-rhui"
-CONF_RPM_PATH = "/tmp/%s-2.0/build/RPMS/noarch/%s-2.0-1.noarch.rpm" % (CONF_RPM_NAME, CONF_RPM_NAME)
+CONF_RPM_PATH = "/tmp/%s-1/build/RPMS/noarch/%s-1-1ui.noarch.rpm" % (CONF_RPM_NAME, CONF_RPM_NAME)
 
 class TestClient(object):
     '''
@@ -118,7 +118,7 @@ class TestClient(object):
         '''
            create a client configuration RPM
         '''
-        RHUIManagerClient.create_container_conf_rpm(RHUA, "/tmp", CONF_RPM_NAME)
+        RHUIManagerClient.create_container_conf_rpm(RHUA, "/tmp", CONF_RPM_NAME, "1", "1ui")
         Expect.expect_retval(RHUA, "test -f %s" % CONF_RPM_PATH)
 
     def test_08_install_cli_rpm(self):

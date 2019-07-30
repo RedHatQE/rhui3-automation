@@ -13,6 +13,7 @@ from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, NoSuchInst
 logging.basicConfig(level=logging.DEBUG)
 
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+HAPROXY = stitches.Connection("hap01.example.com", "root", "/root/.ssh/id_rsa_test")
 
 def setup():
     '''
@@ -82,7 +83,14 @@ def test_09_list_hap():
     hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
     nose.tools.assert_equal(hap_list, [])
 
-def test_10_add_hap_uppercase():
+def test_10_check_cleanup():
+    '''
+        check if the haproxy service was stopped
+    '''
+    nose.tools.ok_(not Helpers.check_service(HAPROXY, "haproxy"),
+                   msg="haproxy is still running on hap01.example.com")
+
+def test_11_add_hap_uppercase():
     '''
         add (and delete) an HAProxy Load-balancer with uppercase characters
     '''
@@ -94,7 +102,7 @@ def test_10_add_hap_uppercase():
     hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
     nose.tools.assert_equal(hap_list, [])
 
-def test_11_delete_unreachable():
+def test_12_delete_unreachable():
     '''
     add a Load-balancer, make it unreachable, and see if it can still be deleted from the RHUA
     '''

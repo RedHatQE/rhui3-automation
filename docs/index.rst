@@ -15,6 +15,7 @@ Welcome to the RHUI 3 Test Plan!
    atomic_host_checks
    cds
    cds_cmd
+   cds_hap_interop
    client_management
    cmdline
    containers

@@ -13,9 +13,10 @@ from rhui3_tests_lib.rhuimanager import RHUIManager
 
 logging.basicConfig(level=logging.DEBUG)
 
-CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-
 HA_HOSTNAME = "hap01.example.com"
+
+CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+HAPROXY = stitches.Connection(HA_HOSTNAME, "root", "/root/.ssh/id_rsa_test")
 
 def setup():
     '''
@@ -203,10 +204,20 @@ def test_20_delete_unreachable():
     Helpers.unbreak_hostname(CONNECTION)
 
     # the node remains configured (haproxy)... unconfigure it properly
-    # not possible until RHBZ#1640002 is fixed
+    # do so by adding and deleting it again
+    RHUICLI.add(CONNECTION, "haproxy", HA_HOSTNAME, unsafe=True)
+    RHUICLI.delete(CONNECTION, "haproxy", [HA_HOSTNAME], force=True)
+
     # clean up the SSH key
     Expect.expect_retval(CONNECTION, "ssh-keygen -R %s" % HA_HOSTNAME)
 
+def test_21_check_cleanup():
+    '''
+    check if the haproxy service was stopped
+    '''
+    # for RHBZ#1640002
+    nose.tools.ok_(not Helpers.check_service(HAPROXY, "haproxy"),
+                   msg="haproxy is still running on %s" % HA_HOSTNAME)
 def teardown():
     '''
     announce the end of the test run

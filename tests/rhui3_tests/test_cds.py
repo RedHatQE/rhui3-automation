@@ -14,9 +14,10 @@ from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
-CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-
 CDS_HOSTNAMES = Util.get_cds_hostnames()
+
+CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+CDS = [stitches.Connection(host, "root", "/root/.ssh/id_rsa_test") for host in CDS_HOSTNAMES]
 
 def setup():
     '''
@@ -88,7 +89,26 @@ def test_09_list_cds():
     cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
     nose.tools.assert_equal(cds_list, [])
 
-def test_10_add_cds_uppercase():
+def test_10_check_cleanup():
+    '''
+        check if Apache was stopped and the remote file system unmounted on all CDSs
+    '''
+    service = "httpd"
+    mdir = "/var/lib/rhui/remote_share"
+    dirty_hosts = dict()
+    errors = []
+
+    dirty_hosts["httpd"] = [cds.hostname for cds in CDS if Helpers.check_service(cds, service)]
+    dirty_hosts["mount"] = [cds.hostname for cds in CDS if Helpers.check_mountpoint(cds, mdir)]
+
+    if dirty_hosts["httpd"]:
+        errors.append("Apache is still running on %s" % dirty_hosts["httpd"])
+    if dirty_hosts["mount"]:
+        errors.append("The remote file system is still mounted on %s" % dirty_hosts["mount"])
+
+    nose.tools.ok_(not errors, msg=errors)
+
+def test_11_add_cds_uppercase():
     '''
         add (and delete) a CDS with uppercase characters
     '''
@@ -102,7 +122,7 @@ def test_10_add_cds_uppercase():
     cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
     nose.tools.assert_equal(len(cds_list), 0)
 
-def test_11_delete_unreachable():
+def test_12_delete_unreachable():
     '''
     add a CDS, make it unreachable, and see if it can still be deleted from the RHUA
     '''

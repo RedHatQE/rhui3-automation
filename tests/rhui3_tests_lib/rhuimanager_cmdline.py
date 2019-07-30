@@ -224,7 +224,7 @@ class RHUIManagerCLI(object):
                          "Entitlement certificate created at %s/%s.crt" % (directory, name))
 
     @staticmethod
-    def client_rpm(connection, certdata, rpmdata, directory, unprotected_repos=""):
+    def client_rpm(connection, certdata, rpmdata, directory, unprotected_repos=None, proxy=""):
         '''
         generate a client configuration RPM
         The certdata argument must be a list, and two kinds of data are supported:
@@ -232,9 +232,10 @@ class RHUIManagerCLI(object):
           * one or more repo labels and optionally an integer denoting the number of days the cert
             will be valid for; if unspecified, rhui-manager will use 365. In this case,
             a certificate will be generated on the fly.
-        The rpmdata argument must be a list with one or two strings:
+        The rpmdata argument must be a list with one, two or three strings:
           * package name: the name for the RPM
           * package version: string denoting the version; if unspecified, rhui-manager will use 2.0
+          * package release: string denoting the release; if unspecified, rhui-manager will use 1
         '''
         cmd = "rhui-manager client rpm"
         if certdata[0].startswith("/"):
@@ -247,15 +248,22 @@ class RHUIManagerCLI(object):
         cmd += " --rpm_name %s" % rpmdata[0]
         if len(rpmdata) > 1:
             cmd += " --rpm_version %s" % rpmdata[1]
+            if len(rpmdata) > 2:
+                cmd += " --rpm_release %s" % rpmdata[2]
+            else:
+                rpmdata.append("1")
         else:
             rpmdata.append("2.0")
+            rpmdata.append("1")
         cmd += " --dir %s" % directory
         if unprotected_repos:
             cmd += " --unprotected_repos %s" % ",".join(unprotected_repos)
+        if proxy:
+            cmd += " --proxy %s" % proxy
         Expect.ping_pong(connection,
                          cmd,
-                         "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-1.noarch.rpm" % \
-                         (directory, rpmdata[0], rpmdata[1], rpmdata[0], rpmdata[1]))
+                         "Location: %s/%s-%s/build/RPMS/noarch/%s-%s-%s.noarch.rpm" % \
+                         (directory, rpmdata[0], rpmdata[1], rpmdata[0], rpmdata[1], rpmdata[2]))
 
     @staticmethod
     def client_content_source(connection, certdata, rpmdata, directory):
