@@ -12,8 +12,10 @@ from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, NoSuchInst
 
 logging.basicConfig(level=logging.DEBUG)
 
+HA_HOSTNAME = "hap01.example.com"
+
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-HAPROXY = stitches.Connection("hap01.example.com", "root", "/root/.ssh/id_rsa_test")
+HAPROXY = stitches.Connection(HA_HOSTNAME, "root", "/root/.ssh/id_rsa_test")
 
 def setup():
     '''
@@ -38,7 +40,7 @@ def test_03_add_hap():
     '''
         add an HAProxy Load-balancer
     '''
-    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com")
+    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", HA_HOSTNAME)
 
 def test_04_list_hap():
     '''
@@ -51,7 +53,7 @@ def test_05_readd_hap():
     '''
         add the HAProxy Load-balancer again (reapply the configuration)
     '''
-    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com", update=True)
+    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", HA_HOSTNAME, update=True)
 
 def test_06_list_hap():
     '''
@@ -74,7 +76,7 @@ def test_08_delete_hap():
     '''
         delete the HAProxy Load-balancer
     '''
-    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
+    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [HA_HOSTNAME])
 
 def test_09_list_hap():
     '''
@@ -88,7 +90,7 @@ def test_10_check_cleanup():
         check if the haproxy service was stopped
     '''
     nose.tools.ok_(not Helpers.check_service(HAPROXY, "haproxy"),
-                   msg="haproxy is still running on hap01.example.com")
+                   msg="haproxy is still running on %s" % HA_HOSTNAME)
 
 def test_11_add_hap_uppercase():
     '''
@@ -107,14 +109,14 @@ def test_12_delete_unreachable():
     add a Load-balancer, make it unreachable, and see if it can still be deleted from the RHUA
     '''
     # for RHBZ#1639996
-    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com")
+    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", HA_HOSTNAME)
     hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
     nose.tools.assert_not_equal(hap_list, [])
 
-    Helpers.break_hostname(CONNECTION, "hap01.example.com")
+    Helpers.break_hostname(CONNECTION, HA_HOSTNAME)
 
     # delete it
-    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
+    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [HA_HOSTNAME])
     # check it
     hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
     nose.tools.assert_equal(hap_list, [])
@@ -122,8 +124,8 @@ def test_12_delete_unreachable():
     Helpers.unbreak_hostname(CONNECTION)
 
     # the node remains configured (haproxy)... unconfigure it properly
-    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com")
-    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
+    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", HA_HOSTNAME)
+    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [HA_HOSTNAME])
 
 def teardown():
     '''
