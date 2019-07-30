@@ -122,10 +122,13 @@ class TestEntitlement(object):
         '''
            upload an incompatible certificate, expect a proper refusal
         '''
+        cert = "/tmp/extra_rhui_files/rhcert_incompatible.pem"
+        if Util.cert_expired(CONNECTION, cert):
+            raise nose.exc.SkipTest("The given certificate has already expired.")
         nose.tools.assert_raises(IncompatibleCertificate,
                                  RHUIManagerEntitlements.upload_rh_certificate,
                                  CONNECTION,
-                                 "/tmp/extra_rhui_files/rhcert_incompatible.pem")
+                                 cert)
 
     @staticmethod
     def test_13_upload_semi_bad_cert():
@@ -160,10 +163,13 @@ class TestEntitlement(object):
            upload a certificate that contains no entitlements
         '''
         # for RHBZ#1497028
+        cert = "/tmp/extra_rhui_files/rhcert_empty.pem"
+        if Util.cert_expired(CONNECTION, cert):
+            raise nose.exc.SkipTest("The given certificate has already expired.")
         nose.tools.assert_raises(IncompatibleCertificate,
                                  RHUIManagerEntitlements.upload_rh_certificate,
                                  CONNECTION,
-                                 "/tmp/extra_rhui_files/rhcert_empty.pem")
+                                 cert)
 
 
     @staticmethod

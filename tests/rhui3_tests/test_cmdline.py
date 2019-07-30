@@ -297,8 +297,10 @@ class TestCLI(object):
     @staticmethod
     def test_28_upload_incompat_cert():
         '''check incompatible certificate handling'''
-        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_incompatible.pem",
-                                   "does not contain any entitlements")
+        cert = "/tmp/extra_rhui_files/rhcert_incompatible.pem"
+        if Util.cert_expired(CONNECTION, cert):
+            raise nose.exc.SkipTest("The given certificate has already expired.")
+        RHUIManagerCLI.cert_upload(CONNECTION, cert, "does not contain any entitlements")
 
     @staticmethod
     def test_29_register_system():
@@ -424,8 +426,10 @@ class TestCLI(object):
     def test_44_upload_empty_cert():
         '''check that an empty certificate is rejected (no traceback)'''
         # for RHBZ#1497028
-        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_empty.pem",
-                                   "does not contain any entitlements")
+        cert = "/tmp/extra_rhui_files/rhcert_empty.pem"
+        if Util.cert_expired(CONNECTION, cert):
+            raise nose.exc.SkipTest("The given certificate has already expired.")
+        RHUIManagerCLI.cert_upload(CONNECTION, cert, "does not contain any entitlements")
 
     def test_45_multi_repo_product(self):
         '''check that all repos in a multi-repo product get added'''

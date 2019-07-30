@@ -32,6 +32,8 @@ In addition, you need a ZIP file with the following files in the root of the arc
 * `test_gpg_key` — This is the RHUI QE public GPG key (0x9F6E93A2).
 * `ANYTHING.tar` — These must be tarballs containing some packages and their `updateinfo.xml.gz` files. The contents will be used for updateinfo testing. Exact names are to be specified in `rhui3_tests/tested_repos.yaml`.
 
+The main and Atomic certificates must not be expired. Expiration is first checked for the "empty", "incompatible", and "partially invalid" certificates, and the tests that use them are skipped if the given certificate has already expired.
+
 Lastly, in order for the subscription test to be able to run, you need a file with valid Red Hat credentials allowing access to RHUI. The file must look like this:
 
 ```

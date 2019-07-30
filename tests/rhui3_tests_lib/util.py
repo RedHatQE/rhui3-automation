@@ -256,6 +256,9 @@ class Util(object):
         '''
         check if the certificate has already expired, return true if so
         '''
+        file_exists = connection.recv_exit_status("test -f %s" % cert) == 0
+        if not file_exists:
+            raise OSError("%s does not exist" % cert)
         return connection.recv_exit_status("openssl x509 -checkend -noout -in %s" % cert) == 1
 
     @staticmethod
