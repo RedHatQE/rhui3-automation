@@ -10,30 +10,10 @@
   package: name=git state=present
   tags: tests
 
-- name: create git repo to clone tests
-  file: path=/tmp/rhui3-tests state=directory
-  tags: tests
-
-- name: check if remote origin exists
-  stat: path=/tmp/rhui3-tests/.git/FETCH_HEAD
-  register: remote_origin
-  tags: tests
-
-- name: init git repo with remote, fetch all, no checkout
-  shell: cd /tmp/rhui3-tests && git init && git remote add -f origin git://github.com/RedHatQE/rhui3-automation.git
-  when: remote_origin.stat.exists == False
-  tags: tests
-
-- name: git true sparseCheckout
-  shell: cd /tmp/rhui3-tests/ && git config core.sparseCheckout true
-  tags: tests
-
-- name: define tests repo to checkout
-  shell: echo tests/ >> /tmp/rhui3-tests/.git/info/sparse-checkout
-  tags: tests
-
-- name: git pull
-  shell: cd /tmp/rhui3-tests && git pull origin master
+- name: clone this project on the test machine
+  git:
+    repo: https://github.com/RedHatQE/rhui3-automation.git
+    dest: /root/rhui3-automation
   tags: tests
 
 - name: install the 'Development tools' package group
@@ -80,7 +60,7 @@
   tags: tests
 
 - name: install tests
-  shell: cd /tmp/rhui3-tests/tests && pip install .
+  shell: cd /root/rhui3-automation/tests && pip install .
   tags: tests
 
 - name: generate ssh keys
