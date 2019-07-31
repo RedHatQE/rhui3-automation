@@ -2,46 +2,41 @@
 
 import re
 
-from stitches.expect import Expect
+from stitches.expect import Expect, ExpectFailed
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
-PROMPT = r'rhui \(subscriptions\) => '
+PROMPT = r"rhui \(subscriptions\) => "
 
 class RHUIManagerSubMan(object):
-    '''
-    Represents -= Subscriptions Manager =- RHUI screen
-    '''
+    """Represents -= Subscriptions Manager =- RHUI screen"""
     @staticmethod
     def subscriptions_list(connection, what):
-        '''
-        list registered or available subscriptions
-        '''
+        """list registered or available subscriptions"""
         if what == "registered":
             key = "l"
         elif what == "available":
             key = "a"
         else:
-            raise ValueError("Unsupported list: " + what)
+            raise ValueError("Unsupported list: %s. Use 'registered' or 'available'." % what)
 
         RHUIManager.screen(connection, "subscriptions")
         Expect.enter(connection, key)
         lines = Expect.match(connection, re.compile("(.*)" + PROMPT, re.DOTALL))[0]
-        sub_list = []
-        for line in lines.splitlines():
-            # subscription names are on lines that start with two spaces
-            if line[:2] == "  ":
-                sub_list.append(line.strip())
-        Expect.enter(connection, 'q')
+        # subscription names are on lines that start with two spaces
+        sub_list = [line.strip() for line in lines.splitlines() if line.startswith("  ")]
+        Expect.enter(connection, "q")
         return sub_list
 
     @staticmethod
     def subscriptions_register(connection, names):
-        '''
-        register a Red Hat subscription in RHUI
-        '''
+        """register one or more Red Hat subscriptions in RHUI"""
         RHUIManager.screen(connection, "subscriptions")
         Expect.enter(connection, "r")
-        RHUIManager.select(connection, names)
+        try:
+            RHUIManager.select(connection, names)
+        except ExpectFailed:
+            Expect.enter(connection, "q")
+            raise RuntimeError("subscription(s) not available: %s" % names)
         RHUIManager.proceed_with_check(connection,
                                        "The following subscriptions will be registered:",
                                        names)
@@ -49,12 +44,14 @@ class RHUIManagerSubMan(object):
 
     @staticmethod
     def subscriptions_unregister(connection, names):
-        '''
-        unregister a Red Hat subscription from RHUI
-        '''
+        """unregister one or more Red Hat subscriptions from RHUI"""
         RHUIManager.screen(connection, "subscriptions")
         Expect.enter(connection, "d")
-        RHUIManager.select(connection, names)
+        try:
+            RHUIManager.select(connection, names)
+        except ExpectFailed:
+            Expect.enter(connection, "q")
+            raise RuntimeError("subscription(s) not registered: %s" % names)
         RHUIManager.proceed_with_check(connection,
                                        "The following subscriptions will be unregistered:",
                                        names)

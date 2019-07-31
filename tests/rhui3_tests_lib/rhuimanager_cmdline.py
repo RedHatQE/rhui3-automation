@@ -296,13 +296,10 @@ class RHUIManagerCLI(object):
         list registered or available subscriptions, complete information or the pool ID only
         '''
         if what not in ["registered", "available"]:
-            raise ValueError("Unsupported list: " + what)
-        if poolonly:
-            poolswitch = " --pool-only"
-        else:
-            poolswitch = ""
-        _, stdout, _ = connection.exec_command("rhui-manager subscriptions list --" + what +
-                                               poolswitch)
+            raise ValueError("Unsupported list: %s" % what)
+        poolswitch = "--pool-only" if poolonly else ""
+        _, stdout, _ = connection.exec_command("rhui-manager subscriptions list --%s %s" \
+                                               % (what, poolswitch))
         with stdout as output:
             sub_list = output.read().decode().strip()
         # return the (decoded and stripped) output as is;
@@ -314,11 +311,11 @@ class RHUIManagerCLI(object):
         '''
         register the subscription to RHUI
         '''
-        Expect.expect_retval(connection, "rhui-manager subscriptions register --pool " + pool)
+        Expect.expect_retval(connection, "rhui-manager subscriptions register --pool %s" % pool)
 
     @staticmethod
     def subscriptions_unregister(connection, pool):
         '''
         remove the subscription from RHUI
         '''
-        Expect.expect_retval(connection, "rhui-manager subscriptions unregister --pool " + pool)
+        Expect.expect_retval(connection, "rhui-manager subscriptions unregister --pool %s " % pool)

@@ -21,9 +21,9 @@ class TestSubscription(object):
     '''
 
     def __init__(self):
-        with open('/usr/share/rhui3_tests_lib/config/tested_repos.yaml', 'r') as configfile:
+        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
-        self.subscription_name = doc['subscription']['name']
+        self.subscription_name = doc["subscription"]["name"]
 
     @staticmethod
     def setup_class():
@@ -63,8 +63,8 @@ class TestSubscription(object):
             check if the subscription available to RHUI is indeed RHUI for CCSP
         '''
         avail_sub = RHUIManagerSubMan.subscriptions_list(CONNECTION, "available")
-        nose.tools.assert_not_equal(len(avail_sub), 0)
-        nose.tools.assert_equal(self.subscription_name, avail_sub[0])
+        nose.tools.ok_(self.subscription_name in avail_sub,
+                       msg="'%s' not found in %s" % (self.subscription_name, avail_sub))
 
     def test_05_register_sub_in_rhui(self):
         '''
@@ -77,8 +77,8 @@ class TestSubscription(object):
             check if the subscription is now tracked as registered
         '''
         reg_sub = RHUIManagerSubMan.subscriptions_list(CONNECTION, "registered")
-        nose.tools.assert_not_equal(len(reg_sub), 0)
-        nose.tools.assert_equal(self.subscription_name, reg_sub[0])
+        nose.tools.ok_(self.subscription_name in reg_sub,
+                       msg="'%s' not found in %s" % (self.subscription_name, reg_sub))
 
     def test_07_unregister_sub_in_rhui(self):
         '''
@@ -94,7 +94,7 @@ class TestSubscription(object):
             check if the subscription is no longer tracked as registered
         '''
         reg_sub = RHUIManagerSubMan.subscriptions_list(CONNECTION, "registered")
-        nose.tools.assert_equal(len(reg_sub), 0)
+        nose.tools.ok_(not reg_sub, msg="something remained: %s" % reg_sub)
 
     @staticmethod
     def test_09_unregister_system():
