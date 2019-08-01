@@ -79,6 +79,9 @@ EUS_repos:
         path: "content/eus/rhel/rhui/server/7/7.4/x86_64/sap-hana/os"
         test_package: "compat-sap-c++-7"
 updateinfo:
+    0:
+        all:
+            repo_id: "hts-6"
     6:
         x86_64:
             repo_name: "Red Hat Hardware Certification Test Suite 6"

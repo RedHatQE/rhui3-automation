@@ -46,6 +46,8 @@ class TestClient(object):
             except KeyError:
                 raise nose.SkipTest("No test repo defined for RHEL %s on %s" % \
                                     (self.version, self.arch))
+            # the special "RHEL 0" repo contains updateinfo.xml instead of *.gz
+            self.test["uncompressed_updateinfo"] = doc["updateinfo"][0]["all"]["repo_id"]
 
     @staticmethod
     def setup_class():
@@ -191,6 +193,18 @@ class TestClient(object):
         with stdout as output:
             processed_errata = output.read().decode().splitlines()
         nose.tools.eq_(orig_errata, processed_errata)
+
+    def test_13_uncompressed_xml(self):
+        '''
+           also check if an uncompressed updateinfo.xml file can be used
+        '''
+        RHUIManagerCLI.repo_add_errata(RHUA,
+                                       self.test["repo_id"],
+                                       "/tmp/extra_rhui_files/%s/updateinfo.xml" % \
+                                       self.test["uncompressed_updateinfo"])
+        # not going to test that on a client, just checking the log
+        Expect.expect_retval(RHUA,
+                             "tail -1 ~/.rhui/rhui.log | grep 'Import of erratum.*was successful'")
 
     def test_99_cleanup(self):
         '''
