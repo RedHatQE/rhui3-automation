@@ -6,19 +6,17 @@ from os.path import basename, join
 from shutil import rmtree
 from tempfile import mkdtemp
 
-import nose
 import stitches
 from stitches.expect import Expect
 
+from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
 from rhui3_tests_lib.sos import Sos
-from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
 TMPDIR = mkdtemp()
-SOSREPORT_FILELIST = join(TMPDIR, "sosreport_filelist")
 SOSREPORT_LOCATION_RHUA = join(TMPDIR, "sosreport_location_rhua")
 SOSREPORT_LOCATION_CDS = join(TMPDIR, "sosreport_location_cds")
 
@@ -29,14 +27,17 @@ WANTED_FILES_RHUA = ["/etc/rhui-installer/answers.yaml",
                      "/etc/rhui/rhui-tools.conf",
                      "/root/.rhui/rhui.log",
                      "/var/log/kafo/configuration.log",
-                     "/var/log/rhui-subscription-sync.log",
-                     "/rhui-manager_status"]
+                     "/var/log/rhui-subscription-sync.log"]
 WANTED_FILES_CDS = ["/etc/httpd/conf.d/03-crane.conf",
                     "/etc/httpd/conf.d/25-cds.example.com.conf",
                     "/etc/pulp/",
                     "/var/log/httpd/cds.example.com_access_ssl.log",
-                    "/var/log/httpd/cds.example.com_error_ssl.log",
-                    "ls_-lR_var.lib.rhui.remote_share"]
+                    "/var/log/httpd/cds.example.com_error_ssl.log"]
+
+CMD_RHUA = "rhui-manager status"
+CMD_CDS = "ls -lR /var/lib/rhui/remote_share"
+WANTED_FILES_RHUA.append(Helpers.encode_sos_command(CMD_RHUA))
+WANTED_FILES_CDS.append(Helpers.encode_sos_command(CMD_CDS))
 
 def setup():
     '''
@@ -70,32 +71,22 @@ def test_02_rhua_sosreport_run():
     with open(SOSREPORT_LOCATION_RHUA, "w") as location:
         location.write(sosreport_location)
 
-def test_03_rhua_fetch_filelist():
-    '''
-       fetch a list of files collected in the sosreport archive
-    '''
-    with open(SOSREPORT_LOCATION_RHUA) as location:
-        sosreport_file = location.read()
-    sosreport_filelist = Sos.list_contents(CONNECTION_RHUA, sosreport_file)
-    with open(SOSREPORT_FILELIST, "w") as filelist:
-        filelist.write(sosreport_filelist)
-
-def test_04_rhua_sosreport_check():
+def test_03_rhua_sosreport_check():
     '''
         check if the sosreport archive from the RHUA node contains the desired files
     '''
-    with open(SOSREPORT_FILELIST) as filelist:
-        sosreport_filelist = filelist.read()
-    Sos.check_files_in_archive(WANTED_FILES_RHUA, sosreport_filelist)
+    with open(SOSREPORT_LOCATION_RHUA) as location:
+        sosreport_location = location.read()
+    Sos.check_files_in_archive(CONNECTION_RHUA, WANTED_FILES_RHUA, sosreport_location)
 
-def test_05_cds_check_sos_script():
+def test_04_cds_check_sos_script():
     '''
         check if the RHUI sosreport script is available on the CDS node
     '''
     # for RHBZ#1596296
     Sos.check_rhui_sos_script(CONNECTION_CDS)
 
-def test_06_cds_sosreport_run():
+def test_05_cds_sosreport_run():
     '''
         run sosreport on the CDS node
     '''
@@ -103,26 +94,13 @@ def test_06_cds_sosreport_run():
     with open(SOSREPORT_LOCATION_CDS, "w") as location:
         location.write(sosreport_location)
 
-def test_07_cds_fetch_filelist():
-    '''
-       fetch a list of files collected in the sosreport archive
-    '''
-    with open(SOSREPORT_LOCATION_CDS) as location:
-        sosreport_file = location.read()
-    sosreport_filelist = Sos.list_contents(CONNECTION_CDS, sosreport_file)
-    with open(SOSREPORT_FILELIST, "w") as filelist:
-        filelist.write(sosreport_filelist)
-
-def test_08_cds_sosreport_check():
+def test_06_cds_sosreport_check():
     '''
         check if the sosreport archive from the CDS node contains the desired files
     '''
-    cds_rhel_version = Util.get_rhel_version(CONNECTION_CDS)
-    if cds_rhel_version["major"] == 7 and cds_rhel_version["minor"] < 6:
-        raise nose.exc.SkipTest("N/A here until RHBZ#1596494 is fixed.")
-    with open(SOSREPORT_FILELIST) as filelist:
-        sosreport_filelist = filelist.read()
-    Sos.check_files_in_archive(WANTED_FILES_CDS, sosreport_filelist)
+    with open(SOSREPORT_LOCATION_CDS) as location:
+        sosreport_location = location.read()
+    Sos.check_files_in_archive(CONNECTION_CDS, WANTED_FILES_CDS, sosreport_location)
 
 def test_99_cleanup():
     '''

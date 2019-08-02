@@ -35,3 +35,15 @@ class Helpers(object):
     def check_mountpoint(connection, mountpoint):
         """check if something is mounted in the given directory"""
         return connection.recv_exit_status("mountpoint %s" % mountpoint) == 0
+
+    @staticmethod
+    def encode_sos_command(command):
+        """replace special characters with safe ones as per rhui-debug, prepend /commands/"""
+        # spaces become underscores
+        # slashes become dots
+        # special case: " /" becomes just "_", not "_.", so let's get rid of the slash first
+        command = command.replace(" /", " ")
+        command = command.replace(" ", "_")
+        command = command.replace("/", ".")
+        # the actual file is in the /commands directory in the archive
+        return "/commands/%s" % command

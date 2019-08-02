@@ -1,12 +1,12 @@
-""" Sos in RHUI """
+"""Sos in RHUI"""
+
+import re
 
 import nose
 from stitches.expect import Expect
 
 class Sos(object):
-    '''
-        Sos handling for RHUI
-    '''
+    """Sos handling for RHUI"""
     @staticmethod
     def check_rhui_sos_script(connection):
         '''
@@ -16,9 +16,7 @@ class Sos(object):
 
     @staticmethod
     def run(connection):
-        '''
-            run the sosreport command
-        '''
+        """run the sosreport command"""
         # first make sure the sos package is installed
         Expect.expect_retval(connection, "yum -y install sos", timeout=30)
         # now run sosreport with only the RHUI plug-in enabled, return the tarball location
@@ -30,23 +28,20 @@ class Sos(object):
         return location
 
     @staticmethod
-    def list_contents(connection, location):
-        '''
-            list the files in the sosreport tarball stored in the given location (path)
-        '''
-        _, stdout, _ = connection.exec_command("tar tf " + location)
+    def check_files_in_archive(connection, filelist, archive):
+        """check if the files in the given filelist are collected in the given archive"""
+        # make sure the archive exists
+        if connection.recv_exit_status("test -f %s" % archive):
+            raise OSError("%s does not exist" % archive)
+        # read the contents of the archive, and check if each file from the filelist is there
+        # must strip the path in front of the real root directory; the archive contains files like:
+        # sosreport-HOST-DATE-HASH/sos_commands/rhui/rhui-debug-DATE-TIME/etc/pulp/repo_auth.conf
+        # while the given filelist contains actual paths like /etc/pulp/repo_auth.conf
+        pattern = "^.*/rhui-debug[^/]+"
+        _, stdout, _ = connection.exec_command("tar tf %s" % archive)
         with stdout as output:
-            filelist = output.read().decode().strip()
-        return filelist
-
-    @staticmethod
-    def check_files_in_archive(filelist, archive):
-        '''
-            check if the files in the given filelist are collected in the given archive
-        '''
-        missing_files = []
-        for wanted_file in filelist:
-            if wanted_file + "\n" not in archive:
-                missing_files.append(wanted_file)
-        nose.tools.ok_(not missing_files,
-                       msg="Not found in the archive: " + ", ".join(missing_files))
+            archive_filelist_raw = output.read().decode().splitlines()
+            archive_filelist = [re.sub(pattern, "", path) for path in archive_filelist_raw]
+            missing_files = [f for f in filelist if f not in archive_filelist]
+            nose.tools.ok_(not missing_files,
+                           msg="Not found in the archive: %s" % missing_files)
