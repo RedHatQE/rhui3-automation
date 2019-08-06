@@ -5,20 +5,10 @@
 '''
 
 from glob import glob
-import sys
 
 from setuptools import setup
 
-REQUIREMENTS = ['nose>=1.3.0', 'requests', 'stitches>=0.12']
-
-# Workarounds for packages whose latest versions cannot be installed on RHEL 6
-PYTHON_VERSION = sys.version_info[0] + sys.version_info[1] / 10.0
-if PYTHON_VERSION <= 2.6:
-    REQUIREMENTS.append('paramiko==2.3.1')
-    REQUIREMENTS.append('idna==2.7')
-    REQUIREMENTS.append('pytoml==0.1.19')
-else:
-    REQUIREMENTS.append('pytoml')
+REQUIREMENTS = ['nose>=1.3.0', 'pytoml', 'requests', 'stitches>=0.12']
 
 DATAFILES = [('share/rhui3_tests_lib/rhui3_tests', glob('rhui3_tests/test_*.py')),
              ('share/rhui3_tests_lib/config', ['rhui3_tests/tested_repos.yaml']),

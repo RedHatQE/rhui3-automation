@@ -51,7 +51,7 @@ class SyncSSHClient(SSHClient):
 instance_types = {"arm64": "a1.large", "x86_64": "m3.large"}
 
 argparser = argparse.ArgumentParser(description='Create CloudFormation stack')
-argparser.add_argument('--rhua', help='RHEL version for RHUI setup (RHEL6, RHEL7)', default="RHEL6")
+argparser.add_argument('--rhua', help=argparse.SUPPRESS)
 
 argparser.add_argument('--iso', help='iso version', default="iso")
 argparser.add_argument('--cli5', help='number of RHEL5 clients', type=int, default=0)
@@ -146,10 +146,6 @@ if args.gluster:
         sys.exit(1)
 if args.nfs:
     fs_type = "nfs"
-if args.atomic_cli:
-    if args.rhua != "RHEL7":
-        logging.error("ATOMIC clients need 'RHEL7' for RHUI setup")
-        sys.exit(1)
 
 if args.cli7 == -1:
     args.cli7 = len(instance_types)
@@ -157,6 +153,11 @@ if args.cli7 == -1:
 if args.cli8 == -1:
     args.cli8 = len(instance_types)
     args.cli8_arch = ",".join(instance_types.keys())
+
+if args.rhua:
+    logging.info("The --rhua parameter is deprecated. " +
+                 "RHEL 7 is used on all nodes except for clients that you set up differently.")
+rhui_os = "RHEL7"
 
 json_dict['Description'] = 'RHUI with %s CDSes' % args.cds
 json_dict['Description'] += " %s HAProxy" % args.haproxy
@@ -288,7 +289,7 @@ json_dict['Resources'] = \
 # add a 50 GB volume for MongoDB either way; MongoDB can be greedy
 if (fs_type == "rhua"):
     json_dict['Resources']["rhua"] = \
-     {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
+     {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
                                u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
@@ -303,14 +304,14 @@ if (fs_type == "rhua"):
                                             },
                                  ],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'rhua']]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.iso, u'rhua']]}},
                                          {u'Key': u'Role', u'Value': u'RHUA'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
 
 else:
     json_dict['Resources']["rhua"] = \
-     {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
+     {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
                                u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
@@ -321,7 +322,7 @@ else:
                                             },
                                  ],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'rhua']]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.iso, u'rhua']]}},
                                          {u'Key': u'Role', u'Value': u'RHUA'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -331,7 +332,7 @@ else:
 if (fs_type == "gluster"):
     for i in range(1, args.cds + 1):
         json_dict['Resources']["cds%i" % i] = \
-            {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
+            {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
                                    u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                    u'BlockDeviceMappings' : [
                                               {
@@ -342,7 +343,7 @@ if (fs_type == "gluster"):
                                    u'KeyName': {u'Ref': u'KeyName'},
                                    u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                    u'Tags': [{u'Key': u'Name',
-                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'cds%i' % i]]}},
+                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.iso, u'cds%i' % i]]}},
                                              {u'Key': u'Role', u'Value': u'CDS'},
                                              ]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -350,12 +351,12 @@ if (fs_type == "gluster"):
 else:
     for i in range(1, args.cds + 1):
         json_dict['Resources']["cds%i" % i] = \
-            {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
+            {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
                                    u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                    u'KeyName': {u'Ref': u'KeyName'},
                                    u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                    u'Tags': [{u'Key': u'Name',
-                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'cds%i' % i]]}},
+                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.iso, u'cds%i' % i]]}},
                                              {u'Key': u'Role', u'Value': u'CDS'},
                                              ]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -390,7 +391,7 @@ for i in (5, 6, 7, 8):
                                    u'KeyName': {u'Ref': u'KeyName'},
                                    u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                    u'Tags': [{u'Key': u'Name',
-                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'cli%i_%i' % (i, j)]]}},
+                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.iso, u'cli%i_%i' % (i, j)]]}},
                                              {u'Key': u'Role', u'Value': u'CLI'},
                                              {u'Key': u'OS', u'Value': u'%s' % os[:5]}]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -403,7 +404,7 @@ for i in range(1, args.atomic_cli + 1):
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'atomic_cli%i' % i]]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.iso, u'atomic_cli%i' % i]]}},
                                          {u'Key': u'Role', u'Value': u'ATOMIC_CLI'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -411,7 +412,7 @@ for i in range(1, args.atomic_cli + 1):
 # nfs
 if (fs_type == "nfs"):
     json_dict['Resources']["nfs"] = \
-     {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
+     {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
                                u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
@@ -422,7 +423,7 @@ if (fs_type == "nfs"):
                                             },
                                  ],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'nfs']]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.iso, u'nfs']]}},
                                          {u'Key': u'Role', u'Value': u'NFS'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -430,12 +431,12 @@ if (fs_type == "nfs"):
 # dns
 if args.dns:
     json_dict['Resources']["dns"] = \
-     {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
+     {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
                                u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'dns']]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.iso, u'dns']]}},
                                          {u'Key': u'Role', u'Value': u'DNS'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -443,12 +444,12 @@ if args.dns:
 # test
 if args.test:
     json_dict['Resources']["test"] = \
-     {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
+     {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
                                u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'test']]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.iso, u'test']]}},
                                          {u'Key': u'Role', u'Value': u'TEST'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -456,12 +457,12 @@ if args.test:
 # HAProxy
 for i in range(1, args.haproxy + 1):
     json_dict['Resources']["haproxy%i" % i] = \
-        {u'Properties': {u'ImageId': {u'Fn::FindInMap': [args.rhua, {u'Ref': u'AWS::Region'}, u'AMI']},
+        {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
                                u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, args.rhua, fs_type_f, args.iso, u'haproxy%i' % i]]}},
+                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.iso, u'haproxy%i' % i]]}},
                                          {u'Key': u'Role', u'Value': u'HAProxy'},
                                          ]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -633,7 +634,7 @@ for instance in instances_detail:
 if args.output_conf:
     outfile = args.output_conf
 else:
-    outfile = "hosts_" + args.rhua + "_" + fs_type_f + "_" + args.iso + ".cfg"
+    outfile = "hosts_%s_%s.cfg" % (fs_type_f, args.iso)
 
 try:
     with open(outfile, 'w') as f:

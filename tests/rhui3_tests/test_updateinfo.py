@@ -198,6 +198,10 @@ class TestClient(object):
         '''
            also check if an uncompressed updateinfo.xml file can be used
         '''
+        # RHEL 6 uses the same set of errata; let's remove errata from MongoDB first so they
+        # can actually be uploaded from the uncompressed XML
+        if self.test["repo_id"] == self.test["uncompressed_updateinfo"]:
+            Expect.expect_retval(RHUA, "mongo pulp_database --eval 'db.units_erratum.remove({})'")
         RHUIManagerCLI.repo_add_errata(RHUA,
                                        self.test["repo_id"],
                                        "/tmp/extra_rhui_files/%s/updateinfo.xml" % \

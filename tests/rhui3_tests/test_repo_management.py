@@ -33,8 +33,9 @@ class TestRepo(object):
         self.custom_rpms = Util.get_rpms_in_dir(CONNECTION, CUSTOM_RPMS_DIR)
         if not self.custom_rpms:
             raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR)
-        version = Util.get_rhel_version(CONNECTION)["major"]
-        arch = Util.get_arch(CONNECTION)
+        # Test the RHEL-6 repo for a change
+        version = 6
+        arch = "x86_64"
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:

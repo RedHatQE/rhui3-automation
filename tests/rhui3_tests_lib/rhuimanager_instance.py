@@ -40,10 +40,7 @@ class RHUIManagerInstance(object):
 
         # first check if the RHUA knows the host's SSH key, because if so, rhui-manager
         # won't ask you to confirm the key
-        # the following command doesn't work as expected on RHEL 6:
-        # key_check_cmd = "ssh-keygen -F %s" % hostname
-        # work around that:
-        key_check_cmd = "grep -q ^%s, /root/.ssh/known_hosts" % hostname
+        key_check_cmd = "ssh-keygen -F %s" % hostname
         # check if the host is known
         known_host = connection.recv_exit_status(key_check_cmd) == 0
         # run rhui-manager and add the instance
