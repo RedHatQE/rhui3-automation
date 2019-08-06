@@ -31,9 +31,6 @@ class TestClient(object):
     '''
 
     def __init__(self):
-        rhua_os_version = Util.get_rhel_version(CONNECTION)["major"]
-        if rhua_os_version < 7:
-            raise nose.exc.SkipTest("Not supported on RHEL %s" % rhua_os_version)
         try:
             socket.gethostbyname(AH)
             self.ah_exists = True

@@ -4,10 +4,10 @@
 
 Script creates ec2 instance machines (m3.large) according to specification.
 
-Instances are named `$user_name_$RHELrelease_$filesystem_type$iso_date_$role` (*user_RHEL7_nfs_20160809_rhua*)
+Instances are named `$user_$fstype_$iso_$role` (*user_nfs_20190708_rhua*)
 
 The script produces an output config file suitable for the RHUI3 ansible installation. [Example](#output-configuration-file) of the output file. Default
-name of the file is `hosts_$RHEL_release_$filesystem_type_$iso.cfg` (*hosts_RHEL7_nfs_20160809.cfg*)
+name of the file is `hosts_$fstype_$iso.cfg` (*hosts_nfs_20190708.cfg*)
 
 New security group is created. Its name contains stack id. <br />
 Inbound rules:
@@ -37,27 +37,27 @@ Run `scripts/create-cf-stack.py [optional parameters]` [(example)](#usage-exampl
 
 Default configuration: 
   * NFS filesystem
-  * RHEL6 instances
+  * RHEL7 instances (basic RHUI 3 requirement)
   * eu-west-1 region
   * instances: 1xRHUA (NFS, DNS), 1xCDS, 1xHAProxy
 
-#### Parameters
+#### Main parameters
 
-  * **--rhua [rhel_version]** - RHEL version for RHUI setup, `default = RHEL6`
-  * **--iso [iso_date]** - iso version to title the instance (as in $user_nick_$RHELrelease_$ROLE_*$iso_date)*
+  * **--iso [iso_date]** - iso version to title the instance (as in $user_$fstype_$iso_$role)
+  * **--gluster** - use GlusterFS instead of NFS
   * **--dns** - if specified, a separate machine for dns, `default = the same as RHUA`
   * **--cds [number]** - number of CDS machines, `default = 1` (if Gluster filesystem, `default = 3`)
   * **--haproxy [number]** - number of HAProxies, `default = 1`
   * **--input-conf [name]** - the name of input conf file, `default = "/etc/rhui_ec2.yaml"`
-  * **--output-conf [name]** - the name of output conf file, `default = "hosts_$RHELrelease_$iso.cfg"`
+  * **--output-conf [name]** - the name of output conf file, `default = "hosts_$fstype_$iso.cfg"`
   * **--cli5/6/7/8 [number]** - number of CLI machines, `default = 0`, use `-1` to get machines for all architectures (one machine per architecture)
   * **--cli7/8-arch [arch]** - CLI machines' architectures (comma-separated list), `default = x86_64 for all of them`, `cli`_N_ set to `-1` will populate the list with all architectures automatically, so this parameter is unnecessary then
   * **--atomic-cli [number]** - number of ATOMIC CLI machines\*, `default = 0`
   * **--test** - if specified, TEST/MASTER machine, `default = 0`
   * **--region [name]** - `default = eu-west-1`
   * **--ansible-ssh-extra-args [args]** - optional SSH arguments for Ansible
-  
-\* ATOMIC CLI machines can be run only with RHEL7 RHUI setup
+
+Run the script with `-h` or `--help` to get a list of all parameters.
 
 Note that RHEL-5 AMIs are not available in all regions;
 see the [RHEL 5 mapping file](RHEL5mapping.json).
@@ -104,20 +104,20 @@ There is an extra 100 GB volume attached to each CDS machine.
 
 #### Usage example
 
-* `scripts/create-cf-stack.py --iso 20160809`
-  * basic RHEL6 NFS configuration
+* `scripts/create-cf-stack.py --iso 20190708`
+  * basic NFS configuration
   * 1xRHUA=DNS=NFS, 1xCDS, 1xHAProxy
-* `scripts/create-cf-stack.py --rhua RHEL7 --test --gluster --iso 20160809`
-  * RHEL7 Gluster configuration
+* `scripts/create-cf-stack.py --test --gluster --iso 20190708`
+  * Gluster configuration
   * 1xRHUA=DNS, 3xCDS, 1xHAProxy, 1xtest_machine
-* `scripts/create-cf-stack.py --region eu-central-1 --nfs cli6 2 --haproxy 2 --iso 20160809`
-  * RHEL6 NFS configuration on eu-central-1 region
+* `scripts/create-cf-stack.py --region eu-central-1 --nfs cli6 2 --haproxy 2 --iso 20190708`
+  * NFS configuration in the eu-central-1 region
   * 1xRHUA=DNS, 1xNFS, 2xCLI6, 2xHAProxy
-* `scripts/create-cf-stack.py --rhua RHEL7 --dns --cds 2 --cli6 1 --cli7 1 --input-conf /etc/rhui_amazon.yaml --output-conf my_new_hosts_config_file.cfg --iso 20160809`
-  * RHEL7 NFS configuration
+* `scripts/create-cf-stack.py --dns --cds 2 --cli6 1 --cli7 1 --input-conf /etc/rhui_amazon.yaml --output-conf my_new_hosts_config_file.cfg --iso 20190708`
+  * NFS configuration
   * 1xRHUA=NFS, 1xDNS, 2xCDS, 1xCLI6, 1xCLI7, 1xHAProxy
-* `scripts/create-cf-stack.py --input-conf rhui_ec2.yaml --rhua RHEL7 --iso rhel8clients --cli8 -1 --test --vpcid vpc-012345678 --subnetid subnet-89abcdef`
-  * RHEL7 NFS configuration
+* `scripts/create-cf-stack.py --input-conf rhui_ec2.yaml --iso rhel8clients --cli8 -1 --test --vpcid vpc-012345678 --subnetid subnet-89abcdef`
+  * NFS configuration
   * custom input configuration file in the current working directory
   * 1xRHUA=NFS=DNS, 1xCDS, 1xHAProxy, 2xCLI8 (x86_64 and ARM64), 1xTEST, custom VPC and subnet (needed by the `a1` instance type used with ARM64)
 

@@ -7,8 +7,6 @@ import nose
 import stitches
 from stitches.expect import Expect
 
-from rhui3_tests_lib.util import Util
-
 RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
 RHUI_SERVICE_PIDFILES = ["/var/run/httpd/httpd.pid",
@@ -87,12 +85,7 @@ def test_05_celery_selinux():
         verify that no SELinux denial related to celery was logged
     '''
     # for RHBZ#1608166 - anyway, only non-fatal denials are expected if everything else works
-    rhua_rhel_version = Util.get_rhel_version(RHUA)["major"]
-    if rhua_rhel_version < 7:
-        output = r"audit2allow\r\n\r\n\r\n\[root@rhua ~\]"
-    else:
-        output = "Nothing to do"
-    Expect.ping_pong(RHUA, "grep celery /var/log/audit/audit.log | audit2allow", output)
+    Expect.ping_pong(RHUA, "grep celery /var/log/audit/audit.log | audit2allow", "Nothing to do")
 
 def test_06_pulp_server_rpm_v():
     '''

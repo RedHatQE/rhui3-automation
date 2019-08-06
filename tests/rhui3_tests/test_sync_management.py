@@ -23,8 +23,9 @@ class TestSync(object):
     '''
 
     def __init__(self):
-        version = Util.get_rhel_version(CONNECTION)["major"]
-        arch = Util.get_arch(CONNECTION)
+        # Test the RHEL-7 ARM-64 repo for a change
+        version = 7
+        arch = "aarch64"
         with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:

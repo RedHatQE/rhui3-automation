@@ -16,47 +16,12 @@
     dest: /root/rhui3-automation
   tags: tests
 
-- name: install the 'Development tools' package group
-  package: name="@Development tools" state=present
-  tags: tests
-
-- name: install python-devel
-  package: name=python-devel state=present
-  tags: tests
-
-- name: install python-setuptools
-  package: name=python-setuptools state=present
-  tags: tests
-
-- name: install libffi-devel
-  package: name=libffi-devel state=present enablerepo=*
-  tags: tests
-
-- name: install openssl-devel
-  package: name=openssl-devel state=present enablerepo=*
-  tags: tests
-
 - name: install bash-completion to simplify test execution
   package: name=bash-completion state=present
   tags: tests
 
-- name: use HTTPS in the pypi URL in setuptools if RHEL 6
-  lineinfile:
-    path: /usr/lib/python2.6/site-packages/setuptools/command/easy_install.py
-    regexp: '^(.*)http://pypi.python.org(.*)$'
-    line: '\1https://pypi.python.org\2'
-    backrefs: yes
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
-  tags: tests
-
-- name: install the last compatible versions of packages whose updates need Python 2.7+
-  shell: easy_install pip==9.0.3 && pip install pycparser==2.18
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 6
-  tags: tests
-
 - name: install pip
   shell: easy_install pip
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
   tags: tests
 
 - name: install tests
