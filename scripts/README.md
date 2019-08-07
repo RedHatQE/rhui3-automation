@@ -4,10 +4,10 @@
 
 Script creates ec2 instance machines (m3.large) according to specification.
 
-Instances are named `$user_$fstype_$iso_$role` (*user_nfs_20190708_rhua*)
+Instances are named `$user_$fstype_$name_$role` (*user_nfs_77betatests_rhua*)
 
 The script produces an output config file suitable for the RHUI3 ansible installation. [Example](#output-configuration-file) of the output file. Default
-name of the file is `hosts_$fstype_$iso.cfg` (*hosts_nfs_20190708.cfg*)
+name of the file is `hosts_$fstype_$name.cfg` (*hosts_nfs_77betatests.cfg*)
 
 New security group is created. Its name contains stack id. <br />
 Inbound rules:
@@ -43,16 +43,16 @@ Default configuration:
 
 #### Main parameters
 
-  * **--iso [iso_date]** - iso version to title the instance (as in $user_$fstype_$iso_$role)
+  * **--name [name]** - common name for the instances in the stack (as in $user_$fstype_$name_$role); also affects the `hosts` file name (unless overridden). `default = rhui`
   * **--gluster** - use GlusterFS instead of NFS
   * **--dns** - if specified, a separate machine for dns, `default = the same as RHUA`
   * **--cds [number]** - number of CDS machines, `default = 1` (if Gluster filesystem, `default = 3`)
   * **--haproxy [number]** - number of HAProxies, `default = 1`
   * **--input-conf [name]** - the name of input conf file, `default = "/etc/rhui_ec2.yaml"`
-  * **--output-conf [name]** - the name of output conf file, `default = "hosts_$fstype_$iso.cfg"`
+  * **--output-conf [name]** - the name of output conf file, `default = "hosts_$fstype_$name.cfg"`
   * **--cli5/6/7/8 [number]** - number of CLI machines, `default = 0`, use `-1` to get machines for all architectures (one machine per architecture)
   * **--cli7/8-arch [arch]** - CLI machines' architectures (comma-separated list), `default = x86_64 for all of them`, `cli`_N_ set to `-1` will populate the list with all architectures automatically, so this parameter is unnecessary then
-  * **--atomic-cli [number]** - number of ATOMIC CLI machines\*, `default = 0`
+  * **--atomic-cli [number]** - number of ATOMIC CLI machines, `default = 0`
   * **--test** - if specified, TEST/MASTER machine, `default = 0`
   * **--region [name]** - `default = eu-west-1`
   * **--ansible-ssh-extra-args [args]** - optional SSH arguments for Ansible
@@ -104,19 +104,19 @@ There is an extra 100 GB volume attached to each CDS machine.
 
 #### Usage example
 
-* `scripts/create-cf-stack.py --iso 20190708`
+* `scripts/create-cf-stack.py`
   * basic NFS configuration
   * 1xRHUA=DNS=NFS, 1xCDS, 1xHAProxy
-* `scripts/create-cf-stack.py --test --gluster --iso 20190708`
+* `scripts/create-cf-stack.py --test --gluster --name playpit`
   * Gluster configuration
   * 1xRHUA=DNS, 3xCDS, 1xHAProxy, 1xtest_machine
-* `scripts/create-cf-stack.py --region eu-central-1 --nfs cli6 2 --haproxy 2 --iso 20190708`
+* `scripts/create-cf-stack.py --region eu-central-1 --nfs cli6 2 --haproxy 2 --name rhui31wip`
   * NFS configuration in the eu-central-1 region
   * 1xRHUA=DNS, 1xNFS, 2xCLI6, 2xHAProxy
-* `scripts/create-cf-stack.py --dns --cds 2 --cli6 1 --cli7 1 --input-conf /etc/rhui_amazon.yaml --output-conf my_new_hosts_config_file.cfg --iso 20190708`
+* `scripts/create-cf-stack.py --dns --cds 2 --cli6 1 --cli7 1 --input-conf /etc/rhui_amazon.yaml --output-conf my_new_hosts_config_file.cfg --name cdsdebug`
   * NFS configuration
   * 1xRHUA=NFS, 1xDNS, 2xCDS, 1xCLI6, 1xCLI7, 1xHAProxy
-* `scripts/create-cf-stack.py --input-conf rhui_ec2.yaml --iso rhel8clients --cli8 -1 --test --vpcid vpc-012345678 --subnetid subnet-89abcdef`
+* `scripts/create-cf-stack.py --input-conf rhui_ec2.yaml --name rhel8clients --cli8 -1 --test --vpcid vpc-012345678 --subnetid subnet-89abcdef`
   * NFS configuration
   * custom input configuration file in the current working directory
   * 1xRHUA=NFS=DNS, 1xCDS, 1xHAProxy, 2xCLI8 (x86_64 and ARM64), 1xTEST, custom VPC and subnet (needed by the `a1` instance type used with ARM64)
