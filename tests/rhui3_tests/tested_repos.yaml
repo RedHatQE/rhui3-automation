@@ -50,7 +50,7 @@ CLI_repo2:
 CLI_product:
     name: "Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI"
     repos_basename: "rhel-atomic-host-rhui-rpms"
-    arches: "aarch64 ppc64le s390x x86_64"
+    arches: "x86_64"
 subscription:
     name: "Red Hat Update Infrastructure and RHEL Add-Ons for Providers"
 container1:
