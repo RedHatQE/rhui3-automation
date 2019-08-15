@@ -51,8 +51,9 @@ CLI_product:
     name: "Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI"
     repos_basename: "rhel-atomic-host-rhui-rpms"
     arches: "x86_64"
-subscription:
-    name: "Red Hat Update Infrastructure and RHEL Add-Ons for Providers"
+subscriptions:
+    RHUI: "Red Hat Update Infrastructure and RHEL Add-Ons for Providers"
+    Atomic: "Red Hat Enterprise Linux Atomic Host for Certified Cloud and Service Providers (via Red Hat Update Infrastructure)"
 container1:
     name: "rhcertification/redhat-certification"
     displayname: "RH Certification Container"

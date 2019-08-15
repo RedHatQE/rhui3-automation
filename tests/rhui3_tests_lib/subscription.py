@@ -1,5 +1,7 @@
 """ RHSM integration in RHUI """
 
+import re
+
 from stitches.expect import Expect
 
 class RHSMRHUI(object):
@@ -17,25 +19,29 @@ class RHSMRHUI(object):
                              timeout=40)
 
     @staticmethod
-    def attach_rhui_sku(connection):
-        """check if the RHUI SKU is available and attach it if so"""
-        Expect.expect_retval(connection,
-                             "subscription-manager list --available " +
-                             "--matches=RC1116415 --pool-only > /tmp/rhuipool.txt && " +
-                             "test -s /tmp/rhuipool.txt && " +
-                             "[[ \"$(cat /tmp/rhuipool.txt)\" =~ ^[0-9a-f]+$ ]] && " +
-                             "subscription-manager attach --pool=$(< /tmp/rhuipool.txt)",
-                             timeout=60)
+    def attach_subscription(connection, sub):
+        """attach a supported subscription"""
+        # 'sub' can be anything that sub-man can search by,
+        # but typically it's the subscription name or the SKU
+        # (or a substring with one or more wildcards)
+        _, stdout, _ = connection.exec_command("subscription-manager list --available " +
+                                               "--matches '%s' --pool-only 2>&1" % sub)
+        with stdout as output:
+            pool = output.read().decode().strip()
+        if not re.match(r"^[0-9a-f]+$", pool):
+            raise RuntimeError("Unable to fetch the pool ID for '%s'. Got: '%s'." % (sub, pool))
+        # attach the pool
+        Expect.expect_retval(connection, "subscription-manager attach --pool %s" % pool, timeout=60)
 
     @staticmethod
-    def enable_rhui_3_repo(connection):
-        """enable the RHUI 3 repo"""
+    def enable_rhui_repos(connection):
+        """enable the repos relevant to RHUI 3"""
         Expect.expect_retval(connection,
-                             "subscription-manager repos --enable=rhel-7-server-rhui-3-rpms",
-                             timeout=30)
+                             "subscription-manager repos --disable=* " +
+                             "--enable=rhel-7-server-rhui-rpms --enable=rhel-7-server-rhui-3-rpms",
+                             timeout=60)
 
     @staticmethod
     def unregister_system(connection):
         """unregister from RHSM"""
-        Expect.expect_retval(connection, "rm -f /tmp/rhuipool.txt")
         Expect.expect_retval(connection, "subscription-manager unregister", timeout=20)

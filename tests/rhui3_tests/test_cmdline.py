@@ -50,7 +50,7 @@ class TestCLI(object):
         self.product_name = doc["CLI_product"]["name"]
         self.product_repos = ["%s-%s" % (doc["CLI_product"]["repos_basename"], arch)
                               for arch in doc["CLI_product"]["arches"].split()]
-        self.subscription_name = doc["subscription"]["name"]
+        self.subscriptions = doc["subscriptions"]
 
     @staticmethod
     def setup_class():
@@ -302,17 +302,18 @@ class TestCLI(object):
             raise nose.exc.SkipTest("The given certificate has already expired.")
         RHUIManagerCLI.cert_upload(CONNECTION, cert, "does not contain any entitlements")
 
-    @staticmethod
-    def test_29_register_system():
-        '''register the system in RHSM, attach RHUI SKU'''
+    def test_29_register_system(self):
+        '''register the system in RHSM, attach the RHUI subscription'''
         RHSMRHUI.register_system(CONNECTION)
-        RHSMRHUI.attach_rhui_sku(CONNECTION)
+        RHSMRHUI.attach_subscription(CONNECTION, self.subscriptions["RHUI"])
 
     @staticmethod
     def test_30_fetch_available_pool():
         '''fetch the available pool ID'''
-        available_pool = RHUIManagerCLI.subscriptions_list(CONNECTION, "available", True)
-        nose.tools.ok_(re.search(r"^[0-9a-f]+$", available_pool) is not None,
+        available_pools = RHUIManagerCLI.subscriptions_list(CONNECTION, "available", True)
+        nose.tools.ok_(available_pools, msg="no available pool")
+        available_pool = available_pools[0]
+        nose.tools.ok_(re.match(r"^[0-9a-f]+$", available_pool),
                        msg="invalid pool ID: '%s'" % available_pool)
         with open(AVAILABLE_POOL_FILE, "w") as apf:
             apf.write(available_pool)
@@ -325,15 +326,17 @@ class TestCLI(object):
                 available_pool = apf.read()
         except IOError:
             raise RuntimeError("pool ID was not fetched")
-        nose.tools.ok_(re.search(r"^[0-9a-f]+$", available_pool) is not None,
+        nose.tools.ok_(re.match(r"^[0-9a-f]+$", available_pool),
                        msg="invalid pool ID: '%s'" % available_pool)
         RHUIManagerCLI.subscriptions_register(CONNECTION, available_pool)
 
     @staticmethod
     def test_32_fetch_registered_pool():
         '''fetch the registered pool ID'''
-        registered_pool = RHUIManagerCLI.subscriptions_list(CONNECTION, "registered", True)
-        nose.tools.ok_(re.search(r"^[0-9a-f]+$", registered_pool) is not None,
+        registered_pools = RHUIManagerCLI.subscriptions_list(CONNECTION, "registered", True)
+        nose.tools.ok_(registered_pools, msg="no registered pool")
+        registered_pool = registered_pools[0]
+        nose.tools.ok_(re.match(r"^[0-9a-f]+$", registered_pool),
                        msg="invalid pool ID: '%s'" % registered_pool)
         with open(REGISTERED_POOL_FILE, "w") as rpf:
             rpf.write(registered_pool)
@@ -355,9 +358,11 @@ class TestCLI(object):
 
     def test_34_check_reg_pool_for_rhui(self):
         '''check if the registered subscription's description is RHUI for CCSP'''
-        list_reg = RHUIManagerCLI.subscriptions_list(CONNECTION)
-        nose.tools.ok_(self.subscription_name in list_reg,
-                       msg="Expected subscription not registered in RHUI! Got: %s" % list_reg)
+        reg_sub = RHUIManagerCLI.subscriptions_list(CONNECTION)
+        nose.tools.ok_(reg_sub, msg="no subscription is registered")
+        nose.tools.eq_(self.subscriptions["RHUI"],
+                       reg_sub.keys()[0],
+                       msg="Expected subscription not registered in RHUI! Got: %s" % reg_sub)
 
     @staticmethod
     def test_35_unregister_subscription():
@@ -367,7 +372,7 @@ class TestCLI(object):
                 registered_pool = rpf.read()
         except IOError:
             raise RuntimeError("no known registered pool ID")
-        nose.tools.ok_(re.search(r"^[0-9a-f]+$", registered_pool) is not None,
+        nose.tools.ok_(re.match(r"^[0-9a-f]+$", registered_pool),
                        msg="invalid pool ID: '%s'" % registered_pool)
         RHUIManagerCLI.subscriptions_unregister(CONNECTION, registered_pool)
 

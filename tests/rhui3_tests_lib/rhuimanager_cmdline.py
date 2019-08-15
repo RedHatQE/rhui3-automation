@@ -293,18 +293,26 @@ class RHUIManagerCLI(object):
     @staticmethod
     def subscriptions_list(connection, what="registered", poolonly=False):
         '''
-        list registered or available subscriptions, complete information or the pool ID only
+        list registered or available subscriptions, {labels: pool IDs} or [pool IDs]
         '''
-        if what not in ["registered", "available"]:
-            raise ValueError("Unsupported list: %s" % what)
-        poolswitch = "--pool-only" if poolonly else ""
-        _, stdout, _ = connection.exec_command("rhui-manager subscriptions list --%s %s" \
-                                               % (what, poolswitch))
+        allowed_lists = ["registered", "available"]
+        if what not in allowed_lists:
+            raise ValueError("Unsupported list: '%s'. Use one of: %s." % (what, allowed_lists))
+        cmd = "rhui-manager subscriptions list --%s" % what
+        if poolonly:
+            cmd += " --pool-only"
+        _, stdout, _ = connection.exec_command(cmd)
         with stdout as output:
-            sub_list = output.read().decode().strip()
-        # return the (decoded and stripped) output as is;
+            subs = output.read().decode().splitlines()
         # if "ESC" and some control characters are included, then RHBZ#1577052 has regressed
-        return sub_list
+        # if only pool IDs are requested, return their list as read from the output;
+        # otherwise, create and return a dict with subscription names and corresponding pool IDs
+        if poolonly:
+            return subs
+        labels = [l.replace("  Label: ", "") for l in subs if l.startswith("  Label")]
+        poolids = [p.replace("  Pool ID: ", "") for p in subs if p.startswith("  Pool")]
+        sub_dict = dict(zip(labels, poolids))
+        return sub_dict
 
     @staticmethod
     def subscriptions_register(connection, pool):
