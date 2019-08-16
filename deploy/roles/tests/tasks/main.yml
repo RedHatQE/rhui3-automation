@@ -84,6 +84,16 @@
   when: rhaccount is defined
   tags: tests
 
+- name: prevent systemd-tmpfiles from purging the directory with the uploaded files
+  lineinfile:
+    path: /usr/lib/tmpfiles.d/extra_rhui_files.conf
+    line: x /tmp/extra_rhui_files
+    create: yes
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['RHUA']|default([]) }}"
+  when: (extra_files is defined) and (unzip_files is success)
+  tags: tests
+
 # this is to allow the nodes to install packages from a tunneled repo if using --tags run_tests
 # ie. if no previous task is run, which would initiate the connections to the nodes otherwise
 - name: make sure connections to RHUI nodes are established before running tests on RHEL 7 Beta
