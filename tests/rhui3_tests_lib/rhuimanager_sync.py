@@ -82,8 +82,14 @@ class RHUIManagerSync(object):
         wait until there are no running Pulp tasks
         '''
         # will be using pulp-admin, which requires you to log in to it
+        # if the Pulp user cert has expired, delete it first of all;
         # if the Pulp user cert doesn't exist, use the one from rhui-manager
         # but create the .pulp directory (with the right perms) if it doesn't exist
+        try:
+            if Util.cert_expired(connection, "~/.pulp/user-cert.pem"):
+                Expect.expect_retval(connection, "rm -f ~/.pulp/user-cert.pem")
+        except OSError:
+            pass
         Expect.expect_retval(connection,
                              "if ! [ -e ~/.pulp/user-cert.pem ]; then " +
                              "mkdir -p -m 700 ~/.pulp; " +
