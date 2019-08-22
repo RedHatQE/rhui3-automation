@@ -1,6 +1,6 @@
 {
     "us-east-1": {
-        "AMI": "ami-091634f5d851e52c2"
+        "AMI": "ami-03587fa4048e9eb92"
     }, 
     "us-west-1": {
         "AMI": ""
@@ -27,10 +27,10 @@
         "AMI": ""
     }, 
     "us-west-2": {
-        "AMI": "ami-0d256fc81499c636a"
+        "AMI": "ami-047f9f2f5072dd073"
     }, 
     "us-east-2": {
-        "AMI": "ami-02638f4456525efd3"
+        "AMI": "ami-0099847d600887c9f"
     }, 
     "ap-south-1": {
         "AMI": ""
@@ -39,7 +39,7 @@
         "AMI": ""
     }, 
     "eu-west-1": {
-        "AMI": "ami-0ab689575c02bcfd8"
+        "AMI": "ami-0eda57fdc7da72118"
     }, 
     "eu-west-2": {
         "AMI": ""
