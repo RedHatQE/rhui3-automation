@@ -7,8 +7,10 @@
 # The cleanup will be skipped, too, so you ought to clean up eventually.
 
 from os import getenv
-from os.path import basename
+from os.path import basename, join
 import re
+from shutil import rmtree
+from tempfile import mkdtemp
 
 import logging
 import nose
@@ -18,6 +20,7 @@ from stitches.expect import Expect
 import urllib3
 import yaml
 
+from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_client import RHUIManagerClient
 from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements
@@ -35,10 +38,15 @@ CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_
 # in your shell before running this script, replacing "hostname" with the actual client host name.
 # This allows for multiple client machines in one stack.
 CLI = stitches.Connection(getenv("RHUICLI", "cli01.example.com"), "root", "/root/.ssh/id_rsa_test")
+CDS = stitches.Connection("cds01.example.com", "root", "/root/.ssh/id_rsa_test")
 
 CUSTOM_REPO = "custom-i386-x86_64"
 CUSTOM_PATH = CUSTOM_REPO.replace("-", "/")
 CUSTOM_RPMS_DIR = "/tmp/extra_rhui_files"
+
+LEGACY_CA_FILE = "legacy_ca.crt"
+
+TMPDIR = mkdtemp()
 
 class TestClient(object):
     '''
@@ -268,6 +276,25 @@ class TestClient(object):
         Expect.ping_pong(CLI, "rhui-set-release --help", "Usage:")
         Expect.ping_pong(CLI, "rhui-set-release -h", "Usage:")
 
+    @staticmethod
+    def test_17_legacy_ca():
+        '''
+            check for bogus error messages if a legacy CA is used
+        '''
+        # for RHBZ#1731856
+        # get the CA cert from the RHUA and upload it to the CDS
+        # the cert is among the extra RHUI files, ie. in the directory also containing custom RPMs
+        remote_ca_file = join(CUSTOM_RPMS_DIR, LEGACY_CA_FILE)
+        local_ca_file = join(TMPDIR, LEGACY_CA_FILE)
+        Util.fetch(CONNECTION, remote_ca_file, local_ca_file)
+        Helpers.add_legacy_ca(CDS, local_ca_file)
+        # re-fetch repodata on the client to trigger the OID validator on the CDS
+        Expect.expect_retval(CLI, "yum clean all ; yum repolist enabled")
+        Expect.expect_retval(CDS,
+                             "egrep 'Cert verification failed against [0-9]+ ca cert' " +
+                             "/var/log/httpd/cds.example.com_error_ssl.log",
+                             1)
+
     def test_99_cleanup(self):
         '''
            remove repos, certs, cli rpms; remove rpms from cli, uninstall cds, hap
@@ -278,6 +305,8 @@ class TestClient(object):
         Expect.expect_retval(CONNECTION, "rm -f /root/test_ent_cli*")
         Expect.expect_retval(CONNECTION, "rm -rf /root/test_cli_rpm-3.0/")
         Util.remove_rpm(CLI, [self.test_package, "test_cli_rpm", test_rpm_name])
+        rmtree(TMPDIR)
+        Helpers.del_legacy_ca(CDS, LEGACY_CA_FILE)
         if not getenv("RHUISKIPSETUP"):
             RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
             RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com"])

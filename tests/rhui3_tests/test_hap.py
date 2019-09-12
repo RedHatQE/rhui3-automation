@@ -1,10 +1,12 @@
 '''HAProxy management tests'''
 
 from os.path import basename
+import re
 
 import logging
 import nose
 import stitches
+from stitches import Expect
 
 from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -126,6 +128,39 @@ def test_12_delete_unreachable():
     # the node remains configured (haproxy)... unconfigure it properly
     RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", HA_HOSTNAME)
     RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [HA_HOSTNAME])
+
+def test_13_delete_select_0():
+    '''
+    add an LB and see if no issue occurs if it and "a zeroth" (ghost) LBs are selected for deletion
+    '''
+    # for RHBZ#1305612
+    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", HA_HOSTNAME)
+    hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
+    nose.tools.assert_not_equal(hap_list, [])
+
+    # try the deletion
+    RHUIManager.screen(CONNECTION, "loadbalancers")
+    Expect.enter(CONNECTION, "d")
+    Expect.expect(CONNECTION, "Enter value")
+    Expect.enter(CONNECTION, "0")
+    Expect.expect(CONNECTION, "Enter value")
+    Expect.enter(CONNECTION, "1")
+    Expect.expect(CONNECTION, "Enter value")
+    Expect.enter(CONNECTION, "c")
+    state = Expect.expect_list(CONNECTION,
+                               [(re.compile(".*Are you sure.*", re.DOTALL), 1),
+                                (re.compile(".*An unexpected error.*", re.DOTALL), 2)])
+    if state == 1:
+        Expect.enter(CONNECTION, "y")
+        RHUIManager.quit(CONNECTION, timeout=180)
+    else:
+        Expect.enter(CONNECTION, "q")
+
+    # the LB list ought to be empty now; if not, delete the LB and fail
+    hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
+    if hap_list:
+        RHUIManagerInstance.delete_all(CONNECTION, "loadbalancers")
+        raise AssertionError("The LB list is not empty after the deletion attempt: %s." % hap_list)
 
 def teardown():
     '''

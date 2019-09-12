@@ -2,10 +2,12 @@
 
 from os.path import basename
 import random
+import re
 
 import logging
 import nose
 import stitches
+from stitches.expect import Expect
 
 from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -146,6 +148,41 @@ def test_12_delete_unreachable():
     # the node remains configured (RHUI mount point, httpd)... unconfigure it properly
     RHUIManagerInstance.add_instance(CONNECTION, "cds", cds)
     RHUIManagerInstance.delete(CONNECTION, "cds", [cds])
+
+def test_13_delete_select_0():
+    '''
+    add a CDS and see if no issue occurs if it and "a zeroth" (ghost) CDSs are selected for deletion
+    '''
+    # for RHBZ#1305612
+    # choose a random CDS and add it
+    cds = random.choice(CDS_HOSTNAMES)
+    RHUIManagerInstance.add_instance(CONNECTION, "cds", cds)
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
+    nose.tools.assert_not_equal(cds_list, [])
+
+    # try the deletion
+    RHUIManager.screen(CONNECTION, "cds")
+    Expect.enter(CONNECTION, "d")
+    Expect.expect(CONNECTION, "Enter value")
+    Expect.enter(CONNECTION, "0")
+    Expect.expect(CONNECTION, "Enter value")
+    Expect.enter(CONNECTION, "1")
+    Expect.expect(CONNECTION, "Enter value")
+    Expect.enter(CONNECTION, "c")
+    state = Expect.expect_list(CONNECTION,
+                               [(re.compile(".*Are you sure.*", re.DOTALL), 1),
+                                (re.compile(".*An unexpected error.*", re.DOTALL), 2)])
+    if state == 1:
+        Expect.enter(CONNECTION, "y")
+        RHUIManager.quit(CONNECTION, timeout=180)
+    else:
+        Expect.enter(CONNECTION, "q")
+
+    # the CDS list ought to be empty now; if not, delete the CDS and fail
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
+    if cds_list:
+        RHUIManagerInstance.delete_all(CONNECTION, "cds")
+        raise AssertionError("The CDS list is not empty after the deletion attempt: %s." % cds_list)
 
 def teardown():
     '''
