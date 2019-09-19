@@ -239,6 +239,33 @@ class TestRepo(object):
                          "The entitlement.*has no associated certificate")
 
     @staticmethod
+    def test_18_repo_select_0():
+        '''check if no repo is chosen if 0 is entered when adding a repo'''
+        # for RHBZ#1305612
+        # upload the small cert and try entering 0 when the list of repos is displayed
+        RHUIManagerEntitlements.upload_rh_certificate(CONNECTION,
+                                                      "/tmp/extra_rhui_files/rhcert_atomic.pem")
+        RHUIManager.screen(CONNECTION, "repo")
+        Expect.enter(CONNECTION, "a")
+        Expect.expect(CONNECTION, "Enter value", 180)
+        Expect.enter(CONNECTION, "3")
+        Expect.expect(CONNECTION, "Enter value")
+        Expect.enter(CONNECTION, "0")
+        Expect.expect(CONNECTION, "Enter value")
+        Expect.enter(CONNECTION, "c")
+        Expect.expect(CONNECTION, "Proceed")
+        Expect.enter(CONNECTION, "y")
+        Expect.expect(CONNECTION, "Content")
+        Expect.enter(CONNECTION, "q")
+
+        # the RHUI repo list ought to be empty now; if not, delete the repo and fail
+        repo_list = RHUIManagerRepo.list(CONNECTION)
+        RHUIManager.remove_rh_certs(CONNECTION)
+        if repo_list:
+            RHUIManagerRepo.delete_all_repos(CONNECTION)
+            raise AssertionError("The repo list is not empty: %s." % repo_list)
+
+    @staticmethod
     def teardown_class():
         '''
            announce the end of the test run

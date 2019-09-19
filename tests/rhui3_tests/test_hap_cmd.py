@@ -130,13 +130,27 @@ def test_15_add_bad_hap():
     hap_list = RHUICLI.list(CONNECTION, "haproxy")
     nose.tools.eq_(hap_list, [])
 
-# currently broken, see RHBZ#1409697
-# def test_16_delete_bad_hap():
-#     '''
-#     try deleting a non-existing HAProxy hostname, expect trouble
-#     '''
-#     status = RHUICLI.delete(CONNECTION, "haproxy", ["bar" + HA_HOSTNAME], force=True)
-#     nose.tools.ok_(not status, msg="unexpected deletion status: %s" % status)
+def test_16_delete_bad_hap():
+    '''
+    try deleting a non-existing HAProxy hostname, expect trouble
+    '''
+    # for RHBZ#1409697
+    # first try a case where only an unknown (none known) hostname is used
+    status = RHUICLI.delete(CONNECTION, "haproxy", ["bar" + HA_HOSTNAME], force=True)
+    nose.tools.ok_(not status, msg="unexpected deletion status: %s" % status)
+
+    # and now a combination of a known and an unknown hostname,
+    # the known hostname should be delete, the unknown skipped, exit code 1
+    # so, add a node first
+    RHUICLI.add(CONNECTION, "haproxy", HA_HOSTNAME, unsafe=True)
+    hap_list = RHUICLI.list(CONNECTION, "haproxy")
+    nose.tools.eq_(hap_list, [HA_HOSTNAME])
+    # deleting now
+    status = RHUICLI.delete(CONNECTION, "haproxy", ["baz" + HA_HOSTNAME, HA_HOSTNAME], force=True)
+    nose.tools.ok_(not status, msg="unexpected deletion status: %s" % status)
+    # check if the valid hostname was deleted and nothing remained
+    hap_list = RHUICLI.list(CONNECTION, "haproxy")
+    nose.tools.eq_(hap_list, [])
 
 def test_17_add_hap_changed_case():
     '''

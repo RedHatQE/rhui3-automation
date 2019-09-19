@@ -149,13 +149,28 @@ def test_15_add_bad_cds():
     cds_list = RHUICLI.list(CONNECTION, "cds")
     nose.tools.eq_(cds_list, [])
 
-# currently broken, see RHBZ#1409697
-# def test_16_delete_bad_cds():
-#     '''
-#     try deleting a non-existing CDS hostname, expect trouble
-#     '''
-#     status = RHUICLI.delete(CONNECTION, "cds", ["bar" + CDS_HOSTNAMES[0]], force=True)
-#     nose.tools.ok_(not status, msg="unexpected deletion status: %s" % status)
+def test_16_delete_bad_cds():
+    '''
+    try deleting a non-existing CDS hostname, expect trouble
+    '''
+    # for RHBZ#1409697
+    # first try a case where only an unknown (ie. no known) hostname is used on the command line
+    status = RHUICLI.delete(CONNECTION, "cds", ["bar" + CDS_HOSTNAMES[0]], force=True)
+    nose.tools.ok_(not status, msg="unexpected deletion status: %s" % status)
+
+    # and now a combination of a known and an unknown hostname
+    # the known hostname should be deleted, the unknown skipped, exit code 1
+    # so, add a node first
+    cds = random.choice(CDS_HOSTNAMES)
+    RHUICLI.add(CONNECTION, "cds", cds, unsafe=True)
+    cds_list = RHUICLI.list(CONNECTION, "cds")
+    nose.tools.eq_(cds_list, [cds])
+    # deleting now
+    status = RHUICLI.delete(CONNECTION, "cds", ["baz" + cds, cds], force=True)
+    nose.tools.ok_(not status, msg="unexpected deletion status: %s" % status)
+    # check if the valid hostname was deleted and nothing remained
+    cds_list = RHUICLI.list(CONNECTION, "cds")
+    nose.tools.eq_(cds_list, [])
 
 def test_17_add_cds_changed_case():
     '''
