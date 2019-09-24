@@ -34,12 +34,15 @@ class RHSMRHUI(object):
         Expect.expect_retval(connection, "subscription-manager attach --pool %s" % pool, timeout=60)
 
     @staticmethod
-    def enable_rhui_repos(connection):
-        """enable the repos relevant to RHUI 3"""
-        Expect.expect_retval(connection,
-                             "subscription-manager repos --disable=* " +
-                             "--enable=rhel-7-server-rhui-rpms --enable=rhel-7-server-rhui-3-rpms",
-                             timeout=60)
+    def enable_rhui_repo(connection, base_rhel=True, gluster=False):
+        """enable the RHUI 3 repo and by default also the base RHEL repo, disable everything else"""
+        # the Gluster 3 repo can also be enabled if needed
+        cmd = "subscription-manager repos --disable=* --enable=rhel-7-server-rhui-3-rpms"
+        if base_rhel:
+            cmd += " --enable=rhel-7-server-rhui-rpms"
+        if gluster:
+            cmd += " --enable=rh-gluster-3-for-rhel-7-server-rhui-rpms"
+        Expect.expect_retval(connection, cmd, timeout=60)
 
     @staticmethod
     def unregister_system(connection):
