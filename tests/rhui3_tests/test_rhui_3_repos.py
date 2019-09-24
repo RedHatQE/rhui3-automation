@@ -23,7 +23,7 @@ def _check_rpms(major, min_count):
           "--certificate /tmp/extra_rhui_files/rhcert.pem " + \
           "--ca-certificate /etc/rhsm/ca/redhat-uep.pem " + \
           "https://cdn.redhat.com/" + \
-          "content/dist/rhel/rhui/server/%s/%sServer/x86_64/rhui/3/os/Packages/" % (major, major)
+          "content/dist/rhel/rhui/server/%s/%sServer/x86_64/rhui/3/os/Packages/r/" % (major, major)
     rpm_link_pattern = r'HREF="[^"]+\.rpm'
     _, stdout, _ = CONNECTION.exec_command(cmd)
     with stdout as output:
@@ -76,7 +76,7 @@ def test_02_rhui_3_for_rhel_7_check():
     '''
         check if the RHUI 3 packages for RHEL 7 are available
     '''
-    _check_rpms(7, 100)
+    _check_rpms(7, 20)
 
 def test_03_eus_6_repos_check():
     '''
@@ -89,8 +89,8 @@ def test_04_eus_7_repos_check():
     '''
         check if all supported RHEL 7 EUS versions are available
     '''
-    # RHEL 7.1-7.6
-    _check_listing(7, 1, 6)
+    # RHEL 7.1-7.7
+    _check_listing(7, 1, 7)
 
 def teardown():
     '''
