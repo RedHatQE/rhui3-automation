@@ -92,8 +92,8 @@ identity=~/.ssh/id_rsa_test
 export PYTHONUNBUFFERED=1
 
 if [[ $1 == all ]]; then
-    rhua_info=$(ssh -i $identity -o StrictHostKeyChecking=no -q rhua.example.com "cat /etc/redhat-release")
-    client_info=$(ssh -i $identity -o StrictHostKeyChecking=no -q cli01.example.com "cat /etc/redhat-release")
+    rhua_info=$(ssh -i $identity -o StrictHostKeyChecking=no -q rhua.example.com "echo \$(< /etc/redhat-release), kernel: \$(uname -r)")
+    client_info=$(ssh -i $identity -o StrictHostKeyChecking=no -q cli01.example.com "echo \$(< /etc/redhat-release), kernel: \$(uname -r)")
     if [[ $2 == quiet ]]; then
         echo "The RHUA is running on $rhua_info. The client is running on $client_info." > $output
         nosetests -vs &>> $output
@@ -107,7 +107,7 @@ elif [[ $1 == client ]]; then
     result=0
     for client in $clients; do
         client_info=$(ssh -i $identity -o StrictHostKeyChecking=no -q $client \
-            "echo OS: \$(< /etc/redhat-release), arch: \$(arch).")
+            "echo OS: \$(< /etc/redhat-release), kernel: \$(uname -r).")
         if [ $? -ne 0 ]; then
             echo "Skipping $client, which is unreachable."
             ((result++))
