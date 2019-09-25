@@ -514,7 +514,7 @@ if not con_cf or not con_ec2:
     logging.error("Create CF/EC2 connections: " + args.region)
     sys.exit(1)
 
-STACK_ID = "STACK" + "-" + ec2_name + "-" + ''.join(random.choice(string.ascii_lowercase) for x in range(10))
+STACK_ID = "STACK-%s-%s-%s" % (ec2_name, args.name, ''.join(random.choice(string.ascii_lowercase) for x in range(10)))
 logging.info("Creating stack with ID " + STACK_ID)
 
 parameters = []
