@@ -12,23 +12,34 @@ logging.basicConfig(level=logging.DEBUG)
 
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
-def _check_rpms(major, min_count):
+def _check_rpms():
     '''
-        helper method to check if the directory for the given RHUI version contains enough RPMs
+        helper method to check if the RHUI repository contains enough RPMs
         and if "rh-rhui-tools" is included (the main package and -libs, all released versions)
-        major: RHEL X version to check
-        min_count: minumum number of RPMs to consider the check successful
     '''
     cmd = "wget -q -O - " + \
           "--certificate /tmp/extra_rhui_files/rhcert.pem " + \
           "--ca-certificate /etc/rhsm/ca/redhat-uep.pem " + \
           "https://cdn.redhat.com/" + \
-          "content/dist/rhel/rhui/server/%s/%sServer/x86_64/rhui/3/os/Packages/r/" % (major, major)
-    rpm_link_pattern = r'HREF="[^"]+\.rpm'
-    _, stdout, _ = CONNECTION.exec_command(cmd)
+          "content/dist/rhel/rhui/server/7/7Server/x86_64/rhui/3/os/repodata/"
+
+    rpm_link_pattern = r'href="[^"]+\.rpm'
+    min_count = 150
+    # first fetch repodata
+    _, stdout, _ = CONNECTION.exec_command(cmd + "repomd.xml")
     with stdout as output:
-        all_lines = output.read().decode()
-        rpms = [l.replace("HREF=\"", "") for l in re.findall(rpm_link_pattern, all_lines)]
+        repomd_xml = output.read().decode()
+        primary_xml_gz_path = re.findall("[0-9a-f]+-primary.xml.gz", repomd_xml)[0]
+    # now fetch package info, uncompressed & filtered on the RHUA, paths on separate lines
+    # (not fetching the compressed or uncompressed data as it's not decode()able)
+    _, stdout, _ = CONNECTION.exec_command(cmd + primary_xml_gz_path +
+                                           " | zegrep -o '%s'" % rpm_link_pattern +
+                                           " | sed 's/href=\"//'")
+    with stdout as output:
+        rpm_paths = output.read().decode().splitlines()
+    # get just package file names
+    rpms = [basename(rpm) for rpm in rpm_paths]
+    # check the number of RPMs
     rpms_count = len(rpms)
     error_msg = "Not enough RPMs. Expected at least %s, found " % min_count
     if rpms_count == 0:
@@ -76,7 +87,7 @@ def test_02_rhui_3_for_rhel_7_check():
     '''
         check if the RHUI 3 packages for RHEL 7 are available
     '''
-    _check_rpms(7, 20)
+    _check_rpms()
 
 def test_03_eus_6_repos_check():
     '''
