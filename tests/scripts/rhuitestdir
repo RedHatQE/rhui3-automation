@@ -1,0 +1,6 @@
+#!/bin/bash
+# Find and print the path to the directory containing the RHUI tests.
+# This is needed because the path differs in RHEL 7, in RHEL 8, and if using RHSCL.
+
+base_dir=$(dirname $(dirname $(readlink -f $BASH_SOURCE)))
+echo $base_dir/share/rhui3_tests_lib/rhui3_tests

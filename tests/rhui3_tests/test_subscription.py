@@ -19,7 +19,7 @@ class TestSubscription(object):
     """class for tests for subscription registration in RHUI"""
 
     def __init__(self):
-        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
+        with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             self.subscriptions = doc["subscriptions"]
 

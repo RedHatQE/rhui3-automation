@@ -26,7 +26,7 @@ class TestSync(object):
         # Test the RHEL-7 ARM-64 repo for a change
         version = 7
         arch = "aarch64"
-        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
+        with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:
                 self.yum_repo_name = doc["yum_repos"][version][arch]["name"]

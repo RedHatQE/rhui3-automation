@@ -40,7 +40,7 @@ class TestCLI(object):
     '''
 
     def __init__(self):
-        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
+        with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
 
         self.yum_repo_names = [doc["CLI_repo1"]["name"], doc["CLI_repo2"]["name"]]

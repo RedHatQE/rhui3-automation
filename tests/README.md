@@ -15,7 +15,7 @@ RHUI deployment with the following hosts running RHEL 7:
 * one HAProxy instance
 * one client instance; it can be running RHEL 6, 7, or 8, regadless of the RHEL version on the RHUA
 * one atomic client instance
-* one test instance
+* one test instance; it can alternatively be running RHEL 8
 
 See the [RHUI deployment readme file ](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md) for details.
 
