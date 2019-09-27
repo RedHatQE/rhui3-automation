@@ -1,50 +1,59 @@
 {
     "us-east-1": {
-        "AMI": "ami-00936483548a6d57f"
+        "AMI": "ami-0dab2fed5c611aca3"
     }, 
     "us-west-1": {
-        "AMI": "ami-0c668a46905f20459"
+        "AMI": "ami-0cbd8b45d320ccdde"
     }, 
-    "eu-north-1": {
-        "AMI": "ami-de961da0"
+    "ap-east-1": {
+        "AMI": "ami-45334934"
+    }, 
+    "ap-northeast-3": {
+        "AMI": ""
     }, 
     "ap-northeast-2": {
-        "AMI": "ami-069295c183176c418"
+        "AMI": "ami-0b3a6f4a4fcebf79b"
     }, 
     "ap-northeast-1": {
-        "AMI": "ami-0b7eb83b412c87bfc"
+        "AMI": "ami-07f96f56190225504"
     }, 
     "sa-east-1": {
-        "AMI": "ami-035b220aff6fe12a1"
-    }, 
-    "ap-southeast-1": {
-        "AMI": "ami-0d978c622189f3633"
-    }, 
-    "ca-central-1": {
-        "AMI": "ami-03240263906701e05"
-    }, 
-    "ap-southeast-2": {
-        "AMI": "ami-04de78cc46d3e3d8c"
-    }, 
-    "us-west-2": {
-        "AMI": "ami-0e19d4d4908d15736"
+        "AMI": "ami-00ef2646ad92631a6"
     }, 
     "us-east-2": {
-        "AMI": "ami-073251e3a0e36cebb"
+        "AMI": "ami-03743759d17d7a528"
+    }, 
+    "ap-southeast-1": {
+        "AMI": "ami-05e954272303ddf88"
+    }, 
+    "ca-central-1": {
+        "AMI": "ami-00b6fe1cf8e9496e1"
+    }, 
+    "ap-southeast-2": {
+        "AMI": "ami-0133984fa8726b627"
+    }, 
+    "us-west-2": {
+        "AMI": "ami-06e060f37f40e2658"
+    }, 
+    "eu-north-1": {
+        "AMI": "ami-4fff7531"
+    }, 
+    "me-south-1": {
+        "AMI": "ami-0d26bb69bc32e18d6"
     }, 
     "ap-south-1": {
-        "AMI": "ami-06d4562409c1b784c"
+        "AMI": "ami-0543b24a171ac29aa"
     }, 
     "eu-central-1": {
-        "AMI": "ami-0d9b29db8ea2d6c48"
+        "AMI": "ami-0a03eccad1a29b099"
     }, 
     "eu-west-1": {
-        "AMI": "ami-06cb841a17fad8552"
+        "AMI": "ami-0c22034dd5e41768c"
     }, 
     "eu-west-2": {
-        "AMI": "ami-0cfabd8162ee906f1"
+        "AMI": "ami-013e64f2d9f3c2bc7"
     }, 
     "eu-west-3": {
-        "AMI": "ami-0b300d9218d33357e"
+        "AMI": "ami-0f1e7ed68c8509858"
     }
 }

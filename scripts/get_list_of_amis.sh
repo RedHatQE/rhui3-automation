@@ -26,12 +26,15 @@ fi
 #u'us-west-2': {u'AMI': u'ami-e8b93688'},
 #u'eu-central-1': {u'AMI': u'ami-3867b357'},
 #
-# Usage: you need to change the ami_description variable and run it
 
+regions=(ap-east-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-south-1 ap-southeast-1 ap-southeast-2 ca-central-1 eu-central-1 eu-north-1 eu-west-1 eu-west-2 eu-west-3 me-south-1 sa-east-1 us-east-1 us-east-2 us-west-1 us-west-2)
 
-regions=(ap-northeast-1 ap-northeast-2 ap-south-1 ap-southeast-1 ap-southeast-2 ca-central-1 eu-central-1 eu-west-1 eu-west-2 eu-west-3 sa-east-1 us-east-1 us-east-2 us-west-1 us-west-2)
-
-ami_description="RHEL-7.5_HVM_GA-20180322-x86_64-1-Hourly2-GP2"
+if [[ $1 =~ ^RHEL ]]; then
+  ami_description=$1
+else
+  echo "Usage: $0 ami_description"
+  exit
+fi
 
 for i in "${regions[@]}"
 do
