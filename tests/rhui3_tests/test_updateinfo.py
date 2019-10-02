@@ -39,7 +39,7 @@ class TestClient(object):
     def __init__(self):
         self.arch = Util.get_arch(CLI)
         self.version = Util.get_rhel_version(CLI)["major"]
-        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
+        with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:
                 self.test = doc["updateinfo"][self.version][self.arch]

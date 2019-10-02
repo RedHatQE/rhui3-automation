@@ -3,7 +3,7 @@
 # Client tests will run on all cliN.example.com machines found in /etc/hosts,
 # unless a specific hostname is defined in the RHUICLI environment variable.
 
-tests_dir=/usr/share/rhui3_tests_lib/rhui3_tests
+tests_dir=$(rhuitestdir)
 if ! test -d $tests_dir; then
   echo "Cannot proceed: $tests_dir does not exist."
   exit 1

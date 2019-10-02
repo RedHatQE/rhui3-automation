@@ -37,7 +37,7 @@ class TestClient(object):
         except socket.error:
             self.ah_exists = False
 
-        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
+        with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
 
         self.atomic_repo_name = doc["atomic_repo"]["name"]

@@ -36,7 +36,7 @@ class TestRepo(object):
         # Test the RHEL-6 repo for a change
         version = 6
         arch = "x86_64"
-        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
+        with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:
                 self.yum_repo_name = doc["yum_repos"][version][arch]["name"]

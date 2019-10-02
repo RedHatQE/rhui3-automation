@@ -21,7 +21,7 @@
   tags: tests
 
 - name: install pip
-  shell: easy_install pip
+  shell: if grep -q 'release 8' /etc/redhat-release; then easy_install-3.6 --prefix /usr pip; else easy_install pip; fi
   tags: tests
 
 - name: install tests
@@ -29,7 +29,7 @@
   tags: tests
 
 - name: generate ssh keys
-  command: ssh-keygen -N "" -f /root/.ssh/id_rsa_test creates=/root/.ssh/id_rsa_test
+  command: ssh-keygen -m pem -N "" -f /root/.ssh/id_rsa_test creates=/root/.ssh/id_rsa_test
   notify: restorecon root ssh
   register: generated_ssh_test_keys
   tags: tests

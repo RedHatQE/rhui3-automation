@@ -11,7 +11,7 @@ from setuptools import setup
 REQUIREMENTS = ['nose>=1.3.0', 'pytoml', 'requests', 'stitches>=0.12']
 
 DATAFILES = [('share/rhui3_tests_lib/rhui3_tests', glob('rhui3_tests/test_*.py')),
-             ('share/rhui3_tests_lib/config', ['rhui3_tests/tested_repos.yaml']),
+             ('/etc/rhui3_tests/', ['rhui3_tests/tested_repos.yaml']),
              ('/etc/bash_completion.d/', ['bash_completion/rhuitests'])]
 
 setup(name='rhui3_tests_lib',

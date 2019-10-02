@@ -39,7 +39,7 @@ class TestEUSCLI(object):
     def __init__(self):
         self.cli_version = Util.get_rhel_version(CLI)["major"]
         arch = Util.get_arch(CLI)
-        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
+        with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:
                 self.repo_id = doc["EUS_repos"][self.cli_version]["id"]

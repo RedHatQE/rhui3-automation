@@ -60,7 +60,7 @@ class TestClient(object):
             raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR)
         self.version = Util.get_rhel_version(CLI)["major"]
         arch = Util.get_arch(CLI)
-        with open("/usr/share/rhui3_tests_lib/config/tested_repos.yaml") as configfile:
+        with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             try:
                 self.yum_repo_name = doc["yum_repos"][self.version][arch]["name"]
