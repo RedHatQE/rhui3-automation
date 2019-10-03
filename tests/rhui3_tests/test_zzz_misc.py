@@ -99,10 +99,12 @@ def test_07_check_migrate_py():
         check if the migration script in the RHUI ISO is up to date
     '''
     # for RHBZ#1278954
-    Expect.expect_retval(RHUA,
-                         "mount /tmp/iso && " +
-                         "grep DEFAULT_ENTITLEMENT /tmp/iso/migrate/migrate.py")
-    Expect.expect_retval(RHUA, "umount /tmp/iso")
+    # the ISO was set up in /etc/fstab by Ansible, so let's reuse the defined mountpoint/directory
+    mdir = "/tmp/iso"
+    # mount it if not mounted already; shouldn't be, but you never know
+    Expect.expect_retval(RHUA, "mountpoint %s || mount %s" % (mdir, mdir))
+    Expect.expect_retval(RHUA, "grep DEFAULT_ENTITLEMENT %s/migrate/migrate.py" % mdir)
+    Expect.expect_retval(RHUA, "umount %s" % mdir)
 
 def test_08_qpid_linearstore():
     '''
