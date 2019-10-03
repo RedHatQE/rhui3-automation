@@ -47,6 +47,12 @@ def test_01_check_version():
     with stdout as output:
         ah_data = json.load(output)
     actual_version = ah_data["deployments"][0]["version"]
+    # sometimes a respin is made and then another element is added to the version
+    # (e.g. 7.7.1.1)
+    # use only the first three elements if so; respins aren't documented
+    version_numbers = actual_version.split(".")
+    if len(version_numbers) > 3:
+        actual_version = ".".join(version_numbers[:3])
 
     # compare the versions
     nose.tools.eq_(expected_version, actual_version)
