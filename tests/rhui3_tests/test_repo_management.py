@@ -1,6 +1,12 @@
 #! /usr/bin/python -tt
 ''' Repository management tests '''
 
+# To check if all entitled repositories can be added and deleted, which takes a huge amount
+# of time and can break, run:
+# export RHUITESTALLREPOS=1
+# in your shell before running this script.
+
+from os import getenv
 from os.path import basename
 
 import logging
@@ -189,6 +195,8 @@ class TestRepo(object):
     @staticmethod
     def test_13_add_all_rh_repos():
         '''add all Red Hat repos, remove them (takes a lot of time!)'''
+        if not getenv("RHUITESTALLREPOS"):
+            raise nose.exc.SkipTest("Not explicitly requested.")
         RHUIManagerRepo.add_rh_repo_all(CONNECTION)
         # it's not feasible to get the repo list if so many repos are present; skip the check
         #nose.tools.ok_(len(RHUIManagerRepo.list(CONNECTION)) > 100)
