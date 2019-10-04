@@ -91,15 +91,17 @@ Other options:
 
 Configuration with NFS filesystem needs at least 1 CDS, 1 HAProxy and RHUA machine. <br />
 If there is a separate NFS machine, an extra 100 GB volume is attached to this machine. If not, an extra 100 GB volume is attached to the RHUA machine.
+Either way, a 50 GB volume is attached for MongoDB on the RHUA.
 
-<img src="https://github.com/RedHatQE/rhui3-automation/blob/stack_script/scripts/img/rhui-storage-nfs.png" width="350">
+![NFS setup](img/rhui-storage-nfs.png)
 
 #### Gluster filesystem
 
 Configuration with Gluster filesystem needs at least 3 CDS, 1 HAProxy and RHUA machine. <br />
 There is an extra 100 GB volume attached to each CDS machine.
+In addition, a 50 GB volume is attached for MongoDB on the RHUA.
 
-<img src="https://github.com/RedHatQE/rhui3-automation/blob/stack_script/scripts/img/rhui-storage-gluster.png" width="350">
+![GlusterFS setup](img/rhui-storage-gluster.png)
 
 ### Examples
 
