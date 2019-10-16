@@ -41,6 +41,14 @@
   when: iso_mount is success
   tags: rhui_nodes
 
+- name: prevent systemd-tmpfiles from deleting the iso and the mount directory
+  blockinfile:
+    path: /usr/lib/tmpfiles.d/rhui_iso.conf
+    block: |
+      x /tmp/rhui.iso
+      x /tmp/iso
+    create: yes
+  tags: rhui_nodes
 
 - name: perform repolist
   yum:
