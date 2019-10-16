@@ -24,6 +24,15 @@ Optional variables:
 
 Note that if you use `rhel7_beta_baseurl`, all RHEL 7 systems will get upgraded and rebooted automatically. Ditto for `rhel8_beta_baseurl`. This will allow a new kernel to boot, apps to load with a new glibc, etc.
 
+Tip: Instead or running `ansible-playbook` directly, and putting all the options together in the first place, you can take advantage of the [deployment script](../scripts/deploy.py), which is meant to be executed from the top directory of this project and only needs the necessary files to be available. See its help message for
+usage information. This script can also read templates for RHEL 7 or 8 Beta URLs from `~/.rhui3-automation.cfg`; the expected format is as follows:
+
+```
+[beta]
+rhel7_template=http://host/path/%s/path/
+rhel8_template=http://host/path/%s/path/
+```
+
 This is RHUI 3.1+ [Ansible](https://www.ansible.com) deployment automation.
 Managed roles:
 - Dns
