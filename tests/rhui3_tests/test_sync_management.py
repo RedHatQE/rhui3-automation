@@ -1,5 +1,7 @@
 '''Repo syncing and scheduling tests'''
 
+from __future__ import print_function
+
 from os.path import basename
 
 import logging

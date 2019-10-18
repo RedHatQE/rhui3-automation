@@ -1,5 +1,7 @@
 '''Tests for RHUI 3 repos and EUS listings'''
 
+from __future__ import print_function
+
 from os.path import basename
 import re
 

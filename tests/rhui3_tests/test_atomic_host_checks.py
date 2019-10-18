@@ -1,5 +1,7 @@
 '''Atomic Host Checks'''
 
+from __future__ import print_function
+
 from os.path import basename
 import re
 import socket

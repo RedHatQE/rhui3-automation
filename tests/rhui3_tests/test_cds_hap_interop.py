@@ -1,5 +1,7 @@
 """CDS-HAProxy Interoperability Tests"""
 
+from __future__ import print_function
+
 from os.path import basename
 
 import logging

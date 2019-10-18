@@ -1,5 +1,7 @@
 """ Test case for the RHUI SKU, the RHUI 3 repo, and subscription registration in RHUI """
 
+from __future__ import print_function
+
 import logging
 from os.path import basename
 

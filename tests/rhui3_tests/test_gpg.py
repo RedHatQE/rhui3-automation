@@ -1,5 +1,7 @@
 '''Tests for working with a custom GPG key in a custom repo'''
 
+from __future__ import print_function
+
 # To skip the upload of an entitlement certificate and the registration of CDS and HAProxy nodes --
 # because you want to save time in each client test case and do this beforehand -- run:
 # export RHUISKIPSETUP=1

@@ -1,5 +1,6 @@
-#! /usr/bin/python -tt
 ''' Repository management tests '''
+
+from __future__ import print_function
 
 # To check if all entitled repositories can be added and deleted, which takes a huge amount
 # of time and can break, run:

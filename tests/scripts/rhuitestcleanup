@@ -1,6 +1,8 @@
 #!/usr/bin/python
 '''Remove certificates and unregister CDS and HAProxy nodes. '''
 
+from __future__ import print_function
+
 import stitches
 
 from rhui3_tests_lib.rhuimanager import RHUIManager

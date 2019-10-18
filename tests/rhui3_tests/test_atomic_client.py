@@ -1,5 +1,7 @@
 '''Atomic client tests (RHEL 7+ only)'''
 
+from __future__ import print_function
+
 from os.path import basename
 import socket
 

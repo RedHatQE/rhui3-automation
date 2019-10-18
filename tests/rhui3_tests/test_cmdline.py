@@ -1,5 +1,7 @@
 '''RHUI CLI tests'''
 
+from __future__ import print_function
+
 import logging
 from os.path import basename, getsize, join
 import re

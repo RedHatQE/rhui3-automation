@@ -1,5 +1,7 @@
 '''Miscellaneous Tests That Do Not Fit Elsewhere'''
 
+from __future__ import print_function
+
 import json
 from os.path import basename
 

@@ -1,6 +1,8 @@
 #!/usr/bin/python
 '''Log in to RHUI, upload a certificate, and add a CDS and a HAProxy node. '''
 
+from __future__ import print_function
+
 import stitches
 
 from rhui3_tests_lib.rhuimanager import RHUIManager

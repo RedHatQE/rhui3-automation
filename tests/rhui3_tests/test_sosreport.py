@@ -1,4 +1,7 @@
 """ Test case for sosreport usage in RHUI """
+
+from __future__ import print_function
+
 # for RHBZ#1591027 and RHBZ#1578678
 
 import logging
