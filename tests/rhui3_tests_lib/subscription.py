@@ -4,18 +4,17 @@ import re
 
 from stitches.expect import Expect
 
+from rhui3_tests_lib.helpers import Helpers
+
 class RHSMRHUI(object):
     """Subscription management for RHUI"""
     @staticmethod
-    def register_system(connection, alt_rhaccount_file=""):
+    def register_system(connection):
         """register with RHSM"""
-        rhaccount_file = alt_rhaccount_file or "/tmp/extra_rhui_files/rhaccount.sh"
-        if connection.recv_exit_status("test -f %s" % rhaccount_file):
-            raise OSError("%s does not exist" % rhaccount_file)
+        username, password = Helpers.get_credentials(connection)
         Expect.expect_retval(connection,
-                             "source %s && " % rhaccount_file +
                              "subscription-manager register --type=rhui " +
-                             "--username=$SM_USERNAME --password=$SM_PASSWORD",
+                             "--username=%s --password=%s" % (username, password),
                              timeout=40)
 
     @staticmethod

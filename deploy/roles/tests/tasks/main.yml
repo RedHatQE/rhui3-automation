@@ -78,10 +78,10 @@
   tags: tests
 
 - name: upload Red Hat credentials
-  copy: src="{{ rhaccount }}" dest=/tmp/extra_rhui_files/rhaccount.sh
+  copy: src="{{ credentials }}" dest=/tmp/extra_rhui_files/credentials.conf
   delegate_to: "{{ item }}"
   with_items: "{{ groups['RHUA']|default([]) }}"
-  when: rhaccount is defined
+  when: credentials is defined
   tags: tests
 
 - name: prevent systemd-tmpfiles from purging the directory with the uploaded files

@@ -16,6 +16,7 @@ import stitches
 from stitches.expect import Expect
 import yaml
 
+from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements
 from rhui3_tests_lib.rhuimanager_repo import AlreadyExistsError, RHUIManagerRepo
@@ -50,8 +51,8 @@ class TestRepo(object):
                 self.yum_repo_version = doc["yum_repos"][version][arch]["version"]
                 self.yum_repo_kind = doc["yum_repos"][version][arch]["kind"]
                 self.yum_repo_path = doc["yum_repos"][version][arch]["path"]
-                self.container_name = doc["container1"]["name"]
-                self.container_displayname = doc["container1"]["displayname"]
+                self.rhcontainer = doc["container1"]
+                self.altcontainer = doc["container_alt"]
             except KeyError:
                 raise nose.SkipTest("No test repo defined for RHEL %s on %s" % (version, arch))
 
@@ -204,29 +205,43 @@ class TestRepo(object):
         RHUIManagerRepo.delete_all_repos(CONNECTION)
         nose.tools.ok_(not RHUIManagerRepo.list(CONNECTION))
 
-    def test_14_add_container(self):
-        '''add a container'''
+    def test_14_add_containers(self):
+        '''add containers'''
+        # use saved credentials; save them in the RHUI configuration first
+        # first a RH container
+        Helpers.set_registry_credentials(CONNECTION)
         RHUIManagerRepo.add_container(CONNECTION,
-                                      self.container_name,
+                                      self.rhcontainer["name"],
                                       "",
-                                      self.container_displayname)
+                                      self.rhcontainer["displayname"])
+        # then a Quay container
+        Helpers.set_registry_credentials(CONNECTION, "quay", backup=False)
+        RHUIManagerRepo.add_container(CONNECTION, self.altcontainer["quay"]["name"])
+        # and finaly a Docker container; we'll need the Docker Hub URL as there's no
+        # auth config for it
+        url = Helpers.get_registry_url("docker")
+        Helpers.set_registry_credentials(CONNECTION, "docker", [url], backup=False)
+        RHUIManagerRepo.add_container(CONNECTION, self.altcontainer["docker"]["name"])
+        # check all of that
         repo_list = RHUIManagerRepo.list(CONNECTION)
-        nose.tools.ok_(self.container_displayname in repo_list,
-                       msg="The container wasn't added. Actual repolist: %s" % repo_list)
+        nose.tools.ok_(len(repo_list) == 3,
+                       msg="The containers weren't added. Actual repolist: %s" % repo_list)
 
     def test_15_display_container(self):
-        '''check detailed information on the container'''
+        '''check detailed information on the RH container'''
+        repo_name = Util.safe_pulp_repo_name(self.rhcontainer["name"])
         RHUIManagerRepo.check_detailed_information(CONNECTION,
-                                                   [self.container_displayname,
+                                                   [self.rhcontainer["displayname"],
                                                     "https://cds.example.com/pulp/docker/%s/" % \
-                                                    self.container_name.replace("/", "_")],
+                                                    repo_name],
                                                    [False],
                                                    [True, None, True],
                                                    0)
 
     @staticmethod
-    def test_16_delete_container():
-        '''delete the container'''
+    def test_16_delete_containers():
+        '''delete the containers'''
+        Helpers.restore_rhui_tools_conf(CONNECTION)
         RHUIManagerRepo.delete_all_repos(CONNECTION)
         nose.tools.ok_(not RHUIManagerRepo.list(CONNECTION))
 

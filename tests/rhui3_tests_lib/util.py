@@ -267,3 +267,10 @@ class Util(object):
         fetch a file from the remote host
         '''
         connection.sftp.get(source, dest)
+
+    @staticmethod
+    def safe_pulp_repo_name(name):
+        '''
+        replace prohibited characters in repo names with safe ones (as per rhui-manager)
+        '''
+        return name.replace("/", "_").replace(".", "_")

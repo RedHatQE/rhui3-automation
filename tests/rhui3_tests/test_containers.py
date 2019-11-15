@@ -18,6 +18,7 @@ import stitches
 from stitches.expect import Expect, ExpectFailed
 import yaml
 
+from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_client import RHUIManagerClient
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
@@ -58,6 +59,9 @@ class TestClient(object):
         except KeyError:
             raise nose.SkipTest("No test container defined for %s" % arch)
 
+        self.container_quay = doc["container_alt"]["quay"]
+        self.container_docker = doc["container_alt"]["docker"]
+
     @staticmethod
     def setup_class():
         '''
@@ -87,18 +91,34 @@ class TestClient(object):
         if not getenv("RHUISKIPSETUP"):
             RHUIManagerInstance.add_instance(RHUA, "loadbalancers", "hap01.example.com")
 
-    def test_04_add_container(self):
+    def test_04_add_containers(self):
         '''
-           add a container
+           add containers
         '''
+        # first, add a container from RH
+        # get credentials and enter them when prompted
+        credentials = Helpers.get_credentials(RHUA)
         RHUIManagerRepo.add_container(RHUA,
                                       self.container_name,
                                       self.container_id,
-                                      self.container_displayname)
+                                      self.container_displayname,
+                                      [""] + credentials)
+        # second, add a container from Quay
+        # get Quay credentials
+        credentials = Helpers.get_credentials(RHUA, "quay")
+        quay_url = Helpers.get_registry_url("quay")
+        RHUIManagerRepo.add_container(RHUA,
+                                      self.container_quay["name"],
+                                      credentials=[quay_url] + credentials)
+        # third, add a container from the Docker hub
+        docker_url = Helpers.get_registry_url("docker")
+        RHUIManagerRepo.add_container(RHUA,
+                                      self.container_docker["name"],
+                                      credentials=[docker_url])
 
-    def test_05_display_container(self):
+    def test_05_display_info(self):
         '''
-           check detailed information on the container
+           check detailed information on the RH container
         '''
         RHUIManagerRepo.check_detailed_information(RHUA,
                                                    [self.container_displayname,
@@ -108,12 +128,21 @@ class TestClient(object):
                                                    [True, None, True],
                                                    0)
 
-    def test_06_sync_container(self):
+    def test_06_sync_containers(self):
         '''
-           sync the container
+           sync the containers
         '''
-        RHUIManagerSync.sync_repo(RHUA, [self.container_displayname])
-        RHUIManagerSync.wait_till_repo_synced(RHUA, [self.container_displayname])
+        quay_repo_name = Util.safe_pulp_repo_name(self.container_quay["name"])
+        docker_repo_name = Util.safe_pulp_repo_name(self.container_docker["name"])
+
+        RHUIManagerSync.sync_repo(RHUA,
+                                  [self.container_displayname,
+                                   quay_repo_name,
+                                   docker_repo_name])
+        RHUIManagerSync.wait_till_repo_synced(RHUA,
+                                              [self.container_displayname,
+                                               quay_repo_name,
+                                               docker_repo_name])
 
     @staticmethod
     def test_07_create_cli_rpm():
@@ -140,26 +169,39 @@ class TestClient(object):
         '''
         if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
-        cmd = "docker pull %s" % self.container_id
-        # in some cases the container is synced but pulling fails mysteriously
-        # if that happens, try again in a minute
-        try:
-            Expect.expect_retval(CLI, cmd, timeout=30)
-        except ExpectFailed:
-            time.sleep(60)
-            Expect.expect_retval(CLI, cmd, timeout=30)
+        for container in [self.container_id,
+                          Util.safe_pulp_repo_name(self.container_quay["name"]),
+                          Util.safe_pulp_repo_name(self.container_docker["name"])]:
+            cmd = "docker pull %s" % container
+            # in some cases the container is synced but pulling fails mysteriously
+            # if that happens, try again in a minute
+            try:
+                Expect.expect_retval(CLI, cmd, timeout=30)
+            except ExpectFailed:
+                time.sleep(60)
+                Expect.expect_retval(CLI, cmd, timeout=30)
 
-    def test_10_check_image(self):
+    def test_10_check_images(self):
         '''
-           check if the container image is now available
+           check if the container images are now available
         '''
         if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
-        Expect.ping_pong(CLI, "docker images", "cds.example.com:5000/%s" % self.container_id)
+
+        quay_repo_name = Util.safe_pulp_repo_name(self.container_quay["name"])
+        docker_repo_name = Util.safe_pulp_repo_name(self.container_docker["name"])
+
+        _, stdout, _ = CLI.exec_command("docker images")
+        with stdout as output:
+            images = output.read().decode().splitlines()
+            repos_cli = [repo.split()[0].split("/")[1] \
+                         for repo in images if repo.startswith("cds.example.com")]
+            nose.tools.eq_(sorted(repos_cli),
+                           sorted([self.container_id, quay_repo_name, docker_repo_name]))
 
     def test_11_run_command(self):
         '''
-           run a test command (uname) in the container
+           run a test command (uname) in the RH container
         '''
         if not self.cli_supported:
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
@@ -167,7 +209,7 @@ class TestClient(object):
 
     def test_99_cleanup(self):
         '''
-           remove the container from the client and the RHUA, uninstall HAProxy and CDS
+           remove the containers from the client and the RHUA, uninstall HAProxy and CDS
         '''
         if self.cli_supported:
             Expect.expect_retval(CLI, "docker rm -f $(docker ps -a -f ancestor=%s -q)" % \

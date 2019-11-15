@@ -18,7 +18,8 @@ CFG_FILE = "~/.rhui3-automation.cfg"
 R3A_CFG = RawConfigParser()
 R3A_CFG.read(expanduser(CFG_FILE))
 
-PRS = argparse.ArgumentParser(description="Run the RHUI 3 Automation playbook to deploy RHUI.")
+PRS = argparse.ArgumentParser(description="Run the RHUI 3 Automation playbook to deploy RHUI.",
+                              formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 PRS.add_argument("inventory",
                  help="inventory file; typically hosts_*.cfg created by create-cf-stack.py",
                  nargs="?")
@@ -36,9 +37,9 @@ PRS.add_argument("--extra-files",
                  help="ZIP file with extra files",
                  default="~/RHUI/extra_files.zip",
                  metavar="file")
-PRS.add_argument("--rhaccount",
-                 help="configuration file with extra Red Hat account data",
-                 default="~/RHUI/rhaccount.sh",
+PRS.add_argument("--creds",
+                 help="configuration file with credentials",
+                 default="~/RHUI/credentials.conf",
                  metavar="file")
 PRS.add_argument("--tests",
                  help="RHUI test to run",
@@ -91,10 +92,10 @@ if exists(expanduser(ARGS.extra_files)):
 else:
     print("%s does not exist, ignoring" % ARGS.extra_files)
 
-if exists(expanduser(ARGS.rhaccount)):
-    EVARS += " rhaccount=%s" % ARGS.rhaccount
+if exists(expanduser(ARGS.creds)):
+    EVARS += " credentials=%s" % ARGS.creds
 else:
-    print("%s does not exist, ignoring" % ARGS.rhaccount)
+    print("%s does not exist, ignoring" % ARGS.creds)
 
 # see if the configuration contains templates for RHEL Beta baseurls;
 # if so, expand them
