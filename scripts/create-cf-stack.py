@@ -1,6 +1,7 @@
 #! /usr/bin/python -tt
 
 """ Create CloudFormation stack """
+from __future__ import print_function
 
 from paramiko import SSHClient
 from boto import cloudformation
@@ -569,10 +570,11 @@ for res in con_cf.describe_stack_resources(STACK_ID):
         instances.append(res.physical_resource_id)
 
 instances_detail = []
-hostsfile = tempfile.NamedTemporaryFile(delete=False)
-logging.debug("Created temporary file for /etc/hosts " + hostsfile.name)
-yamlfile = tempfile.NamedTemporaryFile(delete=False)
-logging.debug("Created temporary YAML config " + yamlfile.name)
+# [revised in November 2019] not necessary, not compatible with Python 3 (part 1/2)
+#hostsfile = tempfile.NamedTemporaryFile(delete=False)
+#logging.debug("Created temporary file for /etc/hosts " + hostsfile.name)
+#yamlfile = tempfile.NamedTemporaryFile(delete=False)
+#logging.debug("Created temporary YAML config " + yamlfile.name)
 for i in con_ec2.get_all_instances():
     for ii in  i.instances:
         if ii.id in instances:
@@ -608,14 +610,15 @@ for i in con_ec2.get_all_instances():
 
             instances_detail.append(details_dict)
 
-            if private_hostname and private_ip:
-                hostsfile.write(private_ip + "\t" + private_hostname + "\n")
-            if public_hostname and public_ip:
-                hostsfile.write(public_ip + "\t" + public_hostname + "\n")
-yamlconfig = {'Instances': sorted(instances_detail[:], lambda x, y: cmp(str(x['Name']), str(y['Name'])), reverse=True)}
-yamlfile.write(yaml.safe_dump(yamlconfig))
-yamlfile.close()
-hostsfile.close()
+# [revised in November 2019] not necessary, not compatible with Python 3 (part 2/2)
+#            if private_hostname and private_ip:
+#                hostsfile.write(private_ip + "\t" + private_hostname + "\n")
+#            if public_hostname and public_ip:
+#                hostsfile.write(public_ip + "\t" + public_hostname + "\n")
+#yamlconfig = {'Instances': sorted(instances_detail[:], lambda x, y: cmp(str(x['Name']), str(y['Name'])), reverse=True)}
+#yamlfile.write(yaml.safe_dump(yamlconfig))
+#yamlfile.close()
+#hostsfile.close()
 logging.debug(instances_detail)
 master_keys = []
 result = []
@@ -813,8 +816,9 @@ for instance in instances_detail:
         logging.debug('client %s sftp channel closed', instance['hostname'])
 
 # --- dump the result
-print '# --- instances created ---'
+print('# --- instances created ---')
 yaml.dump(result, sys.stdout)
+print('# --- stack data saved in %s ---' % outfile)
 # miserable hack --- cannot make paramiko not hang upon exit
 # [revised in February 2017] not necessary anymore
 #import os
