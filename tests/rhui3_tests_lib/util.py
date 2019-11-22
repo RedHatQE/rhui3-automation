@@ -27,11 +27,8 @@ class Util(object):
 
     @staticmethod
     def generate_gpg_key(connection,
-                         keytype="DSA",
-                         keysize="1024",
-                         keyvalid="0",
-                         realname="Key Owner",
-                         email="kowner@example.com",
+                         keydata="",
+                         ownerdata="",
                          comment="comment"):
         '''
         Generate GPG keypair
@@ -39,15 +36,21 @@ class Util(object):
         WARNING!!!
         It takes too long to wait for this operation to complete... use pre-created keys instead!
         '''
+        # keydata = [type, length, expire date]
+        # ownerdata = [real name, email]
+        if len(keydata) != 3:
+            keydata = ["DSA", "1024", "0"]
+        if len(ownerdata) != 2:
+            ownerdata = ["Key Owner", "kowner@example.com"]
         Expect.enter(connection, "cat > /tmp/gpgkey << EOF")
-        Expect.enter(connection, "Key-Type: " + keytype)
-        Expect.enter(connection, "Key-Length: " + keysize)
+        Expect.enter(connection, "Key-Type: " + keydata[0])
+        Expect.enter(connection, "Key-Length: " + keydata[1])
         Expect.enter(connection, "Subkey-Type: ELG-E")
-        Expect.enter(connection, "Subkey-Length: " + keysize)
-        Expect.enter(connection, "Name-Real: " + realname)
+        Expect.enter(connection, "Subkey-Length: " + keydata[1])
+        Expect.enter(connection, "Name-Real: " + ownerdata[0])
         Expect.enter(connection, "Name-Comment: " + comment)
-        Expect.enter(connection, "Name-Email: " + email)
-        Expect.enter(connection, "Expire-Date: " + keyvalid)
+        Expect.enter(connection, "Name-Email: " + ownerdata[1])
+        Expect.enter(connection, "Expire-Date: " + keydata[2])
         Expect.enter(connection, "%commit")
         Expect.enter(connection, "%echo done")
         Expect.enter(connection, "EOF")

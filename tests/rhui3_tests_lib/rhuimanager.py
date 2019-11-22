@@ -143,8 +143,8 @@ class RHUIManager(object):
             if val != "" and val not in skip_list:
                 selected_clean.append(val)
         if sorted(selected_clean) != sorted(value_list):
-            logging.debug("Selected: " + str(selected_clean))
-            logging.debug("Expected: " + str(value_list))
+            logging.debug("Selected: %s", selected_clean)
+            logging.debug("Expected: %s", value_list)
             raise ExpectFailed()
         Expect.enter(connection, "y")
 
