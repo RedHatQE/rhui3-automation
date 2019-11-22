@@ -16,6 +16,19 @@
     dest: /root/rhui3-automation
   tags: tests
 
+- name: install the patch utility
+  package: name=patch state=present
+  when: patch is defined
+  tags: tests
+
+- name: apply a patch (if supplied)
+  patch:
+    src:  "{{ patch }}"
+    basedir: /root/rhui3-automation
+    strip: 1
+  when: patch is defined
+  tags: tests
+
 - name: install bash-completion to simplify test execution
   package: name=bash-completion state=present
   tags: tests

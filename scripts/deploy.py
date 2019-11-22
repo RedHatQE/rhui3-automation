@@ -44,6 +44,9 @@ PRS.add_argument("--creds",
 PRS.add_argument("--tests",
                  help="RHUI test to run",
                  metavar="test name or category")
+PRS.add_argument("--patch",
+                 help="patch to apply to rhui3-automation",
+                 metavar="file")
 PRS.add_argument("--rhel7b",
                  help="RHEL 7 Beta baseurl or compose",
                  metavar="URL/compose")
@@ -112,6 +115,13 @@ if ARGS.rhel8b:
 
 if ARGS.tests:
     EVARS += " tests=%s" % ARGS.tests
+
+if ARGS.patch:
+    if exists(expanduser(ARGS.patch)):
+        EVARS += " patch=%s" % ARGS.patch
+    else:
+        print("--patch was specified but %s does not exist, exiting." % ARGS.patch)
+        sys.exit(1)
 
 # join the command and the extra variables
 CMD += EVARS + "'"

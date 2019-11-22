@@ -35,6 +35,8 @@ In addition, you need a ZIP file with the following files in the root of the arc
 
 The main and Atomic certificates must not be expired. Expiration is first checked for the "empty", "incompatible", and "partially invalid" certificates, and the tests that use them are skipped if the given certificate has already expired.
 
+If you're working on changes to rhui3-automation that aren't in the master branch and you'd like to apply them before installing rhui3-automation and running tests, you can supply a patch file with the changes.
+
 Lastly, in order for several test to be able to run, you need a file with valid Red Hat CCSP credentials and Quay.io credentials. The file must look like this:
 
 ```
@@ -55,7 +57,7 @@ Enter an appropriate encryption password when prompted.
 
 Usage
 --------
-You can include the test stage in a RHUI 3 deployment by providing the address of your test instance in the `[TEST]` section and the address of your client instances in the `[CLI]` and `[ATOMIC_CLI]` sections of the `hosts.cfg` file. Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the `--extra-vars` switch with the required ZIP file as a parameter of the `extra-files` option, the required credentials file as a parameter of the `credentials` option, and the `tests` variable with `all`, `client`, or a test name as its parameter; the test name is the part of the file name in the `rhui3_tests` directory between `test` and the extension. If the credentials file is encrypted, you will have to either provide the encryption password interactively or store it in a separate file (however, if someone reads that file, they will be able to read your Red Hat credentials, too, so be careful where you store the file).
+You can include the test stage in a RHUI 3 deployment by providing the address of your test instance in the `[TEST]` section and the address of your client instances in the `[CLI]` and `[ATOMIC_CLI]` sections of the `hosts.cfg` file. Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the `--extra-vars` switch with the required ZIP file as a parameter of the `extra-files` option, the required credentials file as a parameter of the `credentials` option, and the `tests` variable with `all`, `client`, or a test name as its parameter; the test name is the part of the file name in the `rhui3_tests` directory between `test` and the extension. If the credentials file is encrypted, you will have to either provide the encryption password interactively or store it in a separate file (however, if someone reads that file, they will be able to read your Red Hat credentials, too, so be careful where you store the file). To supply a patch file, use it as a parameter of the `patch` option.
 
 To install _and run the whole test suite_ as part of the initial deployment or after a completed deployment, use either the following command if you would like to enter the encryption password by hand:
 
