@@ -2,6 +2,11 @@
 
 from os.path import basename, join
 
+try:
+    from configparser import ConfigParser # Python 3+
+except ImportError:
+    from ConfigParser import ConfigParser # Python 2
+
 from stitches.expect import Expect
 
 class Helpers(object):
@@ -72,3 +77,91 @@ class Helpers(object):
                              "hash=`openssl x509 -hash -noout -in %s` && " % ca_file +
                              "rm -f %s /etc/pki/tls/certs/$hash.0" % ca_file)
         Expect.expect_retval(connection, "systemctl restart httpd")
+
+    @staticmethod
+    def get_credentials(connection, site="rh"):
+        '''
+        get the user name and password for the given site from the RHUA
+        '''
+        path = "/tmp/extra_rhui_files/credentials.conf"
+        creds_cfg = ConfigParser()
+        _, stdout, _ = connection.exec_command("cat %s" % path)
+        creds_cfg.readfp(stdout)
+        if not creds_cfg.has_section(site):
+            raise RuntimeError("section %s does not exist in %s" % (site, path))
+        if not creds_cfg.has_option(site, "username"):
+            raise RuntimeError("username does not exist inside %s in %s" % (site, path))
+        if not creds_cfg.has_option(site, "password"):
+            raise RuntimeError("password does not exist inside %s in %s" % (site, path))
+        credentials = [creds_cfg.get(site, "username"), creds_cfg.get(site, "password")]
+        return credentials
+
+    @staticmethod
+    def get_registry_url(site, connection=""):
+        """get the URL for the given container registry or for the saved one (use "default" then)"""
+        if site == "default":
+            cfg_file = "/etc/rhui/rhui-tools.conf"
+            rhuicfg = ConfigParser()
+            _, stdout, _ = connection.exec_command("cat %s" % cfg_file)
+            rhuicfg.readfp(stdout)
+            if not rhuicfg.has_option("docker", "docker_url"):
+                return None
+            return rhuicfg.get("docker", "docker_url")
+        urls = {"rh": "https://registry.redhat.io",
+                "quay": "https://quay.io",
+                "docker": "https://registry-1.docker.io"}
+        if site in urls:
+            return urls[site]
+        return None
+
+    @staticmethod
+    def set_registry_credentials(connection, site="rh", data="", backup=True):
+        """put container registry credentials into the RHUI configuration file"""
+        # if "site" isn't in credentials.conf, then "data" is supposed to be:
+        # [username, password, url], or just [url] if no authentication is to be used for "site";
+        # first get the RHUI config file
+        cfg_file = "/etc/rhui/rhui-tools.conf"
+        rhuicfg = ConfigParser()
+        _, stdout, _ = connection.exec_command("cat %s" % cfg_file)
+        rhuicfg.readfp(stdout)
+        # add the relevant config section if it's not there yet
+        if not rhuicfg.has_section("docker"):
+            rhuicfg.add_section("docker")
+        # then get the credentials
+        try:
+            credentials = Helpers.get_credentials(connection, site)
+            url = Helpers.get_registry_url(site)
+            rhuicfg.set("docker", "docker_url", url)
+            rhuicfg.set("docker", "docker_auth", "True")
+        except RuntimeError:
+            # the site isn't defined in the credentials file -> use the data passed to this method
+            if len(data) == 3:
+                rhuicfg.set("docker", "docker_url", data[2])
+                rhuicfg.set("docker", "docker_auth", "True")
+                credentials = data[:-1]
+            elif len(data) == 1:
+                rhuicfg.set("docker", "docker_url", data[0])
+                rhuicfg.set("docker", "docker_auth", "False")
+                credentials = False
+            else:
+                raise ValueError("the passed data is invalid")
+        # if credentials are known, add them into the configuration
+        if credentials:
+            rhuicfg.set("docker", "docker_username", credentials[0])
+            rhuicfg.set("docker", "docker_password", credentials[1])
+        # otherwise, make sure the options don't exists in the configuration
+        else:
+            rhuicfg.remove_option("docker", "docker_username")
+            rhuicfg.remove_option("docker", "docker_password")
+        # back up the original config file (unless prevented)
+        if backup:
+            Expect.expect_retval(connection, "cp -f %s %s.bak" % (cfg_file, cfg_file))
+        # save (rewrite) the configuration file with the newly added credentials
+        stdin, _, _ = connection.exec_command("cat > %s" % cfg_file)
+        rhuicfg.write(stdin)
+
+    @staticmethod
+    def restore_rhui_tools_conf(connection):
+        """restore the backup copy of the RHUI tools configuration file"""
+        cfg_file = "/etc/rhui/rhui-tools.conf"
+        Expect.expect_retval(connection, "mv -f %s.bak %s" % (cfg_file, cfg_file))

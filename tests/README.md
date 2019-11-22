@@ -35,32 +35,37 @@ In addition, you need a ZIP file with the following files in the root of the arc
 
 The main and Atomic certificates must not be expired. Expiration is first checked for the "empty", "incompatible", and "partially invalid" certificates, and the tests that use them are skipped if the given certificate has already expired.
 
-Lastly, in order for the subscription test to be able to run, you need a file with valid Red Hat credentials allowing access to RHUI. The file must look like this:
+Lastly, in order for several test to be able to run, you need a file with valid Red Hat CCSP credentials and Quay.io credentials. The file must look like this:
 
 ```
-SM_USERNAME=login
-SM_PASSWORD=password
+[rh]
+username=YOUR_RH_USERNAME
+password=YOUR_RH_PASSWORD
+
+[quay]
+username=YOUR_QUAY_USERNAME
+password=YOUR_QUAY_PASSWORD
 ```
 
-Replace `login` with your Red Hat login and `password` with your Red Hat password. Save the file in an appropriate location and give it an appropriate name; for example, `rhaccount.sh`. You can then keep the file this way if you are not worried that someone else could read it, or you can encrypt it using Ansible. To encrypt the file, use the following command in the directory holding the file:
+Set the user names and passwords. Save the file in an appropriate location and give it an appropriate name; for example, `credentials.conf`. You can then keep the file this way if you are not worried that someone else could read it, or you can encrypt it using Ansible. To encrypt the file, use the following command in the directory holding the file:
 
-`ansible-vault encrypt rhaccount.sh`
+`ansible-vault encrypt credentials.conf`
 
 Enter an appropriate encryption password when prompted.
 
 Usage
 --------
-You can include the test stage in a RHUI 3 deployment by providing the address of your test instance in the `[TEST]` section and the address of your client instances in the `[CLI]` and `[ATOMIC_CLI]` sections of the `hosts.cfg` file. Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the `--extra-vars` switch with the required ZIP file as a parameter of the `extra-files` option, the required credentials file as a parameter of the `rhaccount` option, and the `tests` variable with `all`, `client`, or a test name as its parameter; the test name is the part of the file name in the `rhui3_tests` directory between `test` and the extension. If the credentials file is encrypted, you will have to either provide the encryption password interactively or store it in a separate file (however, if someone reads that file, they will be able to read your Red Hat credentials, too, so be careful where you store the file).
+You can include the test stage in a RHUI 3 deployment by providing the address of your test instance in the `[TEST]` section and the address of your client instances in the `[CLI]` and `[ATOMIC_CLI]` sections of the `hosts.cfg` file. Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the `--extra-vars` switch with the required ZIP file as a parameter of the `extra-files` option, the required credentials file as a parameter of the `credentials` option, and the `tests` variable with `all`, `client`, or a test name as its parameter; the test name is the part of the file name in the `rhui3_tests` directory between `test` and the extension. If the credentials file is encrypted, you will have to either provide the encryption password interactively or store it in a separate file (however, if someone reads that file, they will be able to read your Red Hat credentials, too, so be careful where you store the file).
 
 To install _and run the whole test suite_ as part of the initial deployment or after a completed deployment, use either the following command if you would like to enter the encryption password by hand:
 
-`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip rhaccount=~/Path/To/rhaccount.sh tests=all" --ask-vault-pass`
+`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip credentials=~/Path/To/credentials.conf tests=all" --ask-vault-pass`
 
 Or the following command if you have stored the encryption password in a separate file and you only want to run the client tests:
 
-`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip rhaccount=~/Path/To/rhaccount.sh tests=client" --vault-password-file ~/Path/To/The/File/With/The/password`
+`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip credentials=~/Path/To/credentials.conf tests=client" --vault-password-file ~/Path/To/The/File/With/The/password`
 
-Beware, regardless of the command you use, the credentials file will be stored on the RHUA node, _unencrypted_, as `/tmp/extra_rhui_files/rhaccount.sh`.
+Beware, regardless of the command you use, the credentials file will be stored on the RHUA node, _unencrypted_, as `/tmp/extra_rhui_files/credentials.conf`.
 
 Provide any other optional variables described in the RHUI deployment Readme as needed.
 

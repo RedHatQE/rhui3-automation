@@ -66,6 +66,11 @@ container_rhel7:
         name: "rhel7-aarch64"
         id: "rhel7-arm64-from-rhui"
         displayname: "RHEL 7 ARM64"
+container_alt:
+    quay:
+        name: "pusher/oauth2_proxy"
+    docker:
+        name: "library/alpine"
 EUS_repos:
     6:
         id: "rhel-sap-hana-for-rhel-6-server-eus-rhui-rpms-6.7-x86_64"
