@@ -27,6 +27,9 @@ PRS.add_argument("--iso",
                  help="RHUI ISO file",
                  default="~/RHUI/RHUI.iso",
                  metavar="file")
+PRS.add_argument("--rhsm",
+                 help="use RHSM instead of a RHUI ISO",
+                 action="store_true")
 PRS.add_argument("--gluster-rpm",
                  help="rh-amazon-rhui-client-rhs30 RPM (if using GlusterFS)",
                  metavar="file")
@@ -37,7 +40,7 @@ PRS.add_argument("--extra-files",
                  help="ZIP file with extra files",
                  default="~/RHUI/extra_files.zip",
                  metavar="file")
-PRS.add_argument("--creds",
+PRS.add_argument("--credentials",
                  help="configuration file with credentials",
                  default="~/RHUI/credentials.conf",
                  metavar="file")
@@ -59,6 +62,9 @@ PRS.add_argument("--tags",
 PRS.add_argument("--skip-tags",
                  help="skip tasks tagged this way",
                  metavar="tags")
+PRS.add_argument("--dry-run",
+                 help="only construct and print the ansible-playbook command, do not run it",
+                 action="store_true")
 
 ARGS = PRS.parse_args()
 
@@ -70,15 +76,20 @@ if not exists(ARGS.inventory):
     print("%s does not exist." % ARGS.inventory)
     sys.exit(1)
 
-if not ARGS.iso or not exists(expanduser(ARGS.iso)):
-    print("You must supply a valid RHUI ISO file.")
-    sys.exit(1)
+if ARGS.rhsm:
+    if not exists(expanduser(ARGS.credentials)):
+        print("--rhsm was used but %s does not exist, exiting." % ARGS.credentials)
+        sys.exit(1)
+else:
+    if not exists(expanduser(ARGS.iso)):
+        print("--rhsm was not used and %s is not a RHUI ISO file, exiting." % ARGS.iso)
+        sys.exit(1)
 
 # start building the command
 CMD = "ansible-playbook -i %s deploy/site.yml --extra-vars '" % ARGS.inventory
 
 # start building the extra variables
-EVARS = "rhui_iso=%s" % ARGS.iso
+EVARS = "rhui_iso=%s" % ARGS.iso if not ARGS.rhsm else ""
 
 if ARGS.gluster_rpm:
     if exists(expanduser(ARGS.gluster_rpm)):
@@ -95,10 +106,10 @@ if exists(expanduser(ARGS.extra_files)):
 else:
     print("%s does not exist, ignoring" % ARGS.extra_files)
 
-if exists(expanduser(ARGS.creds)):
-    EVARS += " credentials=%s" % ARGS.creds
+if exists(expanduser(ARGS.credentials)):
+    EVARS += " credentials=%s" % ARGS.credentials
 else:
-    print("%s does not exist, ignoring" % ARGS.creds)
+    print("%s does not exist, ignoring" % ARGS.credentials)
 
 # see if the configuration contains templates for RHEL Beta baseurls;
 # if so, expand them
@@ -124,7 +135,7 @@ if ARGS.patch:
         sys.exit(1)
 
 # join the command and the extra variables
-CMD += EVARS + "'"
+CMD += EVARS.lstrip() + "'"
 
 # use/skip specific tags if requested
 if ARGS.tags:
@@ -133,6 +144,9 @@ if ARGS.tags:
 if ARGS.skip_tags:
     CMD += " --skip-tags %s" % ARGS.skip_tags
 
-# the command is now built; print it and then run it
-print("Running: %s" % CMD)
-system(CMD)
+# the command is now built; print it and then run it (unless in the dry-run mode)
+if ARGS.dry_run:
+    print("DRY RUN: would have run: %s" % CMD)
+else:
+    print("Running: %s" % CMD)
+    system(CMD)

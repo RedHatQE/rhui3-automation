@@ -9,13 +9,20 @@ from rhui3_tests_lib.helpers import Helpers
 class RHSMRHUI(object):
     """Subscription management for RHUI"""
     @staticmethod
-    def register_system(connection):
+    def register_system(connection, username="", password="", fail_if_registered=False):
         """register with RHSM"""
-        username, password = Helpers.get_credentials(connection)
+        # if username or password isn't specified, it will be obtained using
+        # the get_credentials method on the remote host -- only usable with the RHUA
+        # if the system is already registered, it will be unregistered first,
+        # unless fail_if_registered == True
+        if fail_if_registered and Helpers.is_registered(connection):
+            raise RuntimeError("The system is already registered.")
+        if not username or not password:
+            username, password = Helpers.get_credentials(connection)
         Expect.expect_retval(connection,
-                             "subscription-manager register --type=rhui " +
-                             "--username=%s --password=%s" % (username, password),
-                             timeout=40)
+                             "subscription-manager register --force --type rhui " +
+                             "--username %s --password %s" % (username, password),
+                             timeout=60)
 
     @staticmethod
     def attach_subscription(connection, sub):

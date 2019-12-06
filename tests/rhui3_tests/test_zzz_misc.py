@@ -4,10 +4,14 @@ from __future__ import print_function
 
 import json
 from os.path import basename
+import yaml
 
 import nose
 import stitches
 from stitches.expect import Expect
+
+from rhui3_tests_lib.helpers import Helpers
+from rhui3_tests_lib.subscription import RHSMRHUI
 
 RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 
@@ -17,6 +21,10 @@ RHUI_SERVICE_PIDFILES = ["/var/run/httpd/httpd.pid",
                          "/var/run/pulp/reserved_resource_worker-1.pid",
                          "/var/run/pulp/reserved_resource_worker-2.pid",
                          "/var/run/pulp/resource_manager.pid"]
+
+with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
+    CFG = yaml.load(configfile)
+    SUBSCRIPTION = CFG["subscriptions"]["RHUI"]
 
 def setup():
     '''
@@ -102,7 +110,11 @@ def test_07_check_migrate_py():
     '''
     # for RHBZ#1278954
     # the ISO was set up in /etc/fstab by Ansible, so let's reuse the defined mountpoint/directory
+    # (unless RHSM was used instead, in which case the ISO isn't available and this test will be
+    # skipped)
     mdir = "/tmp/iso"
+    if RHUA.recv_exit_status("test -d %s" % mdir):
+        raise nose.exc.SkipTest("The ISO doesn't exist")
     # mount it if not mounted already; shouldn't be, but you never know
     Expect.expect_retval(RHUA, "mountpoint %s || mount %s" % (mdir, mdir))
     Expect.expect_retval(RHUA, "grep DEFAULT_ENTITLEMENT %s/migrate/migrate.py" % mdir)
@@ -113,7 +125,14 @@ def test_08_qpid_linearstore():
         check if the qpid-cpp-server-linearstore package is available
     '''
     # for RHBZ#1702254
+    needs_registration = not Helpers.is_iso_installation(RHUA) and not Helpers.is_registered(RHUA)
+    if needs_registration:
+        RHSMRHUI.register_system(RHUA)
+        RHSMRHUI.attach_subscription(RHUA, SUBSCRIPTION)
+        RHSMRHUI.enable_rhui_repo(RHUA, False)
     Expect.expect_retval(RHUA, "yum list qpid-cpp-server-linearstore", timeout=30)
+    if needs_registration:
+        RHSMRHUI.unregister_system(RHUA)
 
 def teardown():
     '''

@@ -165,3 +165,14 @@ class Helpers(object):
         """restore the backup copy of the RHUI tools configuration file"""
         cfg_file = "/etc/rhui/rhui-tools.conf"
         Expect.expect_retval(connection, "mv -f %s.bak %s" % (cfg_file, cfg_file))
+
+    @staticmethod
+    def is_iso_installation(connection):
+        """return True if the remote uses a local (ISO based) yum repository, or False otherwise"""
+        yum_repo_file_from_iso = "/etc/yum.repos.d/rhui-local.repo"
+        return connection.recv_exit_status("test -f %s" % yum_repo_file_from_iso) == 0
+
+    @staticmethod
+    def is_registered(connection):
+        """return True if the remote host is registered with RHSM, or False otherwise"""
+        return connection.recv_exit_status("subscription-manager identity") == 0

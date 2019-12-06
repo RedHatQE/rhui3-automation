@@ -2,30 +2,29 @@ Requirements
 ---------------
 * [Ansible](http://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#latest-release-via-dnf-or-yum) version 2.8 and later.
 * Have enough machines running RHEL 7 ready - check the rest of Read Me for details on various RHUI setups.
-* Have RHUI3 ISO.
+* Have the latest RHUI 3 ISO or Red Hat CCSP credentials.
 
 Usage
 --------
 
-* Create a copy of the `hosts.cfg` file and put the addresses of your machines to it. (See [Configuration Samples](#configuration-samples).) Do _not_ edit the `hosts.cfg` file directly as that would prevent you from updating your git clone of rhui3-automation.
-* Run:
+* Run the [stack creation script](../scripts/README.md) to launch VMs and get an inventory file with information about the VMs.
+* Run the [deployment script](../scripts/deploy.py) to deploy RHUI on the VMs.
+
+Note that if you use `--rhel7b`, all RHEL 7 systems will get rebooted after the update
+to the given compose. Ditto for `--rhel8b`.
+This will allow a new kernel to boot, apps to load with a new glibc, etc.
+
+If you want to use Red Hat CCSP credentials instead of the ISO, the credentials file must look
+like this:
+
 ```
-ansible-playbook -i pathto/your_hosts.cfg deploy/site.yml  --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso"
-```
+[rh]
+username=YOUR_RH_USERNAME
+password=YOUR_RH_PASSWORD
+````
 
-Mind the mandatory extra variable `rhui_iso`
-
-Optional variables:
-
-- `common_custom_rpm`=~/Path/To/Your/rh-amazon-rhui-client-rhs30.rpm to setup Gluster
-- `rhel7_beta_baseurl`=URL to create a Yum repo file containing a RHEL 7 compose which wouldn't normally be available on RHEL 7 hosts
-- `rhel8_beta_baseurl`=URL to create a Yum repo file containing a RHEL 8 compose which wouldn't normally be available on RHEL 8 hosts; use the BaseOS repo URL here, the corresponding AppStream repo file will be created automatically
-- `upgrade_all_pkg`=True to update ALL packages (taking obsoletes into account) prior to RHUI installation. Mind that it might take more than several minutes. This will affect all the hosts except for Atomic
-
-Note that if you use `rhel7_beta_baseurl`, all RHEL 7 systems will get upgraded and rebooted automatically. Ditto for `rhel8_beta_baseurl`. This will allow a new kernel to boot, apps to load with a new glibc, etc.
-
-Tip: Instead or running `ansible-playbook` directly, and putting all the options together in the first place, you can take advantage of the [deployment script](../scripts/deploy.py), which is meant to be executed from the top directory of this project and only needs the necessary files to be available. See its help message for
-usage information. This script can also read templates for RHEL 7 or 8 Beta URLs from `~/.rhui3-automation.cfg`; the expected format is as follows:
+The deployment script can also read templates for RHEL 7 or 8 Beta URLs
+from `~/.rhui3-automation.cfg`; the expected format is as follows:
 
 ```
 [beta]
@@ -33,8 +32,8 @@ rhel7_template=http://host/path/%s/path/
 rhel8_template=http://host/path/%s/path/
 ```
 
-This is RHUI 3.1+ [Ansible](https://www.ansible.com) deployment automation.
-Managed roles:
+Managed roles
+-------------
 - Dns
 - Rhua
 - Cdses

@@ -3,7 +3,7 @@
 # tasks common to both the RHUA and CDS nodes
 # sync installation media and set up repos
 # variables:
-# - rhui_iso: path to the RHUI ISO to install from
+# - rhui_iso: path to the RHUI ISO to install from; if you don't supply this, be sure to supply the credentials file instead
 # - rhui_iso_gpgsigs: enable/disable RHUI ISO repo gpg signature checking (default: False; see the setup_package_repos script on the ISO
 
 - name: copy common custom rpm
@@ -18,14 +18,15 @@
   tags: rhui_nodes
 
 - name: upload the rhui iso
-  copy: src="{{ rhui_iso|mandatory }}" dest=/tmp/rhui.iso
+  copy: src="{{ rhui_iso }}" dest=/tmp/rhui.iso
   register: iso_sync
+  when: rhui_iso is defined
   tags: rhui_nodes
 
 - name: mount rhui iso
   mount: name=/tmp/iso fstype=iso9660 opts=loop,ro src=/tmp/rhui.iso state=mounted
   register: iso_mount
-  when: iso_sync is success
+  when: rhui_iso is defined and iso_sync is success
   tags: rhui_nodes
 
 - name: call setup_package_repos
@@ -33,12 +34,12 @@
            chdir=/tmp/iso 
            creates=/etc/yum.repos.d/rhui-local.repo
   register: setup_package_repos_result
-  when: iso_mount is success
+  when: rhui_iso is defined and iso_mount is success
   tags: rhui_nodes
 
 - name: umount rhui iso
   mount: name=/tmp/iso fstype=iso9660 opts=loop,ro src=/tmp/rhui.iso state=unmounted
-  when: iso_mount is success
+  when: rhui_iso is defined and iso_mount is success
   tags: rhui_nodes
 
 - name: prevent systemd-tmpfiles from deleting the iso and the mount directory
@@ -48,13 +49,48 @@
       x /tmp/rhui.iso
       x /tmp/iso
     create: yes
+  when: rhui_iso is defined
+  tags: rhui_nodes
+
+- name: register with RHSM
+  redhat_subscription:
+    state: present
+    username: "{{ lookup('ini', 'username section=rh file=' + credentials) }}"
+    password: "{{ lookup('ini', 'password section=rh file=' + credentials) }}"
+    consumer_type: rhui
+    pool: '^Red Hat Update Infrastructure'
+  when: rhui_iso is undefined and credentials is defined
+  tags: rhui_nodes
+
+- name: enable the RHSM repos required to install RHUI 3
+  rhsm_repository:
+    name: rhel-7-server-rhui-rpms,rhel-7-server-rhui-3-rpms,rh-gluster-3-for-rhel-7-server-rhui-rpms
+    purge: yes
+  register: setup_package_repos_result
+  when: rhui_iso is undefined and credentials is defined
+  tags: rhui_nodes
+
+- name: back up rh-amazon-rhui-client so it can be uninstalled now but installed again if needed
+  yum:
+    name: rh-amazon-rhui-client
+    state: latest
+    download_only: yes
+    download_dir: /root
+  when: rhui_iso is undefined and credentials is defined
+  tags: rhui_nodes
+
+- name: uninstall rh-amazon-rhui-client
+  yum:
+    name: rh-amazon-rhui-client
+    state: absent
+  when: rhui_iso is undefined and credentials is defined
   tags: rhui_nodes
 
 - name: perform repolist
   yum:
     disable_plugin: '*'
     disablerepo: '*'
-    enablerepo: local-rhui3
+    enablerepo: 'local-rhui3*,rhel-7-server-rhui-3-rpms*'
     list: available
   register: yum_repolist_result
   when: setup_package_repos_result is success

@@ -4,22 +4,30 @@ Setup of the RHUI 3 Test Framework
 
 Requirements
 ---------------
-Python 2 or 3. Tested on Python 2.7, and 3.6.
+* Have Python 2 or 3. Tested on Python 2.7 and 3.6.
+* Have the latest released RHUI 3 ISO. If you use an older ISO, you will get failures from the test
+cases that cover bug fixes or features from newer releases. Alternatively, you can supply Red Hat
+CCSP credentials so that RHUI packages can be installed from the Red Hat CDN.
 
-The latest released RHUI 3 ISO. If you use an older ISO, you will get failures from the test cases that cover bug fixes or features from newer releases.
+Note: if you supply the credentials to have the systems registered, remember to unregister
+the systems before you delete the stack to save available entitlements.
+You can do so by running `rhuiunregistersm` on the test machine.
+You can also run this anytime while using the stack.
+Should you need to register the systems again while the stack is active, run `rhuiregistersm`.
 
-RHUI deployment with the following hosts running RHEL 7:
+Environment
+---------------
+Run the [stack creation script](../scripts/README.md) to launch VMs and get an inventory file
+with information about the VMs; be sure to include:
+* one or more client machines
+* an Atomic client machine
+* a test machine
 
-* one RHUA instance
-* at least one CDS instance if using NFS, at least three if using Gluster
-* one HAProxy instance
-* one client instance; it can be running RHEL 6, 7, or 8, regadless of the RHEL version on the RHUA
-* one atomic client instance
-* one test instance; it can alternatively be running RHEL 8
+Deployment
+--------------
+Run the [deployment script](../scripts/deploy.py) to deploy RHUI on the VMs.
 
-See the [RHUI deployment readme file ](https://github.com/RedHatQE/rhui3-automation/blob/master/deploy/README.md) for details.
-
-In addition, you need a ZIP file with the following files in the root of the archive:
+You need a ZIP file with the following files in the root of the archive:
 
 * `rhcert.pem`, `rhcert_atomic.pem` — These must be valid Red Hat content certificates allowing access to the products that provide the repositories configured in `rhui3_tests/tested_repos.yaml`.
 * `rhcert_empty.pem` — This must be a Red Hat content certificate containing no entitlement.
@@ -33,11 +41,16 @@ In addition, you need a ZIP file with the following files in the root of the arc
 * `ANYTHING.tar` — These must be tarballs containing some packages and their `updateinfo.xml.gz` files. The contents will be used for updateinfo testing. Exact names are to be specified in `rhui3_tests/tested_repos.yaml`. One of them must also contain an uncompressed updateinfo file.
 * `legacy_ca.crt` — This must be a CA certificate taken from a different RHUI environment; ie. `/etc/pki/rhui/certs/entitlement-ca.crt`. The file will be used in legacy CA testing.
 
-The main and Atomic certificates must not be expired. Expiration is first checked for the "empty", "incompatible", and "partially invalid" certificates, and the tests that use them are skipped if the given certificate has already expired.
+The main and Atomic certificates must not be expired. Expiration is first checked for the "empty",
+"incompatible", and "partially invalid" certificates, and the tests that use them are skipped if
+the given certificate has already expired.
 
-If you're working on changes to rhui3-automation that aren't in the master branch and you'd like to apply them before installing rhui3-automation and running tests, you can supply a patch file with the changes.
+If you're working on changes to rhui3-automation that aren't in the master branch and you'd like to
+apply them before installing rhui3-automation and running tests, you can supply a patch file
+with the changes.
 
-Lastly, in order for several test to be able to run, you need a file with valid Red Hat CCSP credentials and Quay.io credentials. The file must look like this:
+Lastly, in order for several test to be able to run, you need a file with valid Red Hat CCSP
+credentials and Quay.io credentials. The file must look like this:
 
 ```
 [rh]
@@ -49,44 +62,36 @@ username=YOUR_QUAY_USERNAME
 password=YOUR_QUAY_PASSWORD
 ```
 
-Set the user names and passwords. Save the file in an appropriate location and give it an appropriate name; for example, `credentials.conf`. You can then keep the file this way if you are not worried that someone else could read it, or you can encrypt it using Ansible. To encrypt the file, use the following command in the directory holding the file:
-
-`ansible-vault encrypt credentials.conf`
-
-Enter an appropriate encryption password when prompted.
-
 Usage
 --------
-You can include the test stage in a RHUI 3 deployment by providing the address of your test instance in the `[TEST]` section and the address of your client instances in the `[CLI]` and `[ATOMIC_CLI]` sections of the `hosts.cfg` file. Alternatively, you can install and run the tests at any time after a RHUI 3 deployment by adding (or uncommenting) the `[TEST]`section and running `ansible-playbook` again. Either way, the `ansible-playbook` command line must contain the `--extra-vars` switch with the required ZIP file as a parameter of the `extra-files` option, the required credentials file as a parameter of the `credentials` option, and the `tests` variable with `all`, `client`, or a test name as its parameter; the test name is the part of the file name in the `rhui3_tests` directory between `test` and the extension. If the credentials file is encrypted, you will have to either provide the encryption password interactively or store it in a separate file (however, if someone reads that file, they will be able to read your Red Hat credentials, too, so be careful where you store the file). To supply a patch file, use it as a parameter of the `patch` option.
+To install and test RHUI, run:
 
-To install _and run the whole test suite_ as part of the initial deployment or after a completed deployment, use either the following command if you would like to enter the encryption password by hand:
+```
+./scripts/deploy.py hosts_ID.cfg --tests X
+```
 
-`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip credentials=~/Path/To/credentials.conf tests=all" --ask-vault-pass`
+Where _X_ can be one of:
 
-Or the following command if you have stored the encryption password in a separate file and you only want to run the client tests:
+* `all`: to run all RHUI tests
+* `client`: to run RHUI client tests
+* _name_: to run test\_name\_.py from the [rhui3\_tests](./rhui3\_tests) directory.
 
-`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --extra-vars "rhui_iso=~/Path/To/Your/RHUI.iso extra_files=~/Path/To/Your/file.zip credentials=~/Path/To/credentials.conf tests=client" --vault-password-file ~/Path/To/The/File/With/The/password`
+Note that it can take a few hours for all the test cases to run.
+If you only want to install the test machine, do not use the `--tests` argument.
 
-Beware, regardless of the command you use, the credentials file will be stored on the RHUA node, _unencrypted_, as `/tmp/extra_rhui_files/credentials.conf`.
+The test cases will be installed in the `/usr/share/rhui3_tests_lib/rhui3_tests/` directory
+and the libraries in the `/usr/lib/pythonVERSION/site-packages/rhui3_tests_lib/` directory
+on the TEST machine.
+The output of the tests will be stored in a local report file, which will also be available
+on the web. The file name and the URL will be printed by Ansible.
 
-Provide any other optional variables described in the RHUI deployment Readme as needed.
+If you now want to run the tests, or if you want to run them again, you have two options.
+Either use _Ansible_ again as follows:
 
-Note that it can take a few hours for all the test cases to run. If you only want to install the test machine, do not use the `tests` parameter among the extra variables on the command line.
-
-The test cases will be installed in the `/usr/share/rhui3_tests_lib/rhui3_tests/` directory and the libraries in the `/usr/lib/pythonVERSION/site-packages/rhui3_tests_lib/` directory on the TEST machine. The output of the tests will be stored in a local report file, which will also be available on the web. The file name and the URL will be printed by Ansible.
-
-If you now want to run the tests, or if you want to run them again, you have two options. Either use _Ansible_ again as follows:
-
-`ansible-playbook -i ~/pathto/hosts.cfg deploy/site.yml --tags run_tests --extra-vars tests=all`
+```
+./scripts/deploy.py hosts_ID.cfg --tests X --tags run_tests
+```
 
 Or log in to the TEST machine, become root, and run:
 
-`rhuitests all`
-
-Alternatively, you can run only the client tests while logged in to the system:
-
-`rhuitests client`
-
-Lastly, to run only a single test case, e.g. `test_XYZ.py`:
-
-`rhuitests XYZ`
+`rhuitests X`
