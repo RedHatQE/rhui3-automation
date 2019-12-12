@@ -190,6 +190,8 @@ class RHUIManager(object):
                                                   2)])
             if password_state == 1:
                 initial_password = Util.get_initial_password(connection)
+                if not initial_password:
+                    raise RuntimeError("Could not get the initial password rhui-manager password.")
                 Expect.enter(connection, "rhui-manager")
                 Expect.expect(connection, ".*RHUI Username:")
                 Expect.enter(connection, username)

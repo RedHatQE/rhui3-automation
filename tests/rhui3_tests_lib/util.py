@@ -129,20 +129,17 @@ class Util(object):
             Expect.expect_retval(connection, "tar -xzf" + tfile.name + ".tar.gz && ./install.sh")
 
     @staticmethod
-    def get_initial_password(connection, pwdfile="/etc/rhui-installer/answers.yaml"):
+    def get_initial_password(connection, answers_file="/etc/rhui-installer/answers.yaml"):
         '''
-        Read login password from file
-        @param pwdfile: file with the password (defaults to /etc/rhui-installer/answers.yaml)
+        Read rhui-manager password from the rhui-installer answers file
+        @param answers_file: the RHUI installation answers file with the password
         '''
-        tfile = tempfile.NamedTemporaryFile(delete=False)
-        tfile.close()
-        connection.sftp.get(pwdfile, tfile.name)
-        with open(tfile.name, 'r') as filed:
-            doc = yaml.load(filed)
-            password = doc["rhua"]["rhui_manager_password"]
-        if password[-1:] == '\n':
-            password = password[:-1]
-        return password
+        _, stdout, _ = connection.exec_command("cat %s" % answers_file)
+        try:
+            answers = yaml.load(stdout)
+            return answers["rhua"]["rhui_manager_password"]
+        except (KeyError, TypeError, yaml.scanner.ScannerError):
+            return None
 
     @staticmethod
     def get_rpm_details(rpmpath):
