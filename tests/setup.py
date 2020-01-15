@@ -8,7 +8,7 @@ from glob import glob
 
 from setuptools import setup
 
-REQUIREMENTS = ['nose>=1.3.0', 'pytoml', 'requests', 'stitches>=0.12']
+REQUIREMENTS = ['nose', 'pytoml', 'requests', 'stitches', 'xmltodict']
 
 DATAFILES = [('share/rhui3_tests_lib/rhui3_tests', glob('rhui3_tests/test_*.py')),
              ('/etc/rhui3_tests/', ['rhui3_tests/tested_repos.yaml']),
