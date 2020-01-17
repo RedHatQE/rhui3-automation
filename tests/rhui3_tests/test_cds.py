@@ -9,7 +9,7 @@ import re
 import logging
 import nose
 import stitches
-from stitches.expect import Expect
+from stitches.expect import CTRL_C, Expect
 
 from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhuimanager import RHUIManager
@@ -185,6 +185,40 @@ def test_13_delete_select_0():
     if cds_list:
         RHUIManagerInstance.delete_all(CONNECTION, "cds")
         raise AssertionError("The CDS list is not empty after the deletion attempt: %s." % cds_list)
+
+def test_14_verbose_reporting():
+    '''
+    check if a failure is reported properly (if puppet is verbose)
+    '''
+    # for RHBZ#1751378
+    # choose a random CDS and open port 443 on it, which will later prevent Apache from starting
+    cds = random.choice(CDS)
+    Expect.enter(cds, "ncat -l 443 --keep-open")
+    # try adding the CDS and check for the specific error message in the output
+    error_msg = "change from stopped to running failed"
+    RHUIManager.screen(CONNECTION, "cds")
+    Expect.enter(CONNECTION, "a")
+    Expect.expect(CONNECTION, "Hostname")
+    Expect.enter(CONNECTION, cds.hostname)
+    Expect.expect(CONNECTION, "Username")
+    Expect.enter(CONNECTION, "ec2-user")
+    Expect.expect(CONNECTION, "Absolute")
+    Expect.enter(CONNECTION, "/root/.ssh/id_rsa_rhua")
+    Expect.expect(CONNECTION, "Proceed")
+    Expect.enter(CONNECTION, "y")
+    state = Expect.expect_list(CONNECTION,
+                               [(re.compile(".*%s.*" % error_msg, re.DOTALL), 1),
+                                (re.compile(".*Aborting.*", re.DOTALL), 2),
+                                (re.compile(".*was successfully configured.*", re.DOTALL), 3)],
+                               timeout=180)
+    # quit rhui-manager, clean up, fail if the error message didn't appear
+    Expect.enter(CONNECTION, "q")
+    Expect.enter(cds, CTRL_C)
+    cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
+    if cds_list:
+        RHUIManagerInstance.delete_all(CONNECTION, "cds")
+    if state != 1:
+        raise AssertionError("The expected error message was not seen in rhui-manager's output.")
 
 def teardown():
     '''

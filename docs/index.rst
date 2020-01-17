@@ -18,6 +18,7 @@ Welcome to the RHUI 3 Test Plan!
    cds_hap_interop
    client_management
    cmdline
+   comps
    containers
    entitlements
    eus_cmd

@@ -117,3 +117,15 @@ updateinfo:
             test_package: "grinder_test_package"
             old_version: "2.0-1.fc14"
             errata: "RHEA-2013:9999"
+comps:
+    SAP:
+        name: "RHEL for SAP"
+        test_group: "SAP"
+        test_package: "sapconf"
+        test_langpack: "firefox firefox-langpack-%s"
+    Supplementary:
+        name: "Red Hat Enterprise Linux Supplementary"
+        test_group: "Java Browser"
+        test_group_mod: "Misc 2"
+        test_package: "java-1.8.0-ibm-plugin"
+        test_langpack: ""

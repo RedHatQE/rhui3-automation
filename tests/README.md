@@ -40,6 +40,7 @@ You need a ZIP file with the following files in the root of the archive:
 * `test_gpg_key` — This is the RHUI QE public GPG key (0x9F6E93A2).
 * `ANYTHING.tar` — These must be tarballs containing some packages and their `updateinfo.xml.gz` files. The contents will be used for updateinfo testing. Exact names are to be specified in `rhui3_tests/tested_repos.yaml`. One of them must also contain an uncompressed updateinfo file.
 * `legacy_ca.crt` — This must be a CA certificate taken from a different RHUI environment; ie. `/etc/pki/rhui/certs/entitlement-ca.crt`. The file will be used in legacy CA testing.
+* `NAME/comps.xml` — These must be package group repodata files for both repository NAMEs defined under `comps` in `rhui3_tests/tested_repos.yaml`. In addition, one of the repositories needs a file named `mod-comps.xml` with an additional group as defined in the same YAML file.
 
 The main and Atomic certificates must not be expired. Expiration is first checked for the "empty",
 "incompatible", and "partially invalid" certificates, and the tests that use them are skipped if

@@ -110,19 +110,21 @@ class Util(object):
             raise OSError("%s: not installed, could not remove" % (set(rpmlist) - set(installed)))
 
     @staticmethod
-    def install_pkg_from_rhua(rhua_connection, connection, pkgpath):
+    def install_pkg_from_rhua(rhua_connection, connection, pkgpath, allow_update=False):
         '''
         Transfer package from RHUA host to the instance and install it
         @param pkgpath: path to package on RHUA node
+        @param allow_update: allow an updated version/release to be installed; if not, `rpm' fails
         '''
         tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.close()
         rhua_connection.sftp.get(pkgpath, tfile.name)
         file_extension = os.path.splitext(pkgpath)[1]
         if file_extension == '.rpm':
+            option = "U" if allow_update else "i"
             connection.sftp.put(tfile.name, tfile.name + file_extension)
             os.unlink(tfile.name)
-            Expect.expect_retval(connection, "rpm -i " + tfile.name + file_extension)
+            Expect.expect_retval(connection, "rpm -%s %s%s" % (option, tfile.name, file_extension))
         else:
             connection.sftp.put(tfile.name, tfile.name + '.tar.gz')
             os.unlink(tfile.name)
@@ -177,13 +179,6 @@ class Util(object):
         with stdout as output:
             arch = output.read().decode().strip()
         return arch
-
-    @staticmethod
-    def wildcard(hostname):
-        """ Hostname wildcard """
-        hostname_particles = hostname.split('.')
-        hostname_particles[0] = "*"
-        return ".".join(hostname_particles)
 
     @staticmethod
     def esc_parentheses(name):
@@ -274,3 +269,12 @@ class Util(object):
         replace prohibited characters in repo names with safe ones (as per rhui-manager)
         '''
         return name.replace("/", "_").replace(".", "_")
+
+    @staticmethod
+    def mktemp_remote(connection, extension=""):
+        '''
+        create a temporary file on the remote host and return its path
+        '''
+        _, stdout, _ = connection.exec_command("mktemp /tmp/XXXX%s" % extension)
+        path = stdout.read().decode().strip()
+        return path

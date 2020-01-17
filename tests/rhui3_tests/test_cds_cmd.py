@@ -8,7 +8,7 @@ import random
 import logging
 import nose
 import stitches
-from stitches.expect import Expect
+from stitches.expect import CTRL_C, Expect
 
 from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhui_cmd import RHUICLI
@@ -251,9 +251,6 @@ def test_20_delete_unreachable():
     RHUICLI.add(CONNECTION, "cds", cds, unsafe=True)
     RHUICLI.delete(CONNECTION, "cds", [cds], force=True)
 
-    # clean up the SSH key
-    Expect.expect_retval(CONNECTION, "ssh-keygen -R %s" % cds)
-
 def test_21_check_cleanup():
     '''
     check if Apache was stopped and the remote file system unmounted on all CDSs
@@ -274,8 +271,31 @@ def test_21_check_cleanup():
 
     nose.tools.ok_(not errors, msg=errors)
 
+def test_22_verbose_reporting():
+    '''
+    check if a failure is reported properly (if puppet is run with --verbose)
+    '''
+    # for RHBZ#1751378
+    # choose a random CDS and open port 443 on it, which will later prevent Apache from starting
+    cds = random.choice(CDS)
+    Expect.enter(cds, "ncat -l 443 --keep-open")
+    # try adding the CDS and capture the output
+    error_msg = "change from stopped to running failed"
+    out = Util.mktemp_remote(CONNECTION)
+    cmd = "rhui cds add %s ec2-user /root/.ssh/id_rsa_rhua -u &> %s" % (cds.hostname, out)
+    CONNECTION.recv_exit_status(cmd, timeout=120)
+    # delete the CDS and free the port
+    RHUICLI.delete(CONNECTION, "cds", [cds.hostname], force=True)
+    Expect.enter(cds, CTRL_C)
+    # check if the failure is in the output
+    Expect.expect_retval(CONNECTION, "grep '%s' %s" % (error_msg, out))
+    Expect.expect_retval(CONNECTION, "rm -f %s" % out)
+
 def teardown():
     '''
     announce the end of the test run
     '''
+    # also clean up SSH keys left by rhui
+    for cds in CDS_HOSTNAMES:
+        Expect.expect_retval(CONNECTION, "ssh-keygen -R %s" % cds)
     print("*** Finished running %s. *** " % basename(__file__))

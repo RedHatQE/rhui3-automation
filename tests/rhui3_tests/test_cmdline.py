@@ -165,7 +165,8 @@ class TestCLI(object):
 
     def test_16_repo_info(self):
         '''verify that the repo name is part of the information about the specified repo ID'''
-        RHUIManagerCLI.repo_info(CONNECTION, self.yum_repo_ids[1], self.yum_repo_names[1])
+        info = RHUIManagerCLI.repo_info(CONNECTION, self.yum_repo_ids[1])
+        nose.tools.eq_(info["name"], self.yum_repo_names[1])
 
     def test_17_check_package_in_repo(self):
         '''check a random package in the repo'''

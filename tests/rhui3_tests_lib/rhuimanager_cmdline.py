@@ -106,13 +106,17 @@ class RHUIManagerCLI(object):
         nose.tools.assert_equal(repo_status, "Success")
 
     @staticmethod
-    def repo_info(connection, repo_id, repo_name):
+    def repo_info(connection, repo_id):
         '''
-        check if information about the given repo can be displayed
+        return a dictionary containing information about the given repo
         '''
-        Expect.ping_pong(connection,
-                         "rhui-manager repo info --repo_id " + repo_id,
-                         "Name: *" + Util.esc_parentheses(repo_name))
+        _, stdout, _ = connection.exec_command("rhui-manager repo info --repo_id %s" % repo_id)
+        all_lines = stdout.read().decode().splitlines()
+        if all_lines[0] == "repository %s was not found" % repo_id:
+            raise RuntimeError("Invalid repository ID.")
+        info_pair_list = [line.split(":", 1) for line in all_lines]
+        info_dict = {i[0].replace(" ", "").lower(): i[1].lstrip() for i in info_pair_list}
+        return info_dict
 
     @staticmethod
     def repo_create_custom(connection,
@@ -184,6 +188,16 @@ class RHUIManagerCLI(object):
         Expect.expect_retval(connection,
                              "rhui-manager repo add_errata " +
                              "--repo_id %s --updateinfo %s" % (repo_id, updateinfo),
+                             timeout=120)
+
+    @staticmethod
+    def repo_add_comps(connection, repo_id, comps):
+        '''
+        associate comps metadata with a repo
+        '''
+        Expect.expect_retval(connection,
+                             "rhui-manager repo add_comps " +
+                             "--repo_id %s --comps %s" % (repo_id, comps),
                              timeout=120)
 
     @staticmethod
