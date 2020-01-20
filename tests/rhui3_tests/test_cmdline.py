@@ -364,7 +364,7 @@ class TestCLI(object):
         reg_sub = RHUIManagerCLI.subscriptions_list(CONNECTION)
         nose.tools.ok_(reg_sub, msg="no subscription is registered")
         nose.tools.eq_(self.subscriptions["RHUI"],
-                       reg_sub.keys()[0],
+                       list(reg_sub.keys())[0],
                        msg="Expected subscription not registered in RHUI! Got: %s" % reg_sub)
 
     @staticmethod
