@@ -131,11 +131,11 @@ class Util(object):
             Expect.expect_retval(connection, "tar -xzf" + tfile.name + ".tar.gz && ./install.sh")
 
     @staticmethod
-    def get_initial_password(connection, answers_file="/etc/rhui-installer/answers.yaml"):
+    def get_initial_password(connection):
         '''
         Read rhui-manager password from the rhui-installer answers file
-        @param answers_file: the RHUI installation answers file with the password
         '''
+        answers_file = "/etc/rhui-installer/answers.yaml"
         _, stdout, _ = connection.exec_command("cat %s" % answers_file)
         try:
             answers = yaml.load(stdout)
