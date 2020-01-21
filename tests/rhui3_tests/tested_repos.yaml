@@ -49,8 +49,7 @@ CLI_repo2:
     path: "content/dist/rhel/rhui/atomic/7/7Server/x86_64/os"
 CLI_product:
     name: "Red Hat Enterprise Linux Atomic Host (RPMs) from RHUI"
-    repos_basename: "rhel-atomic-host-rhui-rpms"
-    arches: "x86_64"
+    id: "rhel-atomic-host-rhui-rpms-x86_64"
 subscriptions:
     RHUI: "Red Hat Update Infrastructure and RHEL Add-Ons for Providers"
     Atomic: "Red Hat Enterprise Linux Atomic Host for Certified Cloud and Service Providers (via Red Hat Update Infrastructure)"

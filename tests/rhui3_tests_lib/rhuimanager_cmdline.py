@@ -18,6 +18,28 @@ def _get_repo_status(connection, repo_name):
                                      "[^A-Z]*([A-Za-z]*).*", re.DOTALL))[0]
     return status
 
+def _ent_list(stdout):
+    '''
+    return a list of entitlements based on the given output (produced by cert upload/info)
+    '''
+    response = stdout.read().decode()
+    lines = map(str.lstrip, str(response).splitlines())
+    # there should be a header in the output, with status
+    try:
+        status = Util.uncolorify(lines[2])
+    except IndexError:
+        raise RuntimeError("Unexpected output: %s" % response)
+    if status == "Valid":
+        # only pay attention to lines containing products
+        # (which are non-empty lines below the header, without expriration and file name info)
+        entitlements = [line for line in lines[3:] if line and not line.startswith("Expiration")]
+        return entitlements
+    elif status == "Expired" or status == "No Red Hat entitlements found.":
+        # return an empty list
+        return []
+    # if we're here, there's another problem with the entitlements/output
+    raise RuntimeError("An error occurred: %s" % response)
+
 class CustomRepoAlreadyExists(Exception):
     '''
     Raised if a custom repo with this ID already exists
@@ -33,27 +55,36 @@ class RHUIManagerCLI(object):
     The RHUI manager command-line interface (shell commands to control the RHUA).
     '''
     @staticmethod
-    def cert_upload(connection, certificate_file, test_string):
+    def cert_upload(connection, cert="/tmp/extra_rhui_files/rhcert.pem"):
         '''
-        upload a new or updated Red Hat content certificate
+        upload a new or updated Red Hat content certificate and return a list of valid entitlements
         '''
-        Expect.ping_pong(connection,
-                         "rhui-manager cert upload --cert " + certificate_file,
-                         test_string)
+        # get the complete output and split it into (left-stripped) lines
+        _, stdout, _ = connection.exec_command("rhui-manager cert upload --cert %s" % cert)
+        return _ent_list(stdout)
 
     @staticmethod
     def cert_info(connection):
         '''
-        check the validity of the certificate
+        return a list of valid entitlements (if any)
         '''
-        Expect.ping_pong(connection, "rhui-manager cert info", "Valid")
+        _, stdout, _ = connection.exec_command("rhui-manager cert info")
+        return _ent_list(stdout)
 
     @staticmethod
-    def repo_unused(connection, repo):
+    def repo_unused(connection, by_repo_id=False):
         '''
-        check if a repo specified by its product name is available
+        return a list of repos that are entitled but not added to RHUI
         '''
-        Expect.ping_pong(connection, "rhui-manager repo unused", Util.esc_parentheses(repo))
+        # beware: if using by_repo_id, products will be followed by one or more repo IDs
+        # on separate lines that start with two spaces
+        cmd = "rhui-manager repo unused"
+        if by_repo_id:
+            cmd += " --by_repo_id"
+        _, stdout, _ = connection.exec_command(cmd)
+        response = stdout.read().decode().splitlines()
+        # return everything but the first four lines, which contain headers
+        return response[4:]
 
     @staticmethod
     def repo_add(connection, repo):
@@ -201,11 +232,12 @@ class RHUIManagerCLI(object):
                              timeout=120)
 
     @staticmethod
-    def packages_list(connection, repo_id, package):
+    def packages_list(connection, repo_id):
         '''
-        check if a package is present in the repo
+        return a list of packages present in the repo
         '''
-        Expect.ping_pong(connection, "rhui-manager packages list --repo_id " + repo_id, package)
+        _, stdout, _ = connection.exec_command("rhui-manager packages list --repo_id %s" % repo_id)
+        return stdout.read().decode().splitlines()
 
     @staticmethod
     def packages_upload(connection, repo_id, package):
@@ -218,7 +250,7 @@ class RHUIManagerCLI(object):
                          package + " successfully uploaded")
 
     @staticmethod
-    def repo_labels(connection):
+    def client_labels(connection):
         '''
         view repo labels in the RHUA; returns a list of the labels
         '''

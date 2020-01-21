@@ -29,8 +29,18 @@ logging.basicConfig(level=logging.DEBUG)
 
 CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
 CUSTOM_REPOS = ["my_custom_repo", "another_custom_repo", "yet_another_custom_repo"]
-CR_NAMES = ["", CUSTOM_REPOS[1].replace("_", " ").title()]
+CR_NAMES = [cr.replace("_", " ").title() for cr in CUSTOM_REPOS]
 ALT_CONTENT_SRC_NAME = "atomic_cs"
+CLI_CFG = ["test-rhui", "1.0", "0.1"]
+DATADIR = "/tmp/extra_rhui_files"
+KEYFILE = "test_gpg_key"
+TEST_RPM = "rhui-rpm-upload-test-1-1.noarch.rpm"
+OST_PKG = "ostree"
+CERTS = {"Atomic": "rhcert_atomic.pem",
+         "expired": "rhcert_expired.pem",
+         "incompatible": "rhcert_incompatible.pem",
+         "partial": "rhcert_partially_invalid.pem",
+         "empty": "rhcert_empty.pem"}
 TMPDIR = mkdtemp()
 AVAILABLE_POOL_FILE = join(TMPDIR, "available")
 REGISTERED_POOL_FILE = join(TMPDIR, "registered")
@@ -49,9 +59,7 @@ class TestCLI(object):
         self.yum_repo_ids = [doc["CLI_repo1"]["id"], doc["CLI_repo2"]["id"]]
         self.yum_repo_labels = [doc["CLI_repo1"]["label"], doc["CLI_repo2"]["label"]]
         self.yum_repo_paths = [doc["CLI_repo1"]["path"], doc["CLI_repo2"]["path"]]
-        self.product_name = doc["CLI_product"]["name"]
-        self.product_repos = ["%s-%s" % (doc["CLI_product"]["repos_basename"], arch)
-                              for arch in doc["CLI_product"]["arches"].split()]
+        self.product = doc["CLI_product"]
         self.subscriptions = doc["subscriptions"]
 
     @staticmethod
@@ -84,7 +92,7 @@ class TestCLI(object):
                                           display_name=CR_NAMES[1],
                                           legacy_md=True,
                                           protected=True,
-                                          gpg_public_keys="/tmp/extra_rhui_files/test_gpg_key")
+                                          gpg_public_keys="%s/%s" % (DATADIR, KEYFILE))
         # the third repo will also be protected
         RHUIManagerCLI.repo_create_custom(CONNECTION,
                                           repo_id=CUSTOM_REPOS[2],
@@ -118,24 +126,25 @@ class TestCLI(object):
         '''upload content to one of the custom repos'''
         RHUIManagerCLI.packages_upload(CONNECTION,
                                        CUSTOM_REPOS[0],
-                                       "/tmp/extra_rhui_files/rhui-rpm-upload-test-1-1.noarch.rpm")
+                                       "%s/%s" % (DATADIR, TEST_RPM))
 
     @staticmethod
     def test_07_check_package():
         '''check that the uploaded package is now in the repo'''
-        RHUIManagerCLI.packages_list(CONNECTION,
-                                     CUSTOM_REPOS[0],
-                                     "rhui-rpm-upload-test-1-1.noarch.rpm")
+        package_list = RHUIManagerCLI.packages_list(CONNECTION, CUSTOM_REPOS[0])
+        nose.tools.ok_(TEST_RPM in package_list,
+                       msg="%s not found in %s" % (TEST_RPM, package_list))
 
     @staticmethod
     def test_08_upload_certificate():
         '''upload the Atomic (the small) entitlement certificate'''
-        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_atomic.pem", "Atomic")
+        RHUIManagerCLI.cert_upload(CONNECTION, "%s/%s" % (DATADIR, CERTS["Atomic"]))
 
-    @staticmethod
-    def test_09_check_certificate_info():
+    def test_09_check_certificate_info(self):
         '''check certificate info for validity'''
-        RHUIManagerCLI.cert_info(CONNECTION)
+        ent_list = RHUIManagerCLI.cert_info(CONNECTION)
+        nose.tools.ok_(self.yum_repo_names[0] in ent_list,
+                       msg="%s not found in %s" % (self.yum_repo_names[0], ent_list))
 
     @staticmethod
     def test_10_check_certificate_exp():
@@ -144,7 +153,9 @@ class TestCLI(object):
 
     def test_11_check_unused_product(self):
         '''check if a repo is available'''
-        RHUIManagerCLI.repo_unused(CONNECTION, self.yum_repo_names[0])
+        unused_repos = RHUIManagerCLI.repo_unused(CONNECTION)
+        nose.tools.ok_(self.yum_repo_names[0] in unused_repos,
+                       msg="%s not found in %s" % (self.yum_repo_names[0], unused_repos))
 
     def test_12_add_rh_repo_by_id(self):
         '''add a Red Hat repo by its ID'''
@@ -170,11 +181,14 @@ class TestCLI(object):
 
     def test_17_check_package_in_repo(self):
         '''check a random package in the repo'''
-        RHUIManagerCLI.packages_list(CONNECTION, self.yum_repo_ids[1], "ostree")
+        package_list = RHUIManagerCLI.packages_list(CONNECTION, self.yum_repo_ids[1])
+        test_package_list = [package for package in package_list if package.startswith(OST_PKG)]
+        nose.tools.ok_(test_package_list,
+                       msg="no %s* in %s" % (OST_PKG, package_list))
 
     def test_18_list_labels(self):
         '''check repo labels'''
-        actual_labels = RHUIManagerCLI.repo_labels(CONNECTION)
+        actual_labels = RHUIManagerCLI.client_labels(CONNECTION)
         nose.tools.ok_(all(repo in actual_labels for repo in self.yum_repo_labels),
                        msg="%s not found in %s" % (self.yum_repo_labels, actual_labels))
 
@@ -184,7 +198,7 @@ class TestCLI(object):
         # the label is the repo ID in the case of custom repos
         RHUIManagerCLI.client_cert(CONNECTION,
                                    self.yum_repo_labels + [CUSTOM_REPOS[1]],
-                                   "atomic_and_my",
+                                   CLI_CFG[0],
                                    365,
                                    "/tmp")
 
@@ -194,18 +208,16 @@ class TestCLI(object):
         # for RHBZ#1628957
         sigs_expected = ["sha256", "sha256"]
         _, stdout, _ = CONNECTION.exec_command("openssl x509 -noout -text -in " +
-                                               "/tmp/atomic_and_my.crt")
-        with stdout as output:
-            cert_details = output.read().decode()
+                                               "/tmp/%s.crt" % CLI_CFG[0])
+        cert_details = stdout.read().decode()
         sigs_actual = re.findall("sha[0-9]+", cert_details)
         nose.tools.eq_(sigs_expected, sigs_actual)
 
     def test_21_check_stray_custom_repo(self):
         '''check if only the wanted repos are in the certificate'''
         repo_labels_expected = ["custom-%s" % CUSTOM_REPOS[1]] + self.yum_repo_labels
-        _, stdout, _ = CONNECTION.exec_command("cat /tmp/atomic_and_my-extensions.txt")
-        with stdout as output:
-            extensions = output.read().decode()
+        _, stdout, _ = CONNECTION.exec_command("cat /tmp/%s-extensions.txt" % CLI_CFG[0])
+        extensions = stdout.read().decode()
         repo_labels_actual = re.findall("|".join(["custom-.*"] + self.yum_repo_labels),
                                         extensions)
         nose.tools.eq_(sorted(repo_labels_expected), sorted(repo_labels_actual))
@@ -214,25 +226,22 @@ class TestCLI(object):
     def test_22_create_cli_config_rpm():
         '''create a client configuration RPM'''
         RHUIManagerCLI.client_rpm(CONNECTION,
-                                  ["/tmp/atomic_and_my.key", "/tmp/atomic_and_my.crt"],
-                                  ["atomic_and_my", "1.0", "0.1"],
+                                  ["/tmp/%s.key" % CLI_CFG[0], "/tmp/%s.crt" % CLI_CFG[0]],
+                                  CLI_CFG,
                                   "/tmp",
                                   [CUSTOM_REPOS[0]],
                                   "_none_")
         # check if the rpm was created
-        Expect.expect_retval(CONNECTION,
-                             "test -f /tmp/atomic_and_my-1.0/build/RPMS/noarch/" +
-                             "atomic_and_my-1.0-0.1.noarch.rpm")
+        conf_rpm = "/tmp/%s-%s/build/RPMS/noarch/%s-%s-%s.noarch.rpm" % tuple(CLI_CFG[:2] + CLI_CFG)
+        Expect.expect_retval(CONNECTION, "test -f %s" % conf_rpm)
 
     def test_23_ensure_gpgcheck_config(self):
         '''ensure that GPG checking is configured in the client configuration as expected'''
         # for RHBZ#1428756
         # we'll need the repo file in a few tests; fetch it now
-        remote_repo_file = "/tmp/atomic_and_my-1.0/build/BUILD/atomic_and_my-1.0/rh-cloud.repo"
+        remote_repo_file = "/tmp/%s-%s/build/BUILD/%s-%s/rh-cloud.repo" % tuple(CLI_CFG[:2] * 2)
         try:
-            Util.fetch(CONNECTION,
-                       remote_repo_file,
-                       YUM_REPO_FILE)
+            Util.fetch(CONNECTION, remote_repo_file, YUM_REPO_FILE)
         except IOError:
             raise RuntimeError("configuration not created, can't test it")
         yum_cfg = ConfigParser()
@@ -283,27 +292,33 @@ class TestCLI(object):
               "sed -n -e '/^paths:/,$p' | " + \
               "sed s/paths://"
         _, stdout, _ = CONNECTION.exec_command(cmd)
-        with stdout as output:
-            paths_actual_raw = output.read().decode().splitlines()
-            # the paths are indented, let's get rid of the formatting
-            paths_actual = [p.lstrip() for p in paths_actual_raw]
-            # the OSTree repo must not be included
-            paths_expected = [p for p in self.yum_repo_paths if "ostree" not in p]
-            nose.tools.eq_(paths_expected, paths_actual)
+        paths_actual_raw = stdout.read().decode().splitlines()
+        # the paths are indented, let's get rid of the formatting
+        paths_actual = [p.lstrip() for p in paths_actual_raw]
+        # the OSTree repo must not be included
+        paths_expected = [p for p in self.yum_repo_paths if OST_PKG not in p]
+        nose.tools.eq_(paths_expected, paths_actual)
 
     @staticmethod
     def test_27_upload_expired_cert():
         '''check expired certificate handling'''
-        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_expired.pem",
-                                   "The provided certificate is expired or invalid")
+        try:
+            RHUIManagerCLI.cert_upload(CONNECTION, "%s/%s" % (DATADIR, CERTS["expired"]))
+        except RuntimeError as err:
+            nose.tools.ok_("The provided certificate is expired or invalid" in str(err),
+                           msg="unexpected error: %s" % err)
 
     @staticmethod
     def test_28_upload_incompat_cert():
         '''check incompatible certificate handling'''
-        cert = "/tmp/extra_rhui_files/rhcert_incompatible.pem"
+        cert = "%s/%s" % (DATADIR, CERTS["incompatible"])
         if Util.cert_expired(CONNECTION, cert):
             raise nose.exc.SkipTest("The given certificate has already expired.")
-        RHUIManagerCLI.cert_upload(CONNECTION, cert, "does not contain any entitlements")
+        try:
+            RHUIManagerCLI.cert_upload(CONNECTION, cert)
+        except RuntimeError as err:
+            nose.tools.ok_("does not contain any entitlements" in str(err),
+                           msg="unexpected error: %s" % err)
 
     def test_29_register_system(self):
         '''register the system in RHSM, attach the RHUI subscription'''
@@ -436,12 +451,10 @@ class TestCLI(object):
         repolist = RHUIManagerCLI.repo_list(CONNECTION, True)
         nose.tools.ok_(not repolist, msg="can't continue as some repos remain: %s" % repolist)
         # try uploading the cert now
-        cert = "/tmp/extra_rhui_files/rhcert_partially_invalid.pem"
+        cert = "%s/%s" % (DATADIR, CERTS["partial"])
         if Util.cert_expired(CONNECTION, cert):
             raise nose.exc.SkipTest("The given certificate has already expired.")
-        RHUIManagerCLI.cert_upload(CONNECTION,
-                                   cert,
-                                   "Red Hat Enterprise Linux 7 Server from RHUI")
+        RHUIManagerCLI.cert_upload(CONNECTION, cert)
         # the RHUI log must contain the fact that an invalid path was found in the cert
         Expect.ping_pong(CONNECTION, "tail /root/.rhui/rhui.log", "Invalid entitlement path")
         RHUIManager.remove_rh_certs(CONNECTION)
@@ -450,31 +463,32 @@ class TestCLI(object):
     def test_44_upload_empty_cert():
         '''check that an empty certificate is rejected (no traceback)'''
         # for RHBZ#1497028
-        cert = "/tmp/extra_rhui_files/rhcert_empty.pem"
+        cert = "%s/%s" % (DATADIR, CERTS["empty"])
         if Util.cert_expired(CONNECTION, cert):
             raise nose.exc.SkipTest("The given certificate has already expired.")
-        RHUIManagerCLI.cert_upload(CONNECTION, cert, "does not contain any entitlements")
+        try:
+            RHUIManagerCLI.cert_upload(CONNECTION, cert)
+        except RuntimeError as err:
+            nose.tools.ok_("does not contain any entitlements" in str(err),
+                           msg="unexpected error: %s" % err)
 
     def test_45_multi_repo_product(self):
         '''check that all repos in a multi-repo product get added'''
         # for RHBZ#1651638
-        RHUIManagerCLI.cert_upload(CONNECTION, "/tmp/extra_rhui_files/rhcert_atomic.pem", "Atomic")
-        RHUIManagerCLI.repo_add(CONNECTION, self.product_name)
-        # wait a few seconds for the repos to actually get added
-        time.sleep(10)
+        RHUIManagerCLI.cert_upload(CONNECTION, "%s/%s" % (DATADIR, CERTS["Atomic"]))
+        RHUIManagerCLI.repo_add(CONNECTION, self.product["name"])
+        # wait a few seconds for the repo to actually get added
+        time.sleep(4)
         repolist_actual = RHUIManagerCLI.repo_list(CONNECTION, True).splitlines()
-        nose.tools.eq_(self.product_repos, repolist_actual)
+        nose.tools.eq_([self.product["id"]], repolist_actual)
         # ^ also checks if the repolist is sorted
 
     def test_99_cleanup(self):
         '''cleanup: remove repos and temporary files'''
-        # better to remove the product repos here; if the comparison in the previous test fails,
-        # the test can't continue and remove them
-        for repo in self.product_repos:
-            RHUIManagerCLI.repo_delete(CONNECTION, repo)
+        RHUIManagerCLI.repo_delete(CONNECTION, self.product["id"])
         RHUIManager.remove_rh_certs(CONNECTION)
-        Expect.ping_pong(CONNECTION, "rm -rf /tmp/atomic_and_my* ; " +
-                         "ls /tmp/atomic_and_my* 2>&1",
+        Expect.ping_pong(CONNECTION, "rm -rf /tmp/%s* ; " % CLI_CFG[0] +
+                         "ls /tmp/%s* 2>&1" % CLI_CFG,
                          "No such file or directory")
         Expect.ping_pong(CONNECTION, "rm -f /tmp/repos.std{out,err} ; " +
                          "ls /tmp/repos.std{out,err} 2>&1",

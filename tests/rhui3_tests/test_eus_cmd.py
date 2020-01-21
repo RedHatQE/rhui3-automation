@@ -97,9 +97,7 @@ class TestEUSCLI(object):
         upload an entitlement certificate
         '''
         if not getenv("RHUISKIPSETUP"):
-            RHUIManagerCLI.cert_upload(RHUA,
-                                       "/tmp/extra_rhui_files/rhcert.pem",
-                                       "Extended Update Support")
+            RHUIManagerCLI.cert_upload(RHUA)
 
     def test_05_add_repo(self):
         '''
