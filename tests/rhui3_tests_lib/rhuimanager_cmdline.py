@@ -23,7 +23,7 @@ def _ent_list(stdout):
     return a list of entitlements based on the given output (produced by cert upload/info)
     '''
     response = stdout.read().decode()
-    lines = map(str.lstrip, str(response).splitlines())
+    lines = list(map(str.lstrip, str(response).splitlines()))
     # there should be a header in the output, with status
     try:
         status = Util.uncolorify(lines[2])

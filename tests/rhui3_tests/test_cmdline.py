@@ -481,14 +481,13 @@ class TestCLI(object):
         time.sleep(4)
         repolist_actual = RHUIManagerCLI.repo_list(CONNECTION, True).splitlines()
         nose.tools.eq_([self.product["id"]], repolist_actual)
-        # ^ also checks if the repolist is sorted
 
     def test_99_cleanup(self):
         '''cleanup: remove repos and temporary files'''
         RHUIManagerCLI.repo_delete(CONNECTION, self.product["id"])
         RHUIManager.remove_rh_certs(CONNECTION)
         Expect.ping_pong(CONNECTION, "rm -rf /tmp/%s* ; " % CLI_CFG[0] +
-                         "ls /tmp/%s* 2>&1" % CLI_CFG,
+                         "ls /tmp/%s* 2>&1" % CLI_CFG[0],
                          "No such file or directory")
         Expect.ping_pong(CONNECTION, "rm -f /tmp/repos.std{out,err} ; " +
                          "ls /tmp/repos.std{out,err} 2>&1",

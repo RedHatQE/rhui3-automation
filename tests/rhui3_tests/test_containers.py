@@ -214,7 +214,10 @@ class TestClient(object):
         if self.cli_supported:
             Expect.expect_retval(CLI, "docker rm -f $(docker ps -a -f ancestor=%s -q)" % \
                                  self.container_id)
-            Expect.expect_retval(CLI, "docker rmi %s" % self.container_id)
+            for container in [self.container_id,
+                              Util.safe_pulp_repo_name(self.container_quay["name"]),
+                              Util.safe_pulp_repo_name(self.container_docker["name"])]:
+                Expect.expect_retval(CLI, "docker rmi %s" % container)
             Util.remove_rpm(CLI, [CONF_RPM_NAME])
             Util.restart_if_present(CLI, "docker")
         Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % CONF_RPM_NAME)

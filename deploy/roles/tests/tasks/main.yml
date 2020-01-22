@@ -33,6 +33,11 @@
   package: name=bash-completion state=present
   tags: tests
 
+- name: install python3-setuptools if RHEL 8
+  package: name=python3-setuptools state=present
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8
+  tags: tests
+
 - name: install pip
   shell: if grep -q 'release 8' /etc/redhat-release; then easy_install-3.6 --prefix /usr pip; else easy_install pip; fi
   tags: tests
