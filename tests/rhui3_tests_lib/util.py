@@ -110,25 +110,34 @@ class Util(object):
             raise OSError("%s: not installed, could not remove" % (set(rpmlist) - set(installed)))
 
     @staticmethod
-    def install_pkg_from_rhua(rhua_connection, connection, pkgpath, allow_update=False):
+    def install_pkg_from_rhua(rhua_connection, target_connection, pkgpath, allow_update=False):
         '''
-        Transfer package from RHUA host to the instance and install it
-        @param pkgpath: path to package on RHUA node
-        @param allow_update: allow an updated version/release to be installed; if not, `rpm' fails
+        Transfer a package from the RHUA to the target node and install it there.
         '''
-        tfile = tempfile.NamedTemporaryFile(delete=False)
-        tfile.close()
-        rhua_connection.sftp.get(pkgpath, tfile.name)
-        file_extension = os.path.splitext(pkgpath)[1]
-        if file_extension == '.rpm':
+        # the package can be an RPM file to install/update using rpm -- typically a RHUI client
+        # configuration RPM,
+        # or it can be a gzipped tarball -- typically an Atomic client configuration package
+        supported_extensions = {"RPM": ".rpm", "tar": ".tar.gz"}
+        target_file_name = "/tmp/%s" % os.path.basename(pkgpath)
+        if pkgpath.endswith(supported_extensions["RPM"]):
             option = "U" if allow_update else "i"
-            connection.sftp.put(tfile.name, tfile.name + file_extension)
-            os.unlink(tfile.name)
-            Expect.expect_retval(connection, "rpm -%s %s%s" % (option, tfile.name, file_extension))
+            cmd = "rpm -%s %s" % (option, target_file_name)
+        elif pkgpath.endswith(supported_extensions["tar"]):
+            cmd = "tar xzf %s && ./install.sh" % target_file_name
         else:
-            connection.sftp.put(tfile.name, tfile.name + '.tar.gz')
-            os.unlink(tfile.name)
-            Expect.expect_retval(connection, "tar -xzf" + tfile.name + ".tar.gz && ./install.sh")
+            raise ValueError("%s has an unsupported file extension. Supported extensions are: %s" %\
+                             (pkgpath, list(supported_extensions.values())))
+
+        local_file = tempfile.NamedTemporaryFile(delete=False)
+        local_file.close()
+
+        rhua_connection.sftp.get(pkgpath, local_file.name)
+        target_connection.sftp.put(local_file.name, target_file_name)
+
+        Expect.expect_retval(target_connection, cmd)
+
+        os.unlink(local_file.name)
+        Expect.expect_retval(target_connection, "rm -f %s" % target_file_name)
 
     @staticmethod
     def get_initial_password(connection):
