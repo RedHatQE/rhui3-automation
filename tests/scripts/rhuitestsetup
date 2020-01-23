@@ -30,3 +30,5 @@ try:
     RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", HA)
 except InstanceAlreadyExistsError:
     print("Already added, never mind.")
+
+print("To make client tests skip these steps, run: export RHUISKIPSETUP=1")
