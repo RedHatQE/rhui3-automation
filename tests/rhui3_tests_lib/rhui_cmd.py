@@ -19,8 +19,7 @@ class RHUICLI(object):
         '''
         _validate_node_type(node_type)
         _, stdout, _ = connection.exec_command("rhui %s list" % node_type)
-        with stdout as output:
-            lines = output.read().decode()
+        lines = stdout.read().decode()
         nodes = [line.split(":")[1].strip() for line in lines.splitlines() if "Hostname:" in line]
         return nodes
 

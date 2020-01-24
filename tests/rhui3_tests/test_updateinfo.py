@@ -185,15 +185,13 @@ class TestClient(object):
                                          "/tmp/extra_rhui_files/%s/updateinfo.xml.gz " % \
                                          self.test["repo_id"] +
                                          "| sort -u")
-        with stdout as output:
-            orig_errata = output.read().decode().splitlines()
+        orig_errata = stdout.read().decode().splitlines()
 
         _, stdout, _ = CLI.exec_command("zgrep -o '%s' " % errata_pattern +
                                         "%s/*updateinfo.xml.gz " % \
                                         cache +
                                         "| sort -u")
-        with stdout as output:
-            processed_errata = output.read().decode().splitlines()
+        processed_errata = stdout.read().decode().splitlines()
         nose.tools.eq_(orig_errata, processed_errata)
 
     def test_13_uncompressed_xml(self):

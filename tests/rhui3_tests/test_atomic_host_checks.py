@@ -46,8 +46,7 @@ def test_01_check_version():
 
     # determine the latest version on the Atomic host
     _, stdout, _ = AH_CON.exec_command("atomic host status -j")
-    with stdout as output:
-        ah_data = json.load(output)
+    ah_data = json.load(stdout)
     actual_version = ah_data["deployments"][0]["version"]
     # sometimes a respin is made and then another element is added to the version
     # (e.g. 7.7.1.1)

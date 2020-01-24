@@ -23,8 +23,7 @@ class Sos(object):
         _, stdout, _ = connection.exec_command("sosreport -o rhui --batch | " +
                                                "grep -A1 '^Your sosreport' | " +
                                                "tail -1")
-        with stdout as output:
-            location = output.read().decode().strip()
+        location = stdout.read().decode().strip()
         return location
 
     @staticmethod
@@ -39,9 +38,8 @@ class Sos(object):
         # while the given filelist contains actual paths like /etc/pulp/repo_auth.conf
         pattern = "^.*/rhui-debug[^/]+"
         _, stdout, _ = connection.exec_command("tar tf %s" % archive)
-        with stdout as output:
-            archive_filelist_raw = output.read().decode().splitlines()
-            archive_filelist = [re.sub(pattern, "", path) for path in archive_filelist_raw]
-            missing_files = [f for f in filelist if f not in archive_filelist]
-            nose.tools.ok_(not missing_files,
-                           msg="Not found in the archive: %s" % missing_files)
+        archive_filelist_raw = stdout.read().decode().splitlines()
+        archive_filelist = [re.sub(pattern, "", path) for path in archive_filelist_raw]
+        missing_files = [f for f in filelist if f not in archive_filelist]
+        nose.tools.ok_(not missing_files,
+                       msg="Not found in the archive: %s" % missing_files)

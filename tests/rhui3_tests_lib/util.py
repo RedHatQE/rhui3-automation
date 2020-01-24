@@ -171,8 +171,7 @@ class Util(object):
         get RHEL X.Y version (dict with two integers representing the major and minor version)
         '''
         _, stdout, _ = connection.exec_command(r"egrep -o '[0-9]+\.[0-9]+' /etc/redhat-release")
-        with stdout as output:
-            version = output.read().decode().strip().split(".")
+        version = stdout.read().decode().strip().split(".")
         try:
             version_dict = {"major": int(version[0]), "minor": int(version[1])}
             return version_dict
@@ -185,8 +184,7 @@ class Util(object):
         get machine architecture; note that ARM64 is presented as aarch64.
         '''
         _, stdout, _ = connection.exec_command("arch")
-        with stdout as output:
-            arch = output.read().decode().strip()
+        arch = stdout.read().decode().strip()
         return arch
 
     @staticmethod
@@ -226,9 +224,8 @@ class Util(object):
         return a list of RPM files in the directory
         '''
         _, stdout, _ = connection.exec_command("cd %s && ls -w1 *.rpm" % directory)
-        with stdout as output:
-            rpms = output.read().decode().splitlines()
-            return rpms
+        rpms = stdout.read().decode().splitlines()
+        return rpms
 
     @staticmethod
     def restart_if_present(connection, service):

@@ -53,8 +53,7 @@ def test_02_repo_remove_missing():
     '''
     # for RHBZ#1489113
     _, stdout, _ = RHUA.exec_command("cat /etc/pulp/server/plugins.conf.d/yum_importer.json")
-    with stdout as cfgfile:
-        cfg = json.load(cfgfile)
+    cfg = json.load(stdout)
     nose.tools.ok_("remove_missing" in cfg, msg="'remove_missing' is not in the configuration")
     nose.tools.ok_(cfg["remove_missing"], msg="'remove_missing' is not enabled")
 
@@ -68,15 +67,13 @@ def test_03_restart_services_script():
     # use 0 if a PID file doesn't exist (the service isn't running)
     _, stdout, _ = RHUA.exec_command("for pidfile in %s; do cat $pidfile || echo 0; done" % \
                                      " ".join(RHUI_SERVICE_PIDFILES))
-    with stdout as output:
-        old_pids = list(map(int, output.read().decode().splitlines()))
+    old_pids = list(map(int, stdout.read().decode().splitlines()))
     # restart
     Expect.expect_retval(RHUA, "rhui-services-restart", timeout=30)
     # fetch new service PIDs
     _, stdout, _ = RHUA.exec_command("for pidfile in %s; do cat $pidfile || echo 0; done" % \
                                      " ".join(RHUI_SERVICE_PIDFILES))
-    with stdout as output:
-        new_pids = list(map(int, output.read().decode().splitlines()))
+    new_pids = list(map(int, stdout.read().decode().splitlines()))
     # the new PIDs must differ and mustn't be 0, which would mean the pidfile couldn't be read
     # (which would mean the service didn't (re)start)
     for i in range(len(RHUI_SERVICE_PIDFILES)):

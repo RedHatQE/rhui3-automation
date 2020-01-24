@@ -32,8 +32,7 @@ class RHSMRHUI(object):
         # (or a substring with one or more wildcards)
         _, stdout, _ = connection.exec_command("subscription-manager list --available " +
                                                "--matches '%s' --pool-only 2>&1" % sub)
-        with stdout as output:
-            pool = output.read().decode().strip()
+        pool = stdout.read().decode().strip()
         if not re.match(r"^[0-9a-f]+$", pool):
             raise RuntimeError("Unable to fetch the pool ID for '%s'. Got: '%s'." % (sub, pool))
         # attach the pool

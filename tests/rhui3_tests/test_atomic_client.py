@@ -191,8 +191,7 @@ class TestClient(object):
         '''
         if self.ah_exists:
             _, stdout, _ = ATOMIC_CLI.exec_command("cat /etc/containers/registries.conf")
-            with stdout as cfgfile:
-                cfg = pytoml.load(cfgfile)
+            cfg = pytoml.load(stdout)
             nose.tools.ok_("cds.example.com:5000" in cfg["registries"]["search"]["registries"],
                            msg="unexpected configuration: %s" % cfg)
 

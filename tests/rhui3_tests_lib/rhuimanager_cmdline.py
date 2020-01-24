@@ -118,8 +118,7 @@ class RHUIManagerCLI(object):
         if delimiter:
             cmd += " --delimiter %s" % delimiter
         _, stdout, _ = connection.exec_command(cmd)
-        with stdout as output:
-            response = output.read().decode().strip()
+        response = stdout.read().decode().strip()
         return response
 
     @staticmethod
@@ -255,8 +254,7 @@ class RHUIManagerCLI(object):
         view repo labels in the RHUA; returns a list of the labels
         '''
         _, stdout, _ = connection.exec_command("rhui-manager client labels")
-        with stdout as output:
-            labels = output.read().decode().splitlines()
+        labels = stdout.read().decode().splitlines()
         return labels
 
     @staticmethod
@@ -348,8 +346,7 @@ class RHUIManagerCLI(object):
         if poolonly:
             cmd += " --pool-only"
         _, stdout, _ = connection.exec_command(cmd)
-        with stdout as output:
-            subs = output.read().decode().splitlines()
+        subs = stdout.read().decode().splitlines()
         # if "ESC" and some control characters are included, then RHBZ#1577052 has regressed
         # if only pool IDs are requested, return their list as read from the output;
         # otherwise, create and return a dict with subscription names and corresponding pool IDs

@@ -179,8 +179,7 @@ class TestClient(object):
         sigs_expected = ["sha256", "sha256"]
         _, stdout, _ = CONNECTION.exec_command("openssl x509 -noout -text -in " +
                                                "/root/test_ent_cli.crt")
-        with stdout as output:
-            cert_details = output.read().decode()
+        cert_details = stdout.read().decode()
         sigs_actual = re.findall("sha[0-9]+", cert_details)
         nose.tools.eq_(sigs_expected, sigs_actual)
 

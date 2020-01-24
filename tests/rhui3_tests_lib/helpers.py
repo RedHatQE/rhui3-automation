@@ -28,10 +28,9 @@ class Helpers(object):
     def cds_in_haproxy_cfg(connection, cds):
         """check if the CDS is present in the HAProxy configuration"""
         _, stdout, _ = connection.exec_command("cat /etc/haproxy/haproxy.cfg")
-        with stdout as output:
-            cfg = output.read().decode()
-            return "server %s %s:5000 check" % (cds, cds) in cfg and \
-                   "server %s %s:443 check" % (cds, cds) in cfg
+        cfg = stdout.read().decode()
+        return "server %s %s:5000 check" % (cds, cds) in cfg and \
+               "server %s %s:443 check" % (cds, cds) in cfg
 
     @staticmethod
     def check_service(connection, service):

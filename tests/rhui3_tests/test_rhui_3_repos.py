@@ -29,16 +29,14 @@ def _check_rpms():
     min_count = 150
     # first fetch repodata
     _, stdout, _ = CONNECTION.exec_command(cmd + "repomd.xml")
-    with stdout as output:
-        repomd_xml = output.read().decode()
-        primary_xml_gz_path = re.findall("[0-9a-f]+-primary.xml.gz", repomd_xml)[0]
+    repomd_xml = stdout.read().decode()
+    primary_xml_gz_path = re.findall("[0-9a-f]+-primary.xml.gz", repomd_xml)[0]
     # now fetch package info, uncompressed & filtered on the RHUA, paths on separate lines
     # (not fetching the compressed or uncompressed data as it's not decode()able)
     _, stdout, _ = CONNECTION.exec_command(cmd + primary_xml_gz_path +
                                            " | zegrep -o '%s'" % rpm_link_pattern +
                                            " | sed 's/href=\"//'")
-    with stdout as output:
-        rpm_paths = output.read().decode().splitlines()
+    rpm_paths = stdout.read().decode().splitlines()
     # get just package file names
     rpms = [basename(rpm) for rpm in rpm_paths]
     # check the number of RPMs
@@ -69,8 +67,7 @@ def _check_listing(major, min_eus, max_eus):
     listings_expected = [str(major + i * .1) for i in range(min_eus, max_eus + 1)]
     listings_expected.append("%sServer" % major)
     _, stdout, _ = CONNECTION.exec_command(cmd)
-    with stdout as output:
-        listings_actual = output.read().decode().splitlines()
+    listings_actual = stdout.read().decode().splitlines()
     nose.tools.eq_(listings_expected, listings_actual)
 
 def setup():

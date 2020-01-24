@@ -192,12 +192,11 @@ class TestClient(object):
         docker_repo_name = Util.safe_pulp_repo_name(self.container_docker["name"])
 
         _, stdout, _ = CLI.exec_command("docker images")
-        with stdout as output:
-            images = output.read().decode().splitlines()
-            repos_cli = [repo.split()[0].split("/")[1] \
-                         for repo in images if repo.startswith("cds.example.com")]
-            nose.tools.eq_(sorted(repos_cli),
-                           sorted([self.container_id, quay_repo_name, docker_repo_name]))
+        images = stdout.read().decode().splitlines()
+        repos_cli = [repo.split()[0].split("/")[1] \
+                     for repo in images if repo.startswith("cds.example.com")]
+        nose.tools.eq_(sorted(repos_cli),
+                       sorted([self.container_id, quay_repo_name, docker_repo_name]))
 
     def test_11_run_command(self):
         '''
