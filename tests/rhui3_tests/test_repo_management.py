@@ -180,7 +180,8 @@ class TestRepo(object):
 
     def test_11_delete_one_repo(self):
         '''remove the Red Hat repo'''
-        RHUIManagerRepo.delete_repo(RHUA, [self.yum_repo_name + ".*"])
+        RHUIManagerRepo.delete_repo(RHUA,
+                                    [Util.format_repo(self.yum_repo_name, self.yum_repo_version)])
         repo_list = RHUIManagerRepo.list(RHUA)
         nose.tools.ok_(Util.format_repo(self.yum_repo_name, self.yum_repo_version) not in repo_list,
                        msg="The repo wasn't removed. Actual repolist: %s" % repo_list)

@@ -51,11 +51,11 @@ class RHUIManager(object):
         '''
         for value in value_list:
             match = Expect.match(connection, re.compile(r".*-\s+([0-9]+)\s*:[^\n]*\s+" +
-                                                        Util.esc_parentheses(value) +
+                                                        re.escape(value) +
                                                         r"\s*\n.*for more commands:.*", re.DOTALL))
             Expect.enter(connection, match[0])
             match = Expect.match(connection, re.compile(r".*x\s+([0-9]+)\s*:[^\n]*\s+" +
-                                                        Util.esc_parentheses(value) +
+                                                        re.escape(value) +
                                                         r"\s*\n.*for more commands:.*", re.DOTALL))
             Expect.enter(connection, "l")
         Expect.enter(connection, "c")

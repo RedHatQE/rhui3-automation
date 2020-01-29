@@ -70,7 +70,8 @@ class TestSync(object):
 
     def test_99_cleanup(self):
         '''remove the RH repo and cert'''
-        RHUIManagerRepo.delete_repo(RHUA, [self.yum_repo_name + ".*"])
+        RHUIManagerRepo.delete_repo(RHUA,
+                                    [Util.format_repo(self.yum_repo_name, self.yum_repo_version)])
         RHUIManager.remove_rh_certs(RHUA)
 
     @staticmethod

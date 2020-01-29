@@ -17,9 +17,8 @@ def _get_repo_status(connection, reponame):
     '''
     RHUIManager.screen(connection, "sync")
     Expect.enter(connection, "dr")
-    reponame_quoted = Util.esc_parentheses(reponame)
     res = Expect.match(connection,
-                       re.compile(".*" + reponame_quoted + r"\s*\r\n([^\n]*)\r\n.*",
+                       re.compile(r".*%s\s*\r\n([^\n]*)\r\n.*" % re.escape(reponame),
                                   re.DOTALL), [1], 60)[0]
     connection.cli.exec_command("killall -s SIGINT rhui-manager")
     res = Util.uncolorify(res)

@@ -189,14 +189,6 @@ class Util(object):
         return arch
 
     @staticmethod
-    def esc_parentheses(name):
-        '''
-        helper method to escape parentheses so they can be safely used inside
-        regular expressions in Expect methods
-        '''
-        return name.replace("(", r"\(").replace(")", r"\)")
-
-    @staticmethod
     def format_repo(name, version="", kind=""):
         '''
         helper method to put together a repo name, version, and kind

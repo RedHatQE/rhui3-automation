@@ -13,9 +13,8 @@ def _get_repo_status(connection, repo_name):
     get the status of the given repository
     '''
     Expect.enter(connection, "rhui-manager status")
-    status = Expect.match(connection,
-                          re.compile(".*" + Util.esc_parentheses(repo_name) +
-                                     "[^A-Z]*([A-Za-z]*).*", re.DOTALL))[0]
+    status = Expect.match(connection, re.compile(".*%s[^A-Z]*([A-Za-z]*).*" % re.escape(repo_name),
+                                                 re.DOTALL))[0]
     return status
 
 def _ent_list(stdout):
