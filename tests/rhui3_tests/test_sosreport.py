@@ -9,9 +9,9 @@ from os.path import basename, join
 from shutil import rmtree
 from tempfile import mkdtemp
 
-import stitches
 from stitches.expect import Expect
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
@@ -23,19 +23,20 @@ TMPDIR = mkdtemp()
 SOSREPORT_LOCATION_RHUA = join(TMPDIR, "sosreport_location_rhua")
 SOSREPORT_LOCATION_CDS = join(TMPDIR, "sosreport_location_cds")
 
-CONNECTION_RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-CONNECTION_CDS = stitches.Connection("cds01.example.com", "root", "/root/.ssh/id_rsa_test")
+CONNECTION_RHUA = RHUA = ConMgr.connect()
+CONNECTION_CDS = ConMgr.connect(ConMgr.get_cds_hostnames()[0])
 
+CDS_LB = ConMgr.get_cds_lb_hostname()
 WANTED_FILES_RHUA = ["/etc/rhui-installer/answers.yaml",
                      "/etc/rhui/rhui-tools.conf",
                      "/root/.rhui/rhui.log",
                      "/var/log/kafo/configuration.log",
                      "/var/log/rhui-subscription-sync.log"]
 WANTED_FILES_CDS = ["/etc/httpd/conf.d/03-crane.conf",
-                    "/etc/httpd/conf.d/25-cds.example.com.conf",
+                    "/etc/httpd/conf.d/25-%s.conf" % CDS_LB,
                     "/etc/pulp/",
-                    "/var/log/httpd/cds.example.com_access_ssl.log",
-                    "/var/log/httpd/cds.example.com_error_ssl.log"]
+                    "/var/log/httpd/%s_access_ssl.log" % CDS_LB,
+                    "/var/log/httpd/%s_error_ssl.log" % CDS_LB]
 
 CMD_RHUA = "rhui-manager status"
 CMD_CDS = "ls -lR /var/lib/rhui/remote_share"
@@ -54,7 +55,7 @@ def test_00_rhui_init():
     '''
     #  use initial_run first to ensure we're logged in to rhui-manager
     RHUIManager.initial_run(CONNECTION_RHUA)
-    RHUIManagerInstance.add_instance(CONNECTION_RHUA, "cds", "cds01.example.com")
+    RHUIManagerInstance.add_instance(CONNECTION_RHUA, "cds")
     # can't use expect_retval as the exit code can be 0 or 1 (sync is configured or unconfigured)
     Expect.ping_pong(CONNECTION_RHUA,
                      "rhui-subscription-sync ; echo ACK",
@@ -122,7 +123,7 @@ def test_99_cleanup():
                      "ls " + sosreport_file + "* 2>&1",
                      "No such file or directory")
     rmtree(TMPDIR)
-    RHUIManagerInstance.delete(CONNECTION_RHUA, "cds", ["cds01.example.com"])
+    RHUIManagerInstance.delete_all(CONNECTION_RHUA, "cds")
 
 def teardown():
     '''

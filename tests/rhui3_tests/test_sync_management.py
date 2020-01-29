@@ -6,9 +6,9 @@ from os.path import basename
 
 import logging
 import nose
-import stitches
 import yaml
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
 from rhui3_tests_lib.rhuimanager_sync import RHUIManagerSync
@@ -17,7 +17,7 @@ from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
-CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+RHUA = ConMgr.connect()
 
 class TestSync(object):
     '''
@@ -46,32 +46,32 @@ class TestSync(object):
 
     def test_01_setup(self):
         '''log in to rhui-manager, upload RH cert, add a repo to sync '''
-        RHUIManager.initial_run(CONNECTION)
-        entlist = RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
+        RHUIManager.initial_run(RHUA)
+        entlist = RHUIManagerEntitlements.upload_rh_certificate(RHUA)
         nose.tools.assert_not_equal(len(entlist), 0)
-        RHUIManagerRepo.add_rh_repo_by_repo(CONNECTION, [Util.format_repo(self.yum_repo_name,
-                                                                          self.yum_repo_version,
-                                                                          self.yum_repo_kind)])
+        RHUIManagerRepo.add_rh_repo_by_repo(RHUA, [Util.format_repo(self.yum_repo_name,
+                                                                    self.yum_repo_version,
+                                                                    self.yum_repo_kind)])
 
     def test_02_sync_repo(self):
         '''sync a RH repo '''
-        RHUIManagerSync.sync_repo(CONNECTION, [Util.format_repo(self.yum_repo_name,
-                                                                self.yum_repo_version)])
+        RHUIManagerSync.sync_repo(RHUA, [Util.format_repo(self.yum_repo_name,
+                                                          self.yum_repo_version)])
 
     def test_03_check_sync_started(self):
         '''ensure that the sync started'''
-        RHUIManagerSync.check_sync_started(CONNECTION, [Util.format_repo(self.yum_repo_name,
-                                                                         self.yum_repo_version)])
+        RHUIManagerSync.check_sync_started(RHUA, [Util.format_repo(self.yum_repo_name,
+                                                                   self.yum_repo_version)])
 
     def test_04_wait_till_repo_synced(self):
         '''wait until the repo is synced'''
-        RHUIManagerSync.wait_till_repo_synced(CONNECTION, [Util.format_repo(self.yum_repo_name,
-                                                                            self.yum_repo_version)])
+        RHUIManagerSync.wait_till_repo_synced(RHUA, [Util.format_repo(self.yum_repo_name,
+                                                                      self.yum_repo_version)])
 
     def test_99_cleanup(self):
         '''remove the RH repo and cert'''
-        RHUIManagerRepo.delete_repo(CONNECTION, [self.yum_repo_name + ".*"])
-        RHUIManager.remove_rh_certs(CONNECTION)
+        RHUIManagerRepo.delete_repo(RHUA, [self.yum_repo_name + ".*"])
+        RHUIManager.remove_rh_certs(RHUA)
 
     @staticmethod
     def teardown_class():

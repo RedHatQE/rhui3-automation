@@ -4,17 +4,17 @@
 from __future__ import print_function
 
 import argparse
-import stitches
 from stitches.expect import ExpectFailed
 import yaml
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.subscription import RHSMRHUI
 from rhui3_tests_lib.util import Util
 
-RHUA_HOSTNAME = "rhua.example.com"
-CDS_HOSTNAMES = Util.get_cds_hostnames()
-HA_HOSTNAME = "hap01.example.com"
+RHUA_HOSTNAME = ConMgr.get_rhua_hostname()
+CDS_HOSTNAMES = ConMgr.get_cds_hostnames()
+HA_HOSTNAMES = ConMgr.get_haproxy_hostnames()
 
 with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
     CFG = yaml.load(configfile)
@@ -28,8 +28,8 @@ PRS.add_argument("--force",
 ARGS = PRS.parse_args()
 
 print("Registering the nodes.")
-for hostname in [RHUA_HOSTNAME] + CDS_HOSTNAMES + [HA_HOSTNAME]:
-    CONNECTION = stitches.Connection(hostname, "root", "/root/.ssh/id_rsa_test")
+for hostname in [RHUA_HOSTNAME] + CDS_HOSTNAMES + HA_HOSTNAMES:
+    CONNECTION = ConMgr.connect(hostname)
     # uninstall the AWS repo configuration package (if installed) as it won't be needed anymore
     # (the same repo IDs in RHSM and AWS would confuse the Amazon ID plug-in, which would barf)
     Util.remove_amazon_rhui_conf_rpm(CONNECTION)

@@ -2,6 +2,7 @@
 import re
 from rhui3_tests_lib import screenitem
 from rhui3_tests_lib import lineparser
+from rhui3_tests_lib.conmgr import SUDO_USER_NAME, SUDO_USER_KEY
 
 class Instance(screenitem.ScreenItem):
     """A CDS and HAProxy attributes container"""
@@ -13,8 +14,8 @@ class Instance(screenitem.ScreenItem):
 
     def __init__(self,
             host_name=None,
-            user_name="ec2-user",
-            ssh_key_path="/root/.ssh/id_rsa_rhua",
+            user_name=SUDO_USER_NAME,
+            ssh_key_path=SUDO_USER_KEY,
         ):
         self.host_name = host_name
         self.user_name = user_name

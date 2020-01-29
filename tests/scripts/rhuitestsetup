@@ -3,31 +3,30 @@
 
 from __future__ import print_function
 
-import stitches
-
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, InstanceAlreadyExistsError
 
-CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-CDS = "cds01.example.com"
-HA = "hap01.example.com"
+RHUA = ConMgr.connect()
+CDS_HOSTNAME = ConMgr.get_cds_hostnames()[0]
+HA_HOSTNAME = ConMgr.get_haproxy_hostnames()[0]
 
 print("Logging in to RHUI.")
-RHUIManager.initial_run(CONNECTION)
+RHUIManager.initial_run(RHUA)
 
 print("Uploading an entitlement certificate.")
-RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
+RHUIManagerEntitlements.upload_rh_certificate(RHUA)
 
-print("Adding a CDS (%s)." % CDS)
+print("Adding a CDS (%s)." % CDS_HOSTNAME)
 try:
-    RHUIManagerInstance.add_instance(CONNECTION, "cds", CDS)
+    RHUIManagerInstance.add_instance(RHUA, "cds")
 except InstanceAlreadyExistsError:
     print("Already added, never mind.")
 
-print("Adding an HAProxy load balancer (%s)." % HA)
+print("Adding an HAProxy load balancer (%s)." % HA_HOSTNAME)
 try:
-    RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", HA)
+    RHUIManagerInstance.add_instance(RHUA, "loadbalancers")
 except InstanceAlreadyExistsError:
     print("Already added, never mind.")
 

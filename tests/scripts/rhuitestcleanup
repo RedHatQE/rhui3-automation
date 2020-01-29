@@ -3,33 +3,32 @@
 
 from __future__ import print_function
 
-import stitches
-
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, NoSuchInstance
 from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
 
-CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-CDS = "cds01.example.com"
-HA = "hap01.example.com"
+RHUA = ConMgr.connect()
+CDS_HOSTNAME = ConMgr.get_cds_hostnames()[0]
+HA_HOSTNAME = ConMgr.get_haproxy_hostnames()[0]
 
 print("Removing entitlement certificates.")
-RHUIManager.remove_rh_certs(CONNECTION)
+RHUIManager.remove_rh_certs(RHUA)
 
 print("Unregistering the CDS.")
 try:
-    RHUIManagerInstance.delete(CONNECTION, "cds", [CDS])
+    RHUIManagerInstance.delete(RHUA, "cds", [CDS_HOSTNAME])
 except NoSuchInstance:
     print("Not registered, never mind.")
 
 print("Unregistering the HAProxy load balancer.")
 try:
-    RHUIManagerInstance.delete(CONNECTION, "loadbalancers", [HA])
+    RHUIManagerInstance.delete(RHUA, "loadbalancers", [HA_HOSTNAME])
 except NoSuchInstance:
     print("Not registered, never mind.")
 
 print("Deleting leftover repositories (if there are any).")
-if RHUIManagerRepo.list(CONNECTION):
-    RHUIManagerRepo.delete_all_repos(CONNECTION)
+if RHUIManagerRepo.list(RHUA):
+    RHUIManagerRepo.delete_all_repos(RHUA)
 else:
     print("There are none, never mind.")

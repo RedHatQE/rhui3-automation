@@ -10,19 +10,20 @@ import json
 import logging
 import nose
 import requests
-import stitches
+
+from rhui3_tests_lib.conmgr import ConMgr
 
 logging.basicConfig(level=logging.DEBUG)
 
-AH = "atomiccli.example.com"
+AH = ConMgr.get_atomic_cli_hostname()
 try:
     socket.gethostbyname(AH)
     AH_EXISTS = True
+    AH_CON = ConMgr.connect(AH)
+    DOC = "https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux_atomic_host/" + \
+          "7/html/release_notes/overview"
 except socket.error:
     AH_EXISTS = False
-AH_CON = stitches.Connection(AH, "root", "/root/.ssh/id_rsa_test")
-DOC = "https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux_atomic_host/" + \
-      "7/html/release_notes/overview"
 VERSION_STRING = "page-next.*Red Hat Enterprise Linux Atomic Host ([0-9.]*)"
 
 def setup():

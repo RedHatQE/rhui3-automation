@@ -14,10 +14,10 @@ import time
 
 import logging
 import nose
-import stitches
 from stitches.expect import Expect, ExpectFailed
 import yaml
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_client import RHUIManagerClient
@@ -28,12 +28,12 @@ from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
-RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+RHUA = ConMgr.connect()
 # To make this script communicate with a client machine different from cli01.example.com, run:
 # export RHUICLI=hostname
 # in your shell before running this script, replacing "hostname" with the actual client host name.
 # This allows for multiple client machines in one stack.
-CLI = stitches.Connection(getenv("RHUICLI", "cli01.example.com"), "root", "/root/.ssh/id_rsa_test")
+CLI = ConMgr.connect(getenv("RHUICLI", ConMgr.get_cli_hostnames()[0]))
 
 CONF_RPM_NAME = "containers-rhui"
 CONF_RPM_PATH = "/tmp/%s-1/build/RPMS/noarch/%s-1-1ui.noarch.rpm" % (CONF_RPM_NAME, CONF_RPM_NAME)
@@ -81,7 +81,7 @@ class TestClient(object):
             add a CDS
         '''
         if not getenv("RHUISKIPSETUP"):
-            RHUIManagerInstance.add_instance(RHUA, "cds", "cds01.example.com")
+            RHUIManagerInstance.add_instance(RHUA, "cds")
 
     @staticmethod
     def test_03_add_hap():
@@ -89,7 +89,7 @@ class TestClient(object):
             add an HAProxy Load-balancer
         '''
         if not getenv("RHUISKIPSETUP"):
-            RHUIManagerInstance.add_instance(RHUA, "loadbalancers", "hap01.example.com")
+            RHUIManagerInstance.add_instance(RHUA, "loadbalancers")
 
     def test_04_add_containers(self):
         '''
@@ -122,8 +122,9 @@ class TestClient(object):
         '''
         RHUIManagerRepo.check_detailed_information(RHUA,
                                                    [self.container_displayname,
-                                                    "https://cds.example.com/pulp/docker/%s/" % \
-                                                    self.container_id],
+                                                    "https://%s/pulp/docker/%s/" % \
+                                                    (ConMgr.get_cds_lb_hostname(),
+                                                     self.container_id)],
                                                    [False],
                                                    [True, None, True],
                                                    0)
@@ -193,9 +194,9 @@ class TestClient(object):
 
         _, stdout, _ = CLI.exec_command("docker images")
         images = stdout.read().decode().splitlines()
-        repos_cli = [repo.split()[0].split("/")[1] \
-                     for repo in images if repo.startswith("cds.example.com")]
-        nose.tools.eq_(sorted(repos_cli),
+        images_cli = [image.split()[0].split("/")[1] \
+                     for image in images if image.startswith(ConMgr.get_cds_lb_hostname())]
+        nose.tools.eq_(sorted(images_cli),
                        sorted([self.container_id, quay_repo_name, docker_repo_name]))
 
     def test_11_run_command(self):
@@ -222,8 +223,8 @@ class TestClient(object):
         Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % CONF_RPM_NAME)
         RHUIManagerRepo.delete_all_repos(RHUA)
         if not getenv("RHUISKIPSETUP"):
-            RHUIManagerInstance.delete(RHUA, "loadbalancers", ["hap01.example.com"])
-            RHUIManagerInstance.delete(RHUA, "cds", ["cds01.example.com"])
+            RHUIManagerInstance.delete_all(RHUA, "loadbalancers")
+            RHUIManagerInstance.delete_all(RHUA, "cds")
 
     @staticmethod
     def teardown_class():

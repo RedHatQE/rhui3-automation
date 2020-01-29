@@ -17,11 +17,11 @@ from tempfile import mkdtemp
 import logging
 import nose
 import requests
-import stitches
 from stitches.expect import Expect
 import urllib3
 import yaml
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_client import RHUIManagerClient
@@ -34,13 +34,13 @@ from rhui3_tests_lib.util import Util
 logging.basicConfig(level=logging.DEBUG)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+RHUA = ConMgr.connect()
 # To make this script communicate with a client machine different from cli01.example.com, run:
 # export RHUICLI=hostname
 # in your shell before running this script, replacing "hostname" with the actual client host name.
 # This allows for multiple client machines in one stack.
-CLI = stitches.Connection(getenv("RHUICLI", "cli01.example.com"), "root", "/root/.ssh/id_rsa_test")
-CDS = stitches.Connection("cds01.example.com", "root", "/root/.ssh/id_rsa_test")
+CLI = ConMgr.connect(getenv("RHUICLI", ConMgr.get_cli_hostnames()[0]))
+CDS = ConMgr.connect(ConMgr.get_cds_hostnames()[0])
 
 CUSTOM_REPO = "custom-i386-x86_64"
 CUSTOM_PATH = CUSTOM_REPO.replace("-", "/")
@@ -57,7 +57,7 @@ class TestClient(object):
 
     def __init__(self):
         try:
-            self.custom_rpm = Util.get_rpms_in_dir(CONNECTION, CUSTOM_RPMS_DIR)[0]
+            self.custom_rpm = Util.get_rpms_in_dir(RHUA, CUSTOM_RPMS_DIR)[0]
         except IndexError:
             raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR)
         self.version = Util.get_rhel_version(CLI)["major"]
@@ -84,7 +84,7 @@ class TestClient(object):
     def test_01_init():
         '''log in to RHUI'''
         if not getenv("RHUISKIPSETUP"):
-            RHUIManager.initial_run(CONNECTION)
+            RHUIManager.initial_run(RHUA)
 
     @staticmethod
     def test_02_upload_rh_certificate():
@@ -92,7 +92,7 @@ class TestClient(object):
            upload a new or updated Red Hat content certificate
         '''
         if not getenv("RHUISKIPSETUP"):
-            entlist = RHUIManagerEntitlements.upload_rh_certificate(CONNECTION)
+            entlist = RHUIManagerEntitlements.upload_rh_certificate(RHUA)
             nose.tools.assert_not_equal(len(entlist), 0)
 
     @staticmethod
@@ -101,9 +101,9 @@ class TestClient(object):
             add a CDS
         '''
         if not getenv("RHUISKIPSETUP"):
-            cds_list = RHUIManagerInstance.list(CONNECTION, "cds")
+            cds_list = RHUIManagerInstance.list(RHUA, "cds")
             nose.tools.assert_equal(cds_list, [])
-            RHUIManagerInstance.add_instance(CONNECTION, "cds", "cds01.example.com")
+            RHUIManagerInstance.add_instance(RHUA, "cds")
 
     @staticmethod
     def test_04_add_hap():
@@ -111,47 +111,47 @@ class TestClient(object):
             add an HAProxy Load-balancer
         '''
         if not getenv("RHUISKIPSETUP"):
-            hap_list = RHUIManagerInstance.list(CONNECTION, "loadbalancers")
+            hap_list = RHUIManagerInstance.list(RHUA, "loadbalancers")
             nose.tools.assert_equal(hap_list, [])
-            RHUIManagerInstance.add_instance(CONNECTION, "loadbalancers", "hap01.example.com")
+            RHUIManagerInstance.add_instance(RHUA, "loadbalancers")
 
     def test_05_add_upload_sync_stuff(self):
         '''
            add a custom and RH content repos to protect by a cli entitlement cert, upload rpm, sync
         '''
-        RHUIManagerRepo.add_custom_repo(CONNECTION,
+        RHUIManagerRepo.add_custom_repo(RHUA,
                                         CUSTOM_REPO,
                                         "",
                                         CUSTOM_PATH,
                                         "1",
                                         "y")
-        RHUIManagerRepo.upload_content(CONNECTION,
+        RHUIManagerRepo.upload_content(RHUA,
                                        [CUSTOM_REPO],
                                        "%s/%s" % (CUSTOM_RPMS_DIR, self.custom_rpm))
-        RHUIManagerRepo.add_rh_repo_by_repo(CONNECTION,
+        RHUIManagerRepo.add_rh_repo_by_repo(RHUA,
                                             [Util.format_repo(self.yum_repo_name,
                                                               self.yum_repo_version,
                                                               self.yum_repo_kind)])
-        RHUIManagerSync.sync_repo(CONNECTION,
+        RHUIManagerSync.sync_repo(RHUA,
                                   [Util.format_repo(self.yum_repo_name, self.yum_repo_version)])
 
     def test_06_generate_ent_cert(self):
         '''
            generate an entitlement certificate
         '''
-        RHUIManagerClient.generate_ent_cert(CONNECTION,
+        RHUIManagerClient.generate_ent_cert(RHUA,
                                             [CUSTOM_REPO, self.yum_repo_name],
                                             "test_ent_cli",
                                             "/root/")
-        Expect.expect_retval(CONNECTION, "test -f /root/test_ent_cli.crt")
-        Expect.expect_retval(CONNECTION, "test -f /root/test_ent_cli.key")
+        Expect.expect_retval(RHUA, "test -f /root/test_ent_cli.crt")
+        Expect.expect_retval(RHUA, "test -f /root/test_ent_cli.key")
 
     @staticmethod
     def test_07_create_cli_rpm():
         '''
            create a client configuration RPM from the entitlement certificate
         '''
-        RHUIManagerClient.create_conf_rpm(CONNECTION,
+        RHUIManagerClient.create_conf_rpm(RHUA,
                                           "/root",
                                           "/root/test_ent_cli.crt",
                                           "/root/test_ent_cli.key",
@@ -159,7 +159,7 @@ class TestClient(object):
                                           "3.0",
                                           "1.rhui")
         # check if the rpm was created
-        Expect.expect_retval(CONNECTION,
+        Expect.expect_retval(RHUA,
                              "test -f /root/test_cli_rpm-3.0/build/RPMS/noarch/" +
                              "test_cli_rpm-3.0-1.rhui.noarch.rpm")
 
@@ -168,7 +168,7 @@ class TestClient(object):
         '''
            ensure that GPG checking is enabled in the client configuration
         '''
-        Expect.expect_retval(CONNECTION,
+        Expect.expect_retval(RHUA,
                              r"grep -q '^gpgcheck\s*=\s*1$' " +
                              "/root/test_cli_rpm-3.0/build/BUILD/test_cli_rpm-3.0/rh-cloud.repo")
 
@@ -177,8 +177,8 @@ class TestClient(object):
         '''check if SHA-256 is used in the client certificate signature'''
         # for RHBZ#1628957
         sigs_expected = ["sha256", "sha256"]
-        _, stdout, _ = CONNECTION.exec_command("openssl x509 -noout -text -in " +
-                                               "/root/test_ent_cli.crt")
+        _, stdout, _ = RHUA.exec_command("openssl x509 -noout -text -in " +
+                                         "/root/test_ent_cli.crt")
         cert_details = stdout.read().decode()
         sigs_actual = re.findall("sha[0-9]+", cert_details)
         nose.tools.eq_(sigs_expected, sigs_actual)
@@ -191,7 +191,7 @@ class TestClient(object):
         # get rid of undesired repos first
         Util.remove_amazon_rhui_conf_rpm(CLI)
         Util.disable_beta_repos(CLI)
-        Util.install_pkg_from_rhua(CONNECTION,
+        Util.install_pkg_from_rhua(RHUA,
                                    CLI,
                                    "/root/test_cli_rpm-3.0/build/RPMS/noarch/" +
                                    "test_cli_rpm-3.0-1.rhui.noarch.rpm")
@@ -203,11 +203,11 @@ class TestClient(object):
         '''
            check if RH repos have been synced so RPMs can be installed from them
         '''
-        RHUIManagerSync.wait_till_repo_synced(CONNECTION,
+        RHUIManagerSync.wait_till_repo_synced(RHUA,
                                               [Util.format_repo(self.yum_repo_name,
                                                                 self.yum_repo_version)])
         # also wait for the publish Pulp task to complete (takes time in the case of large repos)
-        RHUIManagerSync.wait_till_pulp_tasks_finish(CONNECTION)
+        RHUIManagerSync.wait_till_pulp_tasks_finish(RHUA)
 
     def test_12_inst_rpm_custom_repo(self):
         '''
@@ -231,13 +231,14 @@ class TestClient(object):
         # try HEADing the repodata file for the already added repo
         # the HTTP request must not complete (not even with HTTP 403);
         # it is supposed to raise an SSLError instead
+        cds_lb = ConMgr.get_cds_lb_hostname()
         nose.tools.assert_raises(requests.exceptions.SSLError, requests.head,
-                                 "https://cds.example.com/pulp/repos/" +
+                                 "https://%s/pulp/repos/" % cds_lb +
                                  self.yum_repo_path + "/repodata/repomd.xml",
                                  verify=False)
         # also check the protected custom repo
         nose.tools.assert_raises(requests.exceptions.SSLError, requests.head,
-                                 "https://cds.example.com/pulp/repos/" +
+                                 "https://%s/pulp/repos/" % cds_lb +
                                  "protected/%s/repodata/repomd.xml" % CUSTOM_PATH,
                                  verify=False)
 
@@ -285,15 +286,16 @@ class TestClient(object):
         # for RHBZ#1731856
         # get the CA cert from the RHUA and upload it to the CDS
         # the cert is among the extra RHUI files, ie. in the directory also containing custom RPMs
+        cds_lb = ConMgr.get_cds_lb_hostname()
         remote_ca_file = join(CUSTOM_RPMS_DIR, LEGACY_CA_FILE)
         local_ca_file = join(TMPDIR, LEGACY_CA_FILE)
-        Util.fetch(CONNECTION, remote_ca_file, local_ca_file)
+        Util.fetch(RHUA, remote_ca_file, local_ca_file)
         Helpers.add_legacy_ca(CDS, local_ca_file)
         # re-fetch repodata on the client to trigger the OID validator on the CDS
         Expect.expect_retval(CLI, "yum clean all ; yum repolist enabled")
         Expect.expect_retval(CDS,
                              "egrep 'Cert verification failed against [0-9]+ ca cert' " +
-                             "/var/log/httpd/cds.example.com_error_ssl.log",
+                             "/var/log/httpd/%s_error_ssl.log" % cds_lb,
                              1)
 
     def test_99_cleanup(self):
@@ -301,17 +303,17 @@ class TestClient(object):
            remove repos, certs, cli rpms; remove rpms from cli, uninstall cds, hap
         '''
         test_rpm_name = self.custom_rpm.rsplit('-', 2)[0]
-        RHUIManagerRepo.delete_all_repos(CONNECTION)
-        nose.tools.assert_equal(RHUIManagerRepo.list(CONNECTION), [])
-        Expect.expect_retval(CONNECTION, "rm -f /root/test_ent_cli*")
-        Expect.expect_retval(CONNECTION, "rm -rf /root/test_cli_rpm-3.0/")
+        RHUIManagerRepo.delete_all_repos(RHUA)
+        nose.tools.assert_equal(RHUIManagerRepo.list(RHUA), [])
+        Expect.expect_retval(RHUA, "rm -f /root/test_ent_cli*")
+        Expect.expect_retval(RHUA, "rm -rf /root/test_cli_rpm-3.0/")
         Util.remove_rpm(CLI, [self.test_package, "test_cli_rpm", test_rpm_name])
         rmtree(TMPDIR)
         Helpers.del_legacy_ca(CDS, LEGACY_CA_FILE)
         if not getenv("RHUISKIPSETUP"):
-            RHUIManagerInstance.delete(CONNECTION, "loadbalancers", ["hap01.example.com"])
-            RHUIManagerInstance.delete(CONNECTION, "cds", ["cds01.example.com"])
-            RHUIManager.remove_rh_certs(CONNECTION)
+            RHUIManagerInstance.delete_all(RHUA, "loadbalancers")
+            RHUIManagerInstance.delete_all(RHUA, "cds")
+            RHUIManager.remove_rh_certs(RHUA)
 
     @staticmethod
     def teardown_class():

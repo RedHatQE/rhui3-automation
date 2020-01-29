@@ -6,16 +6,16 @@ import logging
 from os.path import basename
 
 import nose
-import stitches
 import yaml
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_subman import RHUIManagerSubMan
 from rhui3_tests_lib.subscription import RHSMRHUI
 
 logging.basicConfig(level=logging.DEBUG)
 
-CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+RHUA = ConMgr.connect()
 
 class TestSubscription(object):
     """class for tests for subscription registration in RHUI"""
@@ -33,55 +33,55 @@ class TestSubscription(object):
     @staticmethod
     def test_00_initial_run():
         """log in to RHUI"""
-        RHUIManager.initial_run(CONNECTION)
+        RHUIManager.initial_run(RHUA)
 
     @staticmethod
     def test_01_register_system():
         """register with RHSM"""
-        RHSMRHUI.register_system(CONNECTION)
+        RHSMRHUI.register_system(RHUA)
 
     def test_02_attach_rhui_sub(self):
         """attach the RHUI subscription"""
-        RHSMRHUI.attach_subscription(CONNECTION, self.subscriptions["RHUI"])
+        RHSMRHUI.attach_subscription(RHUA, self.subscriptions["RHUI"])
 
     def test_03_attach_atomic_sub(self):
         """attach the Atomic subscription"""
-        RHSMRHUI.attach_subscription(CONNECTION, self.subscriptions["Atomic"])
+        RHSMRHUI.attach_subscription(RHUA, self.subscriptions["Atomic"])
 
     def test_04_check_available_subs(self):
         """check if the subscriptions available to RHUI are the known ones"""
-        avail_subs = RHUIManagerSubMan.subscriptions_list(CONNECTION, "available")
+        avail_subs = RHUIManagerSubMan.subscriptions_list(RHUA, "available")
         nose.tools.eq_(sorted(avail_subs), sorted(self.subscriptions.values()))
 
     def test_05_reg_rhui_sub_in_rhui(self):
         """register the RHUI subscription in RHUI"""
-        RHUIManagerSubMan.subscriptions_register(CONNECTION, [self.subscriptions["RHUI"]])
+        RHUIManagerSubMan.subscriptions_register(RHUA, [self.subscriptions["RHUI"]])
 
     def test_06_reg_atomic_sub_in_rhui(self):
         """register the Atomic subscription in RHUI"""
-        RHUIManagerSubMan.subscriptions_register(CONNECTION, [self.subscriptions["Atomic"]])
+        RHUIManagerSubMan.subscriptions_register(RHUA, [self.subscriptions["Atomic"]])
 
     def test_07_check_registered_subs(self):
         """check if the subscriptions are now tracked as registered"""
-        reg_subs = RHUIManagerSubMan.subscriptions_list(CONNECTION, "registered")
+        reg_subs = RHUIManagerSubMan.subscriptions_list(RHUA, "registered")
         nose.tools.eq_(sorted(reg_subs), sorted(self.subscriptions.values()))
 
     def test_08_unregister_sub_in_rhui(self):
         """unregister the subscriptions in RHUI"""
-        RHUIManagerSubMan.subscriptions_unregister(CONNECTION, self.subscriptions.values())
+        RHUIManagerSubMan.subscriptions_unregister(RHUA, self.subscriptions.values())
         # also delete the cert files
-        RHUIManager.remove_rh_certs(CONNECTION)
+        RHUIManager.remove_rh_certs(RHUA)
 
     @staticmethod
     def test_09_check_registered_subs():
         """check if the subscriptions are no longer tracked as registered"""
-        reg_sub = RHUIManagerSubMan.subscriptions_list(CONNECTION, "registered")
+        reg_sub = RHUIManagerSubMan.subscriptions_list(RHUA, "registered")
         nose.tools.ok_(not reg_sub, msg="something remained: %s" % reg_sub)
 
     @staticmethod
     def test_10_unregister_system():
         """unregister from RHSM"""
-        RHSMRHUI.unregister_system(CONNECTION)
+        RHSMRHUI.unregister_system(RHUA)
 
     @staticmethod
     def teardown_class():

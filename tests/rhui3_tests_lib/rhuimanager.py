@@ -5,6 +5,7 @@ import re
 
 from stitches.expect import Expect, ExpectFailed
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.util import Util
 
 SELECT_PATTERN = re.compile(r'^  (x|-)  (\d+) :')
@@ -205,6 +206,7 @@ class RHUIManager(object):
         '''
         Change the password of rhui-manager user
         '''
+        rhua = ConMgr.get_rhua_hostname()
         Expect.enter(connection, "p")
         Expect.expect(connection, "Username:")
         Expect.enter(connection, 'admin')
@@ -214,7 +216,7 @@ class RHUIManager(object):
         Expect.enter(connection, password)
         Expect.expect(connection, "Password successfully updated")
         # this action is supposed to log the admin out and thus delete the user cert
-        Expect.expect_retval(connection, "test -f /root/.rhui/rhua.example.com/user.crt", 1)
+        Expect.expect_retval(connection, "test -f /root/.rhui/%s/user.crt" % rhua, 1)
 
     @staticmethod
     def remove_rh_certs(connection):

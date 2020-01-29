@@ -10,6 +10,7 @@ import yaml
 
 from stitches.expect import Expect, ExpectFailed
 
+from rhui3_tests_lib.conmgr import ConMgr, DOMAIN
 
 class Util(object):
     '''
@@ -41,7 +42,7 @@ class Util(object):
         if len(keydata) != 3:
             keydata = ["DSA", "1024", "0"]
         if len(ownerdata) != 2:
-            ownerdata = ["Key Owner", "kowner@example.com"]
+            ownerdata = ["Key Owner", "kowner@%s" % DOMAIN]
         Expect.enter(connection, "cat > /tmp/gpgkey << EOF")
         Expect.enter(connection, "Key-Type: " + keydata[0])
         Expect.enter(connection, "Key-Length: " + keydata[1])
@@ -209,16 +210,6 @@ class Util(object):
         return repo
 
     @staticmethod
-    def get_cds_hostnames():
-        '''
-        read CDS hostnames from /etc/hosts and return a list of them
-        '''
-        cds_pattern = r"cds[0-9]+\.example\.com"
-        with open("/etc/hosts") as hostsfile:
-            all_hosts = hostsfile.read()
-        return re.findall(cds_pattern, all_hosts)
-
-    @staticmethod
     def get_rpms_in_dir(connection, directory):
         '''
         return a list of RPM files in the directory
@@ -237,7 +228,7 @@ class Util(object):
                              "systemctl restart %s; fi" % service)
 
     @staticmethod
-    def check_package_url(connection, package, path="", lb_hostname="cds.example.com"):
+    def check_package_url(connection, package, path=""):
         '''
         verify that the package is available from the RHUI (and not from an unwanted repo)
         '''
@@ -250,7 +241,7 @@ class Util(object):
         Expect.ping_pong(connection,
                          "yumdownloader --url %s" % package_escaped,
                          "https://%s/pulp/repos/%s.*%s" % \
-                         (lb_hostname, path, package_escaped))
+                         (ConMgr.get_cds_lb_hostname(), path, package_escaped))
 
     @staticmethod
     def cert_expired(connection, cert):

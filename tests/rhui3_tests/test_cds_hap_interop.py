@@ -6,25 +6,23 @@ from os.path import basename
 
 import logging
 import nose
-import stitches
-from stitches.expect import Expect
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.rhui_cmd import RHUICLI
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
-from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
 # check if (at least) two CDS nodes are actually available
-CDS_HOSTNAMES = Util.get_cds_hostnames()
+CDS_HOSTNAMES = ConMgr.get_cds_hostnames()
 CDS2_EXISTS = len(CDS_HOSTNAMES) > 1
 
-HA_HOSTNAME = "hap01.example.com"
+HA_HOSTNAME = ConMgr.get_haproxy_hostnames()[0]
 
-RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
-HAPROXY = stitches.Connection(HA_HOSTNAME, "root", "/root/.ssh/id_rsa_test")
+RHUA = ConMgr.connect()
+HAPROXY = ConMgr.connect(HA_HOSTNAME)
 
 def setup():
     """announce the beginning of the test run"""
@@ -33,7 +31,7 @@ def setup():
 def test_01_login_add_hap():
     """log in to RHUI, add an HAProxy Load-balancer"""
     RHUIManager.initial_run(RHUA)
-    RHUIManagerInstance.add_instance(RHUA, "loadbalancers", HA_HOSTNAME)
+    RHUIManagerInstance.add_instance(RHUA, "loadbalancers")
 
 def test_02_add_first_cds():
     """[TUI] add the first CDS"""
@@ -125,11 +123,7 @@ def test_99_cleanup():
     """delete the HAProxy Load-balancer"""
     RHUIManagerInstance.delete(RHUA, "loadbalancers", [HA_HOSTNAME])
     # also clean up the SSH keys (if left behind)
-    Expect.expect_retval(RHUA, "if [ -f ~/.ssh/known_hosts ]; then ssh-keygen -R %s; fi" % \
-                         CDS_HOSTNAMES[0])
-    if CDS2_EXISTS:
-        Expect.expect_retval(RHUA, "if [ -f ~/.ssh/known_hosts ]; then ssh-keygen -R %s; fi" % \
-                             CDS_HOSTNAMES[1])
+    ConMgr.remove_ssh_keys(RHUA)
 
 def teardown():
     """announce the end of the test run"""

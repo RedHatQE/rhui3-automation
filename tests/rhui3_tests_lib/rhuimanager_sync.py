@@ -6,6 +6,8 @@ import time
 import nose
 
 from stitches.expect import Expect, CTRL_C
+
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.util import Util
 
@@ -90,10 +92,11 @@ class RHUIManagerSync(object):
                 Expect.expect_retval(connection, "rm -f ~/.pulp/user-cert.pem")
         except OSError:
             pass
+        rhua = ConMgr.get_rhua_hostname()
         Expect.expect_retval(connection,
                              "if ! [ -e ~/.pulp/user-cert.pem ]; then " +
                              "mkdir -p -m 700 ~/.pulp; " +
-                             "ln -s ~/.rhui/rhua.example.com/user.crt ~/.pulp/user-cert.pem; " +
+                             "ln -s ~/.rhui/%s/user.crt ~/.pulp/user-cert.pem; " % rhua +
                              "touch /tmp/pulploginhack; " +
                              "fi")
         while connection.recv_exit_status("pulp-admin tasks list | grep -q '^No tasks found'"):

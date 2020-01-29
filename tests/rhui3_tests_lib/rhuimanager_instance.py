@@ -3,6 +3,8 @@
 import re
 
 from stitches.expect import Expect, CTRL_C
+
+from rhui3_tests_lib.conmgr import ConMgr, SUDO_USER_NAME, SUDO_USER_KEY
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.instance import Instance
 
@@ -30,14 +32,20 @@ class RHUIManagerInstance(object):
 
     @staticmethod
     def add_instance(connection, screen,
-                     hostname, user_name="ec2-user", ssh_key_path="/root/.ssh/id_rsa_rhua",
+                     hostname="", user_name=SUDO_USER_NAME, ssh_key_path=SUDO_USER_KEY,
                      update=False):
         '''
         Register (add) a new CDS or HAProxy instance
-        @param hostname instance
+        @param hostname instance, or the default value for the screen type as ConMgr knows it
         @param update: Bool; update the cds or hap if it is already tracked or raise an exception
         '''
-
+        if not hostname:
+            if screen == "cds":
+                hostname = ConMgr.get_cds_hostnames()[0]
+            elif screen == "loadbalancers":
+                hostname = ConMgr.get_haproxy_hostnames()[0]
+            else:
+                raise ValueError("hostname not given and screen invalid")
         # first check if the RHUA knows the host's SSH key, because if so, rhui-manager
         # won't ask you to confirm the key
         key_check_cmd = "ssh-keygen -F %s" % hostname

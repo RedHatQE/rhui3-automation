@@ -7,13 +7,13 @@ from os.path import basename
 import yaml
 
 import nose
-import stitches
 from stitches.expect import Expect
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.helpers import Helpers
 from rhui3_tests_lib.subscription import RHSMRHUI
 
-RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+RHUA = ConMgr.connect()
 
 RHUI_SERVICE_PIDFILES = ["/var/run/httpd/httpd.pid",
                          "/var/run/pulp/celerybeat.pid",

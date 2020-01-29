@@ -13,10 +13,10 @@ from os.path import basename
 
 import logging
 import nose
-import stitches
 from stitches.expect import Expect
 import yaml
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhui_cmd import RHUICLI
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_cmdline import RHUIManagerCLI
@@ -24,12 +24,12 @@ from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
-RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+RHUA = ConMgr.connect()
 # To make this script communicate with a client machine different from cli01.example.com, run:
 # export RHUICLI=hostname
 # in your shell before running this script, replacing "hostname" with the actual client host name.
 # This allows for multiple client machines in one stack.
-CLI = stitches.Connection(getenv("RHUICLI", "cli01.example.com"), "root", "/root/.ssh/id_rsa_test")
+CLI = ConMgr.connect(getenv("RHUICLI", ConMgr.get_cli_hostnames()[0]))
 
 CONF_RPM_NAME = "eus-rhui"
 
@@ -75,10 +75,10 @@ class TestEUSCLI(object):
         add a CDS
         '''
         if not getenv("RHUISKIPSETUP"):
-            RHUICLI.add(RHUA, "cds", "cds01.example.com", unsafe=True)
+            RHUICLI.add(RHUA, "cds", unsafe=True)
         # check that
         cds_list = RHUICLI.list(RHUA, "cds")
-        nose.tools.eq_(cds_list, ["cds01.example.com"])
+        nose.tools.ok_(cds_list)
 
     @staticmethod
     def test_03_add_hap():
@@ -86,10 +86,10 @@ class TestEUSCLI(object):
         add an HAProxy Load-Balancer
         '''
         if not getenv("RHUISKIPSETUP"):
-            RHUICLI.add(RHUA, "haproxy", "hap01.example.com", unsafe=True)
+            RHUICLI.add(RHUA, "haproxy", unsafe=True)
         # check that
         hap_list = RHUICLI.list(RHUA, "haproxy")
-        nose.tools.eq_(hap_list, ["hap01.example.com"])
+        nose.tools.ok_(hap_list)
 
     @staticmethod
     def test_04_upload_certificate():
@@ -161,12 +161,9 @@ class TestEUSCLI(object):
         Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % CONF_RPM_NAME)
         if not getenv("RHUISKIPSETUP"):
             RHUIManager.remove_rh_certs(RHUA)
-            RHUICLI.delete(RHUA, "haproxy", ["hap01.example.com"], force=True)
-            RHUICLI.delete(RHUA, "cds", ["cds01.example.com"], force=True)
-            Expect.expect_retval(RHUA,
-                                 "if [ -f ~/.ssh/known_hosts ]; then " +
-                                 "ssh-keygen -R cds01.example.com; " +
-                                 "ssh-keygen -R hap01.example.com; fi")
+            RHUICLI.delete(RHUA, "haproxy", force=True)
+            RHUICLI.delete(RHUA, "cds", force=True)
+            ConMgr.remove_ssh_keys(RHUA)
 
     @staticmethod
     def teardown_class():

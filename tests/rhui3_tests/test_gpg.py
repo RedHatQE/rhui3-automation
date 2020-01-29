@@ -13,9 +13,9 @@ from os.path import basename
 
 import logging
 import nose
-import stitches
 from stitches.expect import Expect
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_client import RHUIManagerClient
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
@@ -24,12 +24,12 @@ from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
-RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+RHUA = ConMgr.connect()
 # To make this script communicate with a client machine different from cli01.example.com, run:
 # export RHUICLI=hostname
 # in your shell before running this script, replacing "hostname" with the actual client host name.
 # This allows for multiple client machines in one stack.
-CLI = stitches.Connection(getenv("RHUICLI", "cli01.example.com"), "root", "/root/.ssh/id_rsa_test")
+CLI = ConMgr.connect(getenv("RHUICLI", ConMgr.get_cli_hostnames()[0]))
 
 REPO = "custom_gpg"
 SIG = "9f6e93a2"
@@ -56,14 +56,14 @@ def test_02_add_cds():
         add a CDS
     '''
     if not getenv("RHUISKIPSETUP"):
-        RHUIManagerInstance.add_instance(RHUA, "cds", "cds01.example.com")
+        RHUIManagerInstance.add_instance(RHUA, "cds")
 
 def test_03_add_hap():
     '''
         add an HAProxy Load-balancer
     '''
     if not getenv("RHUISKIPSETUP"):
-        RHUIManagerInstance.add_instance(RHUA, "loadbalancers", "hap01.example.com")
+        RHUIManagerInstance.add_instance(RHUA, "loadbalancers")
 
 def test_04_create_custom_repo():
     '''
@@ -177,8 +177,8 @@ def test_99_cleanup():
     RHUIManagerRepo.delete_all_repos(RHUA)
     Expect.expect_retval(RHUA, "rm -rf /tmp/%s*" % REPO)
     if not getenv("RHUISKIPSETUP"):
-        RHUIManagerInstance.delete(RHUA, "loadbalancers", ["hap01.example.com"])
-        RHUIManagerInstance.delete(RHUA, "cds", ["cds01.example.com"])
+        RHUIManagerInstance.delete_all(RHUA, "loadbalancers")
+        RHUIManagerInstance.delete_all(RHUA, "cds")
 
 def teardown():
     '''

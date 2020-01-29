@@ -7,12 +7,13 @@ import re
 
 import logging
 import nose
-import stitches
 from stitches.expect import Expect
+
+from rhui3_tests_lib.conmgr import ConMgr
 
 logging.basicConfig(level=logging.DEBUG)
 
-CONNECTION = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+RHUA = ConMgr.connect()
 
 def _check_rpms():
     '''
@@ -28,14 +29,14 @@ def _check_rpms():
     rpm_link_pattern = r'href="[^"]+\.rpm'
     min_count = 150
     # first fetch repodata
-    _, stdout, _ = CONNECTION.exec_command(cmd + "repomd.xml")
+    _, stdout, _ = RHUA.exec_command(cmd + "repomd.xml")
     repomd_xml = stdout.read().decode()
     primary_xml_gz_path = re.findall("[0-9a-f]+-primary.xml.gz", repomd_xml)[0]
     # now fetch package info, uncompressed & filtered on the RHUA, paths on separate lines
     # (not fetching the compressed or uncompressed data as it's not decode()able)
-    _, stdout, _ = CONNECTION.exec_command(cmd + primary_xml_gz_path +
-                                           " | zegrep -o '%s'" % rpm_link_pattern +
-                                           " | sed 's/href=\"//'")
+    _, stdout, _ = RHUA.exec_command(cmd + primary_xml_gz_path +
+                                     " | zegrep -o '%s'" % rpm_link_pattern +
+                                     " | sed 's/href=\"//'")
     rpm_paths = stdout.read().decode().splitlines()
     # get just package file names
     rpms = [basename(rpm) for rpm in rpm_paths]
@@ -66,7 +67,7 @@ def _check_listing(major, min_eus, max_eus):
           "content/eus/rhel/rhui/server/%s/listing" % major
     listings_expected = [str(major + i * .1) for i in range(min_eus, max_eus + 1)]
     listings_expected.append("%sServer" % major)
-    _, stdout, _ = CONNECTION.exec_command(cmd)
+    _, stdout, _ = RHUA.exec_command(cmd)
     listings_actual = stdout.read().decode().splitlines()
     nose.tools.eq_(listings_expected, listings_actual)
 
@@ -80,7 +81,7 @@ def test_01_install_wget():
     '''
         make sure wget is installed on the RHUA
     '''
-    Expect.expect_retval(CONNECTION, "yum -y install wget", timeout=30)
+    Expect.expect_retval(RHUA, "yum -y install wget", timeout=30)
 
 def test_02_rhui_3_for_rhel_7_check():
     '''

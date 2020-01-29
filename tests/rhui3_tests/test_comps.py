@@ -14,10 +14,10 @@ from os.path import basename
 from bisect import insort
 import logging
 import nose
-import stitches
-from stitches.expect import Expect
+from stitches.expect import Expect, ExpectFailed
 import yaml
 
+from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhui_cmd import RHUICLI
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_cmdline import RHUIManagerCLI
@@ -27,12 +27,12 @@ from rhui3_tests_lib.yummy import Yummy
 
 logging.basicConfig(level=logging.DEBUG)
 
-RHUA = stitches.Connection("rhua.example.com", "root", "/root/.ssh/id_rsa_test")
+RHUA = ConMgr.connect()
 # To make this script communicate with a client machine different from cli01.example.com, run:
 # export RHUICLI=hostname
 # in your shell before running this script, replacing "hostname" with the actual client host name.
 # This allows for multiple client machines in one stack.
-CLI = stitches.Connection(getenv("RHUICLI", "cli01.example.com"), "root", "/root/.ssh/id_rsa_test")
+CLI = ConMgr.connect(getenv("RHUICLI", ConMgr.get_cli_hostnames()[0]))
 
 BIG_REPO = "rhel-7-server-rhui-rpms"
 EMP_REPO = "rhel-7-server-rhui-rh-common-rpms"
@@ -62,13 +62,13 @@ class TestCompsXML(object):
         """log in to RHUI, ensure CDS & HAProxy nodes have been added"""
         if not getenv("RHUISKIPSETUP"):
             RHUIManager.initial_run(RHUA)
-            RHUICLI.add(RHUA, "cds", "cds01.example.com", unsafe=True)
-            RHUICLI.add(RHUA, "haproxy", "hap01.example.com", unsafe=True)
+            RHUICLI.add(RHUA, "cds", unsafe=True)
+            RHUICLI.add(RHUA, "haproxy", unsafe=True)
         # check that
         cds_list = RHUICLI.list(RHUA, "cds")
-        nose.tools.ok_("cds01.example.com" in cds_list)
+        nose.tools.ok_(cds_list)
         hap_list = RHUICLI.list(RHUA, "haproxy")
-        nose.tools.eq_(hap_list, ["hap01.example.com"])
+        nose.tools.ok_(hap_list)
 
     def test_02_add_repos(self):
         """create custom repos for testing"""
@@ -239,7 +239,7 @@ class TestCompsXML(object):
         not_xml = "/etc/motd"
         Expect.expect_retval(RHUA, "echo '<foo></bar>' > %s" % bad_xml)
         for comps_file in [bad_xml, not_xml]:
-            nose.tools.assert_raises(stitches.expect.ExpectFailed,
+            nose.tools.assert_raises(ExpectFailed,
                                      RHUIManagerCLI.repo_add_comps,
                                      RHUA,
                                      BIG_REPO,
@@ -249,7 +249,7 @@ class TestCompsXML(object):
     def test_17_wrong_repo(self):
         """try using an invalid repository ID"""
         # a valid XML file is needed anyway (is parsed first), so reuse the first test repo
-        nose.tools.assert_raises(stitches.expect.ExpectFailed,
+        nose.tools.assert_raises(ExpectFailed,
                                  RHUIManagerCLI.repo_add_comps,
                                  RHUA,
                                  BIG_REPO.replace("rpms", "foo"),
@@ -273,12 +273,9 @@ class TestCompsXML(object):
         RHUIManagerCLI.repo_delete(RHUA, ZIP_REPO)
         # uninstall HAProxy & CDS, forget their keys
         if not getenv("RHUISKIPSETUP"):
-            RHUICLI.delete(RHUA, "haproxy", ["hap01.example.com"], force=True)
-            RHUICLI.delete(RHUA, "cds", ["cds01.example.com"], force=True)
-            Expect.expect_retval(RHUA,
-                                 "if [ -f ~/.ssh/known_hosts ]; then " +
-                                 "ssh-keygen -R cds01.example.com; " +
-                                 "ssh-keygen -R hap01.example.com; fi")
+            RHUICLI.delete(RHUA, "haproxy", force=True)
+            RHUICLI.delete(RHUA, "cds", force=True)
+            ConMgr.remove_ssh_keys(RHUA)
 
     @staticmethod
     def teardown_class():
