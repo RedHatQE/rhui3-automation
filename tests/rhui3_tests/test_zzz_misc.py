@@ -22,10 +22,6 @@ RHUI_SERVICE_PIDFILES = ["/var/run/httpd/httpd.pid",
                          "/var/run/pulp/reserved_resource_worker-2.pid",
                          "/var/run/pulp/resource_manager.pid"]
 
-with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
-    CFG = yaml.load(configfile)
-    SUBSCRIPTION = CFG["subscriptions"]["RHUI"]
-
 def setup():
     '''
        announce the beginning of the test run
@@ -124,8 +120,11 @@ def test_08_qpid_linearstore():
     # for RHBZ#1702254
     needs_registration = not Helpers.is_iso_installation(RHUA) and not Helpers.is_registered(RHUA)
     if needs_registration:
+        with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
+            cfg = yaml.load(configfile)
+        sub = cfg["subscriptions"]["RHUI"]
         RHSMRHUI.register_system(RHUA)
-        RHSMRHUI.attach_subscription(RHUA, SUBSCRIPTION)
+        RHSMRHUI.attach_subscription(RHUA, sub)
         RHSMRHUI.enable_rhui_repo(RHUA, False)
     Expect.expect_retval(RHUA, "yum list qpid-cpp-server-linearstore", timeout=30)
     if needs_registration:
