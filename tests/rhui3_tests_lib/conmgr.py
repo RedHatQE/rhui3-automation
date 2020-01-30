@@ -1,6 +1,7 @@
 """Connection Manager for RHUI Test Cases"""
 
 import re
+import logging
 
 from stitches.connection import Connection
 from stitches.expect import Expect
@@ -18,12 +19,18 @@ USER_KEY = "/root/.ssh/id_rsa_test"
 SUDO_USER_NAME = "ec2-user"
 SUDO_USER_KEY = "/root/.ssh/id_rsa_rhua"
 
-def _list_hostnames(nodes):
+def _list_hostnames(nodes, fake=False):
     """return a list of hostnames of the given node type"""
+    # if "fake" is on and no hostnames are found, a hostname is made up and returned as
+    # a single list item
     host_pattern = r"%s[0-9]+\.%s" % (nodes, re.escape(DOMAIN))
     with open("/etc/hosts") as hostsfile:
         all_hosts = hostsfile.read()
-    return re.findall(host_pattern, all_hosts)
+    matched_hosts = re.findall(host_pattern, all_hosts)
+    if matched_hosts or not fake:
+        return matched_hosts
+    logging.warning("No hosts found. Using a fake hostname. Proceed with caution.")
+    return ["%s01.%s" % (nodes, DOMAIN)]
 
 class ConMgr(object):
     """simplify connections to RHUI nodes & clients by providing handy constants and methods"""
@@ -38,19 +45,19 @@ class ConMgr(object):
         return "%s.%s" % (SHORT_HOSTNAMES["CDS_LB"], DOMAIN)
 
     @staticmethod
-    def get_cds_hostnames():
+    def get_cds_hostnames(fake=True):
         """return a list of CDS hostnames"""
-        return _list_hostnames(SHORT_HOSTNAMES["CDS"])
+        return _list_hostnames(SHORT_HOSTNAMES["CDS"], fake)
 
     @staticmethod
-    def get_haproxy_hostnames():
+    def get_haproxy_hostnames(fake=True):
         """return a list of HAProxy hostnames; there's usually only a single HAProxy node in RHUI"""
-        return _list_hostnames(SHORT_HOSTNAMES["HAProxy"])
+        return _list_hostnames(SHORT_HOSTNAMES["HAProxy"], fake)
 
     @staticmethod
-    def get_cli_hostnames():
+    def get_cli_hostnames(fake=True):
         """return a list of client hostnames"""
-        return _list_hostnames(SHORT_HOSTNAMES["client"])
+        return _list_hostnames(SHORT_HOSTNAMES["client"], fake)
 
     @staticmethod
     def get_atomic_cli_hostname():
