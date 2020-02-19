@@ -124,9 +124,9 @@ class TestCLI(object):
     @staticmethod
     def test_06_upload_rpm():
         '''upload content to one of the custom repos'''
-        RHUIManagerCLI.packages_upload(RHUA,
-                                       CUSTOM_REPOS[0],
-                                       "%s/%s" % (DATADIR, TEST_RPM))
+        RHUIManagerCLI.packages_upload(RHUA, CUSTOM_REPOS[0], "%s/%s" % (DATADIR, TEST_RPM))
+        # also supply the whole directory
+        RHUIManagerCLI.packages_upload(RHUA, CUSTOM_REPOS[0], DATADIR)
 
     @staticmethod
     def test_07_check_package():

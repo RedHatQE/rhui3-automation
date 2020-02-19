@@ -1,5 +1,6 @@
 """ RHUIManagerCLI functions """
 
+from os.path import join
 import re
 import time
 
@@ -238,14 +239,26 @@ class RHUIManagerCLI(object):
         return stdout.read().decode().splitlines()
 
     @staticmethod
-    def packages_upload(connection, repo_id, package):
+    def packages_upload(connection, repo_id, path):
         '''
-        upload a package to the custom repo
+        upload a package or a directory with packages to the custom repo
         '''
-        Expect.ping_pong(connection,
-                         "rhui-manager packages upload " +
-                         "--repo_id %s --packages %s" % (repo_id, package),
-                         package + " successfully uploaded")
+        cmd = "rhui-manager packages upload --repo_id %s --packages %s" % (repo_id, path)
+        _, stdout, _ = connection.exec_command(cmd)
+        output = stdout.read().decode().splitlines()
+        successfully_uploaded_packages = [line.split()[0] for line in output \
+                                          if line.endswith("successfully uploaded")]
+        if not successfully_uploaded_packages:
+            raise RuntimeError("\n".join(output) or "no output from '%s'" % cmd)
+        successfully_uploaded_packages.sort()
+        path_type = Util.get_file_type(connection, path)
+        if path_type == "regular file":
+            expected_packages = [path]
+        elif path_type == "directory":
+            expected_packages = [join(path, rpm) for rpm in Util.get_rpms_in_dir(connection, path)]
+        else:
+            expected_packages = []
+        nose.tools.eq_(successfully_uploaded_packages, expected_packages)
 
     @staticmethod
     def client_labels(connection):

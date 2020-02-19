@@ -301,19 +301,11 @@ class RHUIManagerRepo(object):
         '''
         # Check whether "path" is a file or a directory.
         # If it is a directory, get a list of *.rpm files in it.
-        Expect.enter(connection, "stat -c %F " + path)
-        path_type = Expect.expect_list(connection,
-                                       [(re.compile(".*regular file.*", re.DOTALL), 1),
-                                        (re.compile(".*directory.*", re.DOTALL), 2)])
-        if path_type == 1:
+        path_type = Util.get_file_type(connection, path)
+        if path_type == "regular file":
             content = [basename(path)]
-        elif path_type == 2:
-            Expect.enter(connection, "echo " + path + "/*.rpm")
-            output = Expect.match(connection, re.compile("(.*)", re.DOTALL))[0]
-            rpm_files = output.splitlines()[1]
-            content = []
-            for rpm_file in rpm_files.split():
-                content.append(basename(rpm_file))
+        elif path_type == "directory":
+            content = Util.get_rpms_in_dir(connection, path)
         else:
             # This should not happen. Getting here means that "path" is neither a file
             # nor a directory.

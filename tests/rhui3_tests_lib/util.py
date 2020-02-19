@@ -267,3 +267,12 @@ class Util(object):
         _, stdout, _ = connection.exec_command("mktemp /tmp/XXXX%s" % extension)
         path = stdout.read().decode().strip()
         return path
+
+    @staticmethod
+    def get_file_type(connection, path):
+        '''
+        What kind of file is it? A regular file, a directory, symlink, ... or None.
+        '''
+        _, stdout, _ = connection.exec_command("stat -c %%F '%s'" % path)
+        ftype = stdout.read().decode().strip()
+        return ftype or None
