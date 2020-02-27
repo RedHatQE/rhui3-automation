@@ -13,6 +13,8 @@
     dest: /etc/yum.repos.d/redhat-rhui.repo
     remote_src: yes
   when: rhel7_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7 and not atomic | default(False)
+  # proceed if this fails, which is expected with RC composes containing the non-Beta release name, in which choose_repo.py doesn't disable the non-beta yum repo file
+  ignore_errors: True
   tags: cli
 
 - name: install the docker package if RHEL7
