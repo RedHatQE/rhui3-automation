@@ -32,11 +32,14 @@ class RHSMRHUI(object):
         # (or a substring with one or more wildcards)
         _, stdout, _ = connection.exec_command("subscription-manager list --available " +
                                                "--matches '%s' --pool-only 2>&1" % sub)
-        pool = stdout.read().decode().strip()
-        if not re.match(r"^[0-9a-f]+$", pool):
-            raise RuntimeError("Unable to fetch the pool ID for '%s'. Got: '%s'." % (sub, pool))
-        # attach the pool
-        Expect.expect_retval(connection, "subscription-manager attach --pool %s" % pool, timeout=60)
+        pools = stdout.read().decode().splitlines()
+        if not pools:
+            raise RuntimeError("There are no available pools.")
+        if not all(re.match(r"^[0-9a-f]+$", pool) for pool in pools):
+            raise RuntimeError("This doesn't look like a list of pools: '%s'." % pools)
+        pool_opts = " ".join(["--pool %s" % pool for pool in pools])
+        # attach the pool(s)
+        Expect.expect_retval(connection, "subscription-manager attach %s" % pool_opts, timeout=60)
 
     @staticmethod
     def enable_rhui_repo(connection, base_rhel=True, gluster=False):
