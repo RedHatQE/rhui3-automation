@@ -27,6 +27,7 @@ Welcome to the RHUI 3 Test Plan!
    hap_cmd
    repo_management
    rhui_3_repos
+   security
    sosreport
    subscription
    sync_management
