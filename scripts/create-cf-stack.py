@@ -123,7 +123,7 @@ if (args.r3 and not args.vpcid):
 
 try:
     with open(args.input_conf, 'r') as confd:
-        valid_config = yaml.load(confd)
+        valid_config = yaml.safe_load(confd)
 
     (ssh_key_name, ssh_key) = valid_config["ssh"][REGION]
     ec2_key = valid_config["ec2"]["ec2-key"]
