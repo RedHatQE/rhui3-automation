@@ -481,8 +481,8 @@ for i in range(1, args.haproxy + 1):
 if args.vpcid and args.subnetid:
     # Setting VpcId and SubnetId
     json_dict['Outputs'] = {}
-    for key in json_dict['Resources'].keys():
-        # We'll be changing dictionary so .keys() is required here!
+    for key in list(json_dict['Resources']):
+        # We'll be changing dictionary so retyping to a list is required to ensure compatibility with Python 3.7+.
         if json_dict['Resources'][key]['Type'] == 'AWS::EC2::SecurityGroup':
             json_dict['Resources'][key]['Properties']['VpcId'] = args.vpcid
         elif json_dict['Resources'][key]['Type'] == 'AWS::EC2::Instance':
