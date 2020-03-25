@@ -3,31 +3,56 @@
 
 from __future__ import print_function
 
+import argparse
+
 from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements
 from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, InstanceAlreadyExistsError
 
+PRS = argparse.ArgumentParser(description="Execute common setup tasks.",
+                              formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+PRS.add_argument("--cert",
+                 help="upload an entitlement certificate; " +
+                 "use 'no' to skip this, or a non-default cert name to override the default cert",
+                 default="default")
+PRS.add_argument("--one-cds-only",
+                 help="add only one CDS node",
+                 action="store_true")
+ARGS = PRS.parse_args()
+
 RHUA = ConMgr.connect()
-CDS_HOSTNAME = ConMgr.get_cds_hostnames()[0]
-HA_HOSTNAME = ConMgr.get_haproxy_hostnames()[0]
+CDS_HOSTNAMES = ConMgr.get_cds_hostnames()
+HA_HOSTNAMES = ConMgr.get_haproxy_hostnames()
 
 print("Logging in to RHUI.")
 RHUIManager.initial_run(RHUA)
 
-print("Uploading an entitlement certificate.")
-RHUIManagerEntitlements.upload_rh_certificate(RHUA)
+if ARGS.cert != "no":
+    print("Uploading an entitlement certificate.")
+    if ARGS.cert == "default":
+        RHUIManagerEntitlements.upload_rh_certificate(RHUA)
+    else:
+        RHUIManagerEntitlements.upload_rh_certificate(RHUA,
+                                                      "/tmp/extra_rhui_files/rhcert_%s.pem" % \
+                                                      ARGS.cert)
 
-print("Adding a CDS (%s)." % CDS_HOSTNAME)
-try:
-    RHUIManagerInstance.add_instance(RHUA, "cds")
-except InstanceAlreadyExistsError:
-    print("Already added, never mind.")
+if ARGS.one_cds_only:
+    CDS_HOSTNAMES = [CDS_HOSTNAMES[0]]
+print("Adding CDS nodes (%s)." % CDS_HOSTNAMES)
+for cds in CDS_HOSTNAMES:
+    try:
+        RHUIManagerInstance.add_instance(RHUA, "cds", cds)
+        print("%s added." % cds)
+    except InstanceAlreadyExistsError:
+        print("%s already added, never mind." % cds)
 
-print("Adding an HAProxy load balancer (%s)." % HA_HOSTNAME)
-try:
-    RHUIManagerInstance.add_instance(RHUA, "loadbalancers")
-except InstanceAlreadyExistsError:
-    print("Already added, never mind.")
+print("Adding HAProxy load balancers (%s)." % HA_HOSTNAMES)
+for haproxy in HA_HOSTNAMES:
+    try:
+        RHUIManagerInstance.add_instance(RHUA, "loadbalancers", haproxy)
+        print("%s added." % haproxy)
+    except InstanceAlreadyExistsError:
+        print("%s already added, never mind." % haproxy)
 
 print("To make client tests skip these steps, run: export RHUISKIPSETUP=1")

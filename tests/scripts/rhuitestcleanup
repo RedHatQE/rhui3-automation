@@ -5,30 +5,33 @@ from __future__ import print_function
 
 from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhuimanager import RHUIManager
-from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance, NoSuchInstance
+from rhui3_tests_lib.rhuimanager_instance import RHUIManagerInstance
 from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
 
 RHUA = ConMgr.connect()
-CDS_HOSTNAME = ConMgr.get_cds_hostnames()[0]
-HA_HOSTNAME = ConMgr.get_haproxy_hostnames()[0]
+CDS_HOSTNAMES = ConMgr.get_cds_hostnames()
+HA_HOSTNAMES = ConMgr.get_haproxy_hostnames()
 
 print("Removing entitlement certificates.")
 RHUIManager.remove_rh_certs(RHUA)
 
-print("Unregistering the CDS.")
-try:
-    RHUIManagerInstance.delete(RHUA, "cds", [CDS_HOSTNAME])
-except NoSuchInstance:
-    print("Not registered, never mind.")
+print("Unregistering CDS nodes.")
+if RHUIManagerInstance.list(RHUA, "cds"):
+    RHUIManagerInstance.delete_all(RHUA, "cds")
+    print("Done.")
+else:
+    print("There were none.")
 
-print("Unregistering the HAProxy load balancer.")
-try:
-    RHUIManagerInstance.delete(RHUA, "loadbalancers", [HA_HOSTNAME])
-except NoSuchInstance:
-    print("Not registered, never mind.")
+print("Unregistering HAProxy nodes.")
+if RHUIManagerInstance.list(RHUA, "loadbalancers"):
+    RHUIManagerInstance.delete_all(RHUA, "loadbalancers")
+    print("Done.")
+else:
+    print("There were none.")
 
 print("Deleting leftover repositories (if there are any).")
 if RHUIManagerRepo.list(RHUA):
     RHUIManagerRepo.delete_all_repos(RHUA)
+    print("Done.")
 else:
-    print("There are none, never mind.")
+    print("There were none.")
