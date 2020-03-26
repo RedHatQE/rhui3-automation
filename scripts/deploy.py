@@ -17,6 +17,10 @@ except ImportError:
 CFG_FILE = "~/.rhui3-automation.cfg"
 R3A_CFG = RawConfigParser()
 R3A_CFG.read(expanduser(CFG_FILE))
+if R3A_CFG.has_section("main") and R3A_CFG.has_option("main", "basedir"):
+    RHUI_DIR = R3A_CFG.get("main", "basedir")
+else:
+    RHUI_DIR = "~/RHUI"
 
 PRS = argparse.ArgumentParser(description="Run the RHUI 3 Automation playbook to deploy RHUI.",
                               formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -25,7 +29,7 @@ PRS.add_argument("inventory",
                  nargs="?")
 PRS.add_argument("--iso",
                  help="RHUI ISO file",
-                 default="~/RHUI/RHUI.iso",
+                 default="%s/RHUI.iso" % RHUI_DIR,
                  metavar="file")
 PRS.add_argument("--rhsm",
                  help="use RHSM instead of a RHUI ISO",
@@ -38,11 +42,11 @@ PRS.add_argument("--upgrade",
                  action="store_true")
 PRS.add_argument("--extra-files",
                  help="ZIP file with extra files",
-                 default="~/RHUI/extra_files.zip",
+                 default="%s/extra_files.zip" % RHUI_DIR,
                  metavar="file")
 PRS.add_argument("--credentials",
                  help="configuration file with credentials",
-                 default="~/RHUI/credentials.conf",
+                 default="%s/credentials.conf" % RHUI_DIR,
                  metavar="file")
 PRS.add_argument("--tests",
                  help="RHUI test to run",
