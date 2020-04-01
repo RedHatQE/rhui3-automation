@@ -27,11 +27,11 @@ yum_repos:
             path: "content/dist/rhel8/rhui/8/x86_64/highavailability/os"
             test_package: "clufter-common"
         aarch64:
-            name: "Red Hat Enterprise Linux 8 for ARM 64 - BaseOS (RPMs) from RHUI"
+            name: "Red Hat Enterprise Linux 8 for ARM 64 - Supplementary (RPMs) from RHUI"
             version: "8"
             kind: "Yum"
-            path: "content/dist/rhel8/rhui/8/aarch64/baseos/os"
-            test_package: "tree"
+            path: "content/dist/rhel8/rhui/8/aarch64/supplementary/os"
+            test_package: "zhongyi-song-fonts"
 atomic_repo:
     name: "Red Hat Enterprise Linux Atomic Host (Trees) from RHUI"
     kind: "Atomic"

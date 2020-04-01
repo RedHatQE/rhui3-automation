@@ -61,3 +61,13 @@
     state: absent
   when: rhel7_beta_baseurl is defined and ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7 and not atomic | default(False)
   tags: cli
+
+- name: install fontpackages-filesystem if RHEL8 ARM64
+  package: name=fontpackages-filesystem state=present
+  with_indexed_items: "{{ groups['CLI'] }}"
+  when: >
+    "'CLI' in groups" and
+    ansible_os_family == "RedHat" and
+    ansible_distribution_major_version|int == 8 and
+    ansible_architecture == "aarch64"
+  tags: cli
