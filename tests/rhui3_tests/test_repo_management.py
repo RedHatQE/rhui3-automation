@@ -51,8 +51,7 @@ class TestRepo(object):
                 self.yum_repo_version = doc["yum_repos"][version][arch]["version"]
                 self.yum_repo_kind = doc["yum_repos"][version][arch]["kind"]
                 self.yum_repo_path = doc["yum_repos"][version][arch]["path"]
-                self.rhcontainer = doc["container1"]
-                self.altcontainer = doc["container_alt"]
+                self.containers = {"rh": doc["container_primary"], "alt": doc["container_alt"]}
             except KeyError:
                 raise nose.SkipTest("No test repo defined for RHEL %s on %s" % (version, arch))
 
@@ -212,17 +211,17 @@ class TestRepo(object):
         # first a RH container
         Helpers.set_registry_credentials(RHUA)
         RHUIManagerRepo.add_container(RHUA,
-                                      self.rhcontainer["name"],
+                                      self.containers["rh"]["name"],
                                       "",
-                                      self.rhcontainer["displayname"])
+                                      self.containers["rh"]["displayname"])
         # then a Quay container
         Helpers.set_registry_credentials(RHUA, "quay", backup=False)
-        RHUIManagerRepo.add_container(RHUA, self.altcontainer["quay"]["name"])
+        RHUIManagerRepo.add_container(RHUA, self.containers["alt"]["quay"]["name"])
         # and finaly a Docker container; we'll need the Docker Hub URL as there's no
         # auth config for it
         url = Helpers.get_registry_url("docker")
         Helpers.set_registry_credentials(RHUA, "docker", [url], backup=False)
-        RHUIManagerRepo.add_container(RHUA, self.altcontainer["docker"]["name"])
+        RHUIManagerRepo.add_container(RHUA, self.containers["alt"]["docker"]["name"])
         # check all of that
         repo_list = RHUIManagerRepo.list(RHUA)
         nose.tools.ok_(len(repo_list) == 3,
@@ -230,9 +229,9 @@ class TestRepo(object):
 
     def test_15_display_container(self):
         '''check detailed information on the RH container'''
-        repo_name = Util.safe_pulp_repo_name(self.rhcontainer["name"])
+        repo_name = Util.safe_pulp_repo_name(self.containers["rh"]["name"])
         RHUIManagerRepo.check_detailed_information(RHUA,
-                                                   [self.rhcontainer["displayname"],
+                                                   [self.containers["rh"]["displayname"],
                                                     "https://%s/pulp/docker/%s/" % \
                                                     (ConMgr.get_cds_lb_hostname(), repo_name)],
                                                    [False],

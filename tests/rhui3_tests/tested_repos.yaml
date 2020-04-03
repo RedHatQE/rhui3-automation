@@ -2,7 +2,7 @@ yum_repos:
     6:
         x86_64:
             name: "Red Hat Enterprise Linux for SAP (RHEL 6 Server) (RPMs) from RHUI"
-            version: "6Server-x86_64"
+            version: "6Server"
             kind: "Yum"
             path: "content/dist/rhel/rhui/server/6/6Server/x86_64/sap/os"
             test_package: "vm-dump-metrics"
@@ -53,7 +53,7 @@ CLI_product:
 subscriptions:
     RHUI: "Red Hat Update Infrastructure and RHEL Add-Ons for Providers"
     Atomic: "Red Hat Enterprise Linux Atomic Host for Certified Cloud and Service Providers (via Red Hat Update Infrastructure)"
-container1:
+container_primary:
     name: "rhcertification/redhat-certification"
     displayname: "RH Certification Container"
 container_rhel7:
