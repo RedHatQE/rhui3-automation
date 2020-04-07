@@ -46,14 +46,11 @@ class TestRepo(object):
         arch = "x86_64"
         with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
-            try:
-                self.yum_repo_name = doc["yum_repos"][version][arch]["name"]
-                self.yum_repo_version = doc["yum_repos"][version][arch]["version"]
-                self.yum_repo_kind = doc["yum_repos"][version][arch]["kind"]
-                self.yum_repo_path = doc["yum_repos"][version][arch]["path"]
-                self.containers = {"rh": doc["container_primary"], "alt": doc["container_alt"]}
-            except KeyError:
-                raise nose.SkipTest("No test repo defined for RHEL %s on %s" % (version, arch))
+            self.yum_repo_name = doc["yum_repos"][version][arch]["name"]
+            self.yum_repo_version = doc["yum_repos"][version][arch]["version"]
+            self.yum_repo_kind = doc["yum_repos"][version][arch]["kind"]
+            self.yum_repo_path = doc["yum_repos"][version][arch]["path"]
+            self.containers = {"rh": doc["container_primary"], "alt": doc["container_alt"]}
 
     @staticmethod
     def setup_class():
