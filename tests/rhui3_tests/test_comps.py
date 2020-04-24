@@ -69,6 +69,11 @@ class TestCompsXML(object):
         nose.tools.ok_(cds_list)
         hap_list = RHUICLI.list(RHUA, "haproxy")
         nose.tools.ok_(hap_list)
+        # if running RHEL Beta, temporarily restore the non-Beta repos potentially disabled by choose_repo.py
+        cmd = "if grep -q Beta /etc/redhat-release; then " \
+              "cp /etc/yum.repos.d/redhat-rhui.repo{.disabled,}; " \
+              "yum-config-manager --enable %s %s; fi" % (BIG_REPO, EMP_REPO)
+        Expect.expect_retval(RHUA, cmd)
 
     def test_02_add_repos(self):
         """create custom repos for testing"""
@@ -276,6 +281,10 @@ class TestCompsXML(object):
             RHUICLI.delete(RHUA, "haproxy", force=True)
             RHUICLI.delete(RHUA, "cds", force=True)
             ConMgr.remove_ssh_keys(RHUA)
+        # if running RHEL Beta, destroy the non-Beta repos again
+        cmd = "if grep -c Beta /etc/redhat-release; then " \
+              "rm -f /etc/yum.repos.d/redhat-rhui.repo; fi"
+        Expect.expect_retval(RHUA, cmd)
 
     @staticmethod
     def teardown_class():
