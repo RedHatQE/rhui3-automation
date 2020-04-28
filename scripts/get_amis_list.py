@@ -1,4 +1,5 @@
 #! /usr/bin/python -tt
+"""Regenerate a list of AMI IDs based on the given AMI description."""
 
 import sys
 import subprocess
@@ -14,7 +15,11 @@ if subprocess.call("aws configure get aws_access_key_id &> /dev/null", shell=Tru
     sys.exit(1)
 
 argparser = argparse.ArgumentParser(description='Get list of AMIs')
-argparser.add_argument('rhel', help='Description of the ami (f.e. RHEL-7.5_HVM_GA-20180322-x86_64-1-Hourly2-GP2)', metavar='AMI', nargs='?')
+argparser.add_argument('rhel',
+                       help='Description of the ami \
+                       (e.g. RHEL-7.5_HVM_GA-20180322-x86_64-1-Hourly2-GP2)',
+                       metavar='AMI',
+                       nargs='?')
 
 args = argparser.parse_args()
 
@@ -40,26 +45,29 @@ ami_properties = args.rhel.split("-")
 if ami_properties[3] != "x86_64":
     mapping = mapping.replace(".", "_%s." % ami_properties[3])
 
-regions = ["ap-east-1",
-           "ap-northeast-1",
-           "ap-northeast-2",
-           "ap-northeast-3",
-           "ap-south-1",
-           "ap-southeast-1",
-           "ap-southeast-2",
-           "ca-central-1",
-           "eu-central-1",
-           "eu-north-1",
-           "eu-west-1",
-           "eu-west-2",
-           "eu-west-3",
-           "me-south-1",
-           "sa-east-1",
-           "us-east-1",
-           "us-east-2",
-           "us-west-1",
-           "us-west-2"
-           ]
+regions = [
+    "af-south-1",
+    "ap-east-1",
+    "ap-northeast-1",
+    "ap-northeast-2",
+    "ap-northeast-3",
+    "ap-south-1",
+    "ap-southeast-1",
+    "ap-southeast-2",
+    "ca-central-1",
+    "eu-central-1",
+    "eu-north-1",
+    "eu-south-1",
+    "eu-west-1",
+    "eu-west-2",
+    "eu-west-3",
+    "me-south-1",
+    "sa-east-1",
+    "us-east-1",
+    "us-east-2",
+    "us-west-1",
+    "us-west-2"
+    ]
 
 cmd = "aws ec2 describe-images " \
       "--filters Name=name,Values=*{0}* " \
@@ -69,21 +77,20 @@ out_dict = {}
 
 for i in regions:
     ami = subprocess.Popen(cmd.format(args.rhel, i).split(), stdout=subprocess.PIPE)
-    out,err = ami.communicate()
+    out, err = ami.communicate()
     js = json.loads(out)
     try:
         ami_id = js[0]
-    except IndexError as e:
-        sys.stderr.write("Got '%s' error \n" % e)
+    except IndexError as err:
+        sys.stderr.write("Got '%s' error \n" % err)
         sys.stderr.write("Missing AMI ID for '%s' region \n \n" % i)
         ami_id = ""
     out_dict[i] = {}
     out_dict[i]["AMI"] = ami_id
-    
 try:
     with open(mapping, 'w') as f:
         json.dump(out_dict, f, indent=4)
 
-except Exception as e:
-    sys.stderr.write("Got '%s' error" % e)
+except Exception as err:
+    sys.stderr.write("Got '%s' error" % err)
     sys.exit(1)
