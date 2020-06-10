@@ -1,6 +1,6 @@
 """ RHUIManagerCLI functions """
 
-from os.path import join
+from os.path import basename, join
 import re
 import time
 
@@ -237,6 +237,23 @@ class RHUIManagerCLI(object):
         '''
         _, stdout, _ = connection.exec_command("rhui-manager packages list --repo_id %s" % repo_id)
         return stdout.read().decode().splitlines()
+
+    @staticmethod
+    def packages_remote(connection, repo_id, url):
+        '''
+        upload packages from a remote URL to a custom repository
+        '''
+        cmd = "rhui-manager packages remote --repo_id %s --url %s" % (repo_id, url)
+        _, stdout, _ = connection.exec_command(cmd)
+        output = stdout.read().decode().splitlines()
+        successfully_uploaded_packages = [basename(line.split()[0]) for line in output \
+                                          if line.endswith("successfully uploaded")]
+        if not successfully_uploaded_packages:
+            raise RuntimeError("\n".join(output) or "no output from '%s'" % cmd)
+        successfully_uploaded_packages.sort()
+        expected_packages = [basename(url)] if url.endswith(".rpm") else Util.get_rpm_links(url)
+        expected_packages.sort()
+        nose.tools.eq_(successfully_uploaded_packages, expected_packages)
 
     @staticmethod
     def packages_upload(connection, repo_id, path):

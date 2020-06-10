@@ -6,6 +6,7 @@ import re
 import string
 import tempfile
 import time
+import urllib3
 import yaml
 
 from stitches.expect import Expect, ExpectFailed
@@ -208,6 +209,22 @@ class Util(object):
         '''
         _, stdout, _ = connection.exec_command("cd %s && ls -w1 *.rpm" % directory)
         rpms = stdout.read().decode().splitlines()
+        return rpms
+
+    @staticmethod
+    def get_rpm_links(url):
+        '''
+        return a list of RPM files linked from an HTML page (e.g. a directory listing)
+        '''
+        poolmgr = urllib3.PoolManager()
+        try:
+            request = poolmgr.request("GET", url)
+        except (urllib3.exceptions.SSLError, urllib3.exceptions.MaxRetryError):
+            # if the URL can't be reached, consider it an empty page
+            return []
+        content = request.data.decode()
+        rpmlinks = re.findall(r"<a href=\"[^\"]*\.rpm", content)
+        rpms = [rpmlink.replace("<a href=\"", "") for rpmlink in rpmlinks]
         return rpms
 
     @staticmethod

@@ -128,3 +128,7 @@ comps:
         test_group_mod: "Misc 2"
         test_package: "java-1.8.0-ibm-plugin"
         test_langpack: ""
+remote_content:
+    rpm: "http://mirror.centos.org/centos/7/fasttrack/x86_64/Packages/firewalld-filesystem-0.6.3-2.el7_7.1.0.1.noarch.rpm"
+    ftp: "ftp://ftp.redhat.com/redhat/linux/enterprise/2.1AS/en/os/i386/SRPMS/xsnow-1.40-14.src.rpm"
+    html_with_links: "https://repos.fedorapeople.org/pulp/pulp/demo_repos/repo_resync_b/"
