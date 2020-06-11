@@ -115,17 +115,28 @@ if exists(expanduser(ARGS.credentials)):
 else:
     print("%s does not exist, ignoring" % ARGS.credentials)
 
+# provided that the RHEL X Beta string is NOT a URL,
 # see if the configuration contains templates for RHEL Beta baseurls;
 # if so, expand them
 # if not, use the arguments verbatim
 if ARGS.rhel7b:
-    if R3A_CFG.has_section("beta") and R3A_CFG.has_option("beta", "rhel7_template"):
-        ARGS.rhel7b = R3A_CFG.get("beta", "rhel7_template") % ARGS.rhel7b
+    if ":/" not in ARGS.rhel7b and R3A_CFG.has_option("beta", "rhel7_template"):
+        try:
+            ARGS.rhel7b = R3A_CFG.get("beta", "rhel7_template") % ARGS.rhel7b
+        except TypeError:
+            print("The RHEL 7 Beta URL template is written incorrectly in %s. " % CFG_FILE +
+                  "It must contain '%s' in one place.")
+            sys.exit(1)
     EVARS += " rhel7_beta_baseurl=%s" % ARGS.rhel7b
 
 if ARGS.rhel8b:
-    if R3A_CFG.has_section("beta") and R3A_CFG.has_option("beta", "rhel8_template"):
-        ARGS.rhel8b = R3A_CFG.get("beta", "rhel8_template") % ARGS.rhel8b
+    if ":/" not in ARGS.rhel8b and R3A_CFG.has_option("beta", "rhel8_template"):
+        try:
+            ARGS.rhel8b = R3A_CFG.get("beta", "rhel8_template") % ARGS.rhel8b
+        except TypeError:
+            print("The RHEL 8 Beta URL template is written incorrectly in %s. " % CFG_FILE +
+                  "It must contain '%s' in one place.")
+            sys.exit(1)
     EVARS += " rhel8_beta_baseurl=%s" % ARGS.rhel8b
 
 if ARGS.tests:
