@@ -51,6 +51,7 @@ class TestRepo(object):
             self.yum_repo_kind = doc["yum_repos"][version][arch]["kind"]
             self.yum_repo_path = doc["yum_repos"][version][arch]["path"]
             self.containers = {"rh": doc["container_primary"], "alt": doc["container_alt"]}
+            self.remote_content = doc["remote_content"]
 
     @staticmethod
     def setup_class():
@@ -104,18 +105,33 @@ class TestRepo(object):
                                  RHUA,
                                  CUSTOM_REPOS[0])
 
-    def test_05_upload_one_rpm(self):
-        '''upload one rpm to the custom repo'''
+    def test_05_upload_local_rpms(self):
+        '''upload rpms from a local directory to a custom repo'''
         RHUIManagerRepo.upload_content(RHUA,
                                        [CUSTOM_REPOS[0]],
                                        "%s/%s" % (CUSTOM_RPMS_DIR, self.custom_rpms[0]))
-
-    @staticmethod
-    def test_06_upload_several_rpms():
-        '''upload several rpms to the custom repo from a directory'''
         RHUIManagerRepo.upload_content(RHUA,
                                        [CUSTOM_REPOS[0]],
                                        CUSTOM_RPMS_DIR)
+
+    def test_06_upload_remote_rpms(self):
+        '''upload rpms from remote servers to custom repos'''
+        # try single RPMs first
+        RHUIManagerRepo.upload_remote_content(RHUA,
+                                              [CUSTOM_REPOS[1]],
+                                              self.remote_content["rpm"])
+        RHUIManagerRepo.upload_remote_content(RHUA,
+                                              [CUSTOM_REPOS[1]],
+                                              self.remote_content["ftp"])
+        # and now an HTML page with links to RPMs
+        RHUIManagerRepo.upload_remote_content(RHUA,
+                                              [CUSTOM_REPOS[2]],
+                                              self.remote_content["html_with_links"])
+        # and finally also some bad stuff
+        # issues are handled in the TUI libraries -- no packages will be found and uploaded
+        rhua = ConMgr.get_rhua_hostname()
+        RHUIManagerRepo.upload_remote_content(RHUA, [CUSTOM_REPOS[2]], "https://%s/" % rhua)
+        RHUIManagerRepo.upload_remote_content(RHUA, [CUSTOM_REPOS[2]], "http://%s/" % rhua)
 
     def test_07_check_for_package(self):
         '''check package lists'''
@@ -135,7 +151,11 @@ class TestRepo(object):
         nose.tools.eq_(RHUIManagerRepo.check_for_package(RHUA,
                                                          CUSTOM_REPOS[1],
                                                          ""),
-                       [])
+                       sorted([basename(self.remote_content[p]) for p in ["rpm", "ftp"]]))
+        nose.tools.eq_(RHUIManagerRepo.check_for_package(RHUA,
+                                                         CUSTOM_REPOS[2],
+                                                         ""),
+                       sorted(Util.get_rpm_links(self.remote_content["html_with_links"])))
 
     def test_08_display_custom_repos(self):
         '''check detailed information on the custom repos'''
@@ -148,12 +168,13 @@ class TestRepo(object):
                                                    [CUSTOM_REPOS[1], CUSTOM_PATHS[1]],
                                                    [True, False],
                                                    [True, None, True],
-                                                   0)
+                                                   2)
+        rpm_link_count = len(Util.get_rpm_links(self.remote_content["html_with_links"]))
         RHUIManagerRepo.check_detailed_information(RHUA,
                                                    [CUSTOM_REPOS[2], CUSTOM_PATHS[2]],
                                                    [True, True],
                                                    [False],
-                                                   0)
+                                                   rpm_link_count)
 
     def test_09_add_rh_repo_by_repo(self):
         '''add a Red Hat repo by its name'''

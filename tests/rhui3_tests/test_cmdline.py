@@ -60,6 +60,7 @@ class TestCLI(object):
         self.yum_repo_labels = [doc["CLI_repo1"]["label"], doc["CLI_repo2"]["label"]]
         self.yum_repo_paths = [doc["CLI_repo1"]["path"], doc["CLI_repo2"]["path"]]
         self.product = doc["CLI_product"]
+        self.remote_content = doc["remote_content"]
         self.subscriptions = doc["subscriptions"]
 
     @staticmethod
@@ -70,18 +71,14 @@ class TestCLI(object):
         print("*** Running %s: *** " % basename(__file__))
 
     @staticmethod
-    def test_01_initial_run():
-        '''log in to RHUI'''
+    def test_01_init_repo_check():
+        '''log in to RHUI, check if the repo list is empty'''
         RHUIManager.initial_run(RHUA)
-
-    @staticmethod
-    def test_02_check_empty_repo_list():
-        '''check if the repo list is empty'''
         repolist = RHUIManagerCLI.repo_list(RHUA, True)
         nose.tools.ok_(not repolist, msg="there are some repos already: %s" % repolist)
 
     @staticmethod
-    def test_03_create_custom_repos():
+    def test_02_create_custom_repos():
         '''create three custom repos for testing'''
         # the first repo will be unprotected, with default parameters
         RHUIManagerCLI.repo_create_custom(RHUA, CUSTOM_REPOS[0])
@@ -99,7 +96,7 @@ class TestCLI(object):
                                           protected=True)
 
     @staticmethod
-    def test_04_custom_repo_checks():
+    def test_03_custom_repo_checks():
         '''check if the custom repo cannot be added twice and if the GPG key path is validated'''
         nose.tools.assert_raises(CustomRepoAlreadyExists,
                                  RHUIManagerCLI.repo_create_custom,
@@ -112,7 +109,7 @@ class TestCLI(object):
                                  gpg_public_keys="/this_file_cant_be_there")
 
     @staticmethod
-    def test_05_check_custom_repos():
+    def test_04_check_custom_repos():
         '''check if the custom repos were actually created'''
         # try a delimiter this time
         delimiter = ","
@@ -122,18 +119,46 @@ class TestCLI(object):
         # ^ also checks if the repo IDs are sorted
 
     @staticmethod
-    def test_06_upload_rpm():
-        '''upload content to one of the custom repos'''
+    def test_05_upload_local_rpms():
+        '''upload content from a local directory to one of the custom repos'''
         RHUIManagerCLI.packages_upload(RHUA, CUSTOM_REPOS[0], "%s/%s" % (DATADIR, TEST_RPM))
         # also supply the whole directory
         RHUIManagerCLI.packages_upload(RHUA, CUSTOM_REPOS[0], DATADIR)
 
-    @staticmethod
-    def test_07_check_package():
-        '''check that the uploaded package is now in the repo'''
-        package_list = RHUIManagerCLI.packages_list(RHUA, CUSTOM_REPOS[0])
-        nose.tools.ok_(TEST_RPM in package_list,
-                       msg="%s not found in %s" % (TEST_RPM, package_list))
+    def test_06_upload_remote_rpms(self):
+        '''upload content from remote servers to the custom repos'''
+        # try single RPMs first
+        RHUIManagerCLI.packages_remote(RHUA, CUSTOM_REPOS[1], self.remote_content["rpm"])
+        RHUIManagerCLI.packages_remote(RHUA, CUSTOM_REPOS[1], self.remote_content["ftp"])
+        # and now an HTML page with links to RPMs
+        RHUIManagerCLI.packages_remote(RHUA,
+                                       CUSTOM_REPOS[2],
+                                       self.remote_content["html_with_links"])
+        # and finally also some bad stuff
+        rhua = ConMgr.get_rhua_hostname()
+        try:
+            RHUIManagerCLI.packages_remote(RHUA, CUSTOM_REPOS[2], "https://%s/" % rhua)
+        except RuntimeError as err:
+            # the RHUA listens on port 443 and uses a self-signed cert, which should be refused
+            nose.tools.ok_("CERTIFICATE_VERIFY_FAILED" in str(err))
+        try:
+            # the RHUA also listens on port 80
+            # create an empty subdirectory, supply it to rhui-manager, and expect no RPMs
+            test_dir = "r"
+            Expect.expect_retval(RHUA, "mkdir -p /var/www/html/%s" % test_dir)
+            RHUIManagerCLI.packages_remote(RHUA, CUSTOM_REPOS[2], "http://%s/%s" % (rhua, test_dir))
+        except RuntimeError as err:
+            Expect.expect_retval(RHUA, "rmdir /var/www/html/%s" % test_dir)
+            nose.tools.ok_("Found 0 RPMs" in str(err))
+
+    def test_07_check_packages(self):
+        '''check that the uploaded packages are now in the repos'''
+        package_lists = [RHUIManagerCLI.packages_list(RHUA, repo) for repo in CUSTOM_REPOS]
+        nose.tools.eq_(package_lists[0], Util.get_rpms_in_dir(RHUA, DATADIR))
+        rpm_ftp_combined = sorted([basename(self.remote_content[p]) for p in ["rpm", "ftp"]])
+        nose.tools.eq_(package_lists[1], rpm_ftp_combined)
+        linked_rpms = sorted(Util.get_rpm_links(self.remote_content["html_with_links"]))
+        nose.tools.eq_(package_lists[2], linked_rpms)
 
     @staticmethod
     def test_08_upload_certificate():
