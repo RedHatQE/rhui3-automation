@@ -10,6 +10,7 @@ from boto import ec2
 import argparse
 import time
 import logging
+import subprocess
 import sys
 import random
 import string
@@ -582,6 +583,16 @@ for i in con_ec2.get_all_instances():
                 public_hostname = ii.tags["PublicHostname"]
             except KeyError:
                 public_hostname = ii.public_dns_name
+            # sometimes an instance doesn't get its public hostname immediately (it's empty)
+            # if that's the case, keep asking AWS (using the CLI)
+            get_pub_hostname_cmd = "aws ec2 describe-instances --region %s --instance-ids %s --query 'Reservations[].Instances[].PublicDnsName'" % (REGION, ii.id)
+            while not public_hostname:
+                logging.info('the public hostname of %s is not yet known, will try to fetch it after a while' % ii.id)
+                time.sleep(20)
+                cmd_out = subprocess.check_output(get_pub_hostname_cmd, shell=True).decode()
+                response_list = json.loads(cmd_out)
+                if response_list:
+                    public_hostname = response_list[0]
             try:
                 private_hostname = ii.tags["PrivateHostname"]
             except KeyError:
@@ -819,6 +830,18 @@ for instance in instances_detail:
 print('# --- instances created ---')
 yaml.dump(result, sys.stdout)
 print('# --- stack data saved in %s ---' % outfile)
+# check if the file really contains all the hostnames; they should be there, but just in case...
+# (basically, if a line starts with the space character, it's a problem; report the line number)
+outfile_ok = True
+with open(outfile) as outfile_fd:
+    saved_lines = outfile_fd.readlines()
+    for index, text in enumerate(saved_lines):
+        if text.startswith(' '):
+            print('Missing hostname on line %s!' % (index + 1))
+            outfile_ok = False
+    if not outfile_ok:
+        print('Fix the file manually, or delete the stack and try again.')
+        sys.exit(2)
 # miserable hack --- cannot make paramiko not hang upon exit
 # [revised in February 2017] not necessary anymore
 #import os
