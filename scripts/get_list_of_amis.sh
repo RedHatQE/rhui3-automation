@@ -27,7 +27,7 @@ fi
 #u'eu-central-1': {u'AMI': u'ami-3867b357'},
 #
 
-regions=(af-south-1 ap-east-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-south-1 ap-southeast-1 ap-southeast-2 ca-central-1 eu-central-1 eu-north-1 eu-south-1 eu-west-1 eu-west-2 eu-west-3 me-south-1 sa-east-1 us-east-1 us-east-2 us-west-1 us-west-2)
+regions=$(aws ec2 describe-regions --all-regions --query 'Regions[].{Name:RegionName}' --output text | sort)
 
 if [[ $1 =~ ^RHEL ]]; then
   ami_description=$1
@@ -36,7 +36,7 @@ else
   exit
 fi
 
-for i in "${regions[@]}"
+for i in $regions
 do
 	echo "u'"$i"': {u'AMI': u'"`aws ec2 describe-images --filters "Name=name,Values=*$ami_description*" --query 'Images[*].ImageId' --region=$i`"'}," | sed -re 's/\[.*?\"(.+?)\".*\]/\1/'
 	sleep 5
