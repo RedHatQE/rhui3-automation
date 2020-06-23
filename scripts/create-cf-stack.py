@@ -819,6 +819,18 @@ for instance in instances_detail:
 print('# --- instances created ---')
 yaml.dump(result, sys.stdout)
 print('# --- stack data saved in %s ---' % outfile)
+# sometimes a hostname can't be obtained in time and doesn't appear in the file; check the file
+# (basically, if a line starts with the space character, it's a problem; report the line number)
+outfile_ok = True
+with open(outfile) as outfile_fd:
+    saved_lines = outfile_fd.readlines()
+    for index, text in enumerate(saved_lines):
+        if text.startswith(' '):
+            print('Missing hostname on line %s!' % (index + 1))
+            outfile_ok = False
+    if not outfile_ok:
+        print('Fix the file manually, or delete the stack and try again.')
+        sys.exit(2)
 # miserable hack --- cannot make paramiko not hang upon exit
 # [revised in February 2017] not necessary anymore
 #import os
