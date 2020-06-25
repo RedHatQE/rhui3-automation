@@ -34,7 +34,7 @@ def _ent_list(stdout):
         # (which are non-empty lines below the header, without expriration and file name info)
         entitlements = [line for line in lines[3:] if line and not line.startswith("Expiration")]
         return entitlements
-    elif status == "Expired" or status == "No Red Hat entitlements found.":
+    if status in ("Expired", "No Red Hat entitlements found."):
         # return an empty list
         return []
     # if we're here, there's another problem with the entitlements/output
@@ -194,7 +194,7 @@ class RHUIManagerCLI(object):
                                     (re.compile(".*%s.*" % out["repo_exists"], re.DOTALL), 3),
                                     (re.compile(".*%s.*" % out["bad_gpg"], re.DOTALL), 4),
                                     (re.compile(".*%s.*" % out["success"], re.DOTALL), 5)])
-        if state == 1 or state == 2:
+        if state in (1, 2):
             raise ValueError("the given repo ID is unusable")
         if state == 3:
             raise CustomRepoAlreadyExists()

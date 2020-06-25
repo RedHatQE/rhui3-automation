@@ -71,12 +71,11 @@ class RHUIManagerInstance(object):
                 RHUIManager.quit(connection)
                 raise InstanceAlreadyExistsError("%s already tracked but update wasn't required" % \
                                                  hostname)
-            else:
-                # we wish to update, send 'y' answer
-                Expect.enter(connection, "y")
-                # the question about user name comes now
-                Expect.expect(connection,
-                              "Username with SSH access to %s and sudo privileges:" % hostname)
+            # we wish to update, send 'y' answer
+            Expect.enter(connection, "y")
+            # the question about user name comes now
+            Expect.expect(connection,
+                          "Username with SSH access to %s and sudo privileges:" % hostname)
         # if the execution reaches here, uesername question was already asked
         Expect.enter(connection, user_name)
         Expect.expect(connection,

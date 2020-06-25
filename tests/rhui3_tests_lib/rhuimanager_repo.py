@@ -17,7 +17,6 @@ class AlreadyExistsError(Exception):
     '''
     To be raised if a custom repo already exists with this name.
     '''
-    pass
 
 class RHUIManagerRepo(object):
     '''

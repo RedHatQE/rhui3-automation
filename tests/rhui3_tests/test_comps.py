@@ -69,7 +69,8 @@ class TestCompsXML(object):
         nose.tools.ok_(cds_list)
         hap_list = RHUICLI.list(RHUA, "haproxy")
         nose.tools.ok_(hap_list)
-        # if running RHEL Beta, temporarily restore the non-Beta repos potentially disabled by choose_repo.py
+        # if running RHEL Beta, temporarily restore the non-Beta repos,
+        # potentially disabled by choose_repo.py
         cmd = "if grep -q Beta /etc/redhat-release; then " \
               "cp /etc/yum.repos.d/redhat-rhui.repo{.disabled,}; " \
               "yum-config-manager --enable %s %s; fi" % (BIG_REPO, EMP_REPO)
