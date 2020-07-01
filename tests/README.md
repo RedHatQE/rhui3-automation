@@ -46,7 +46,7 @@ The main and Atomic certificates must not be expired. Expiration is first checke
 "incompatible", and "partially invalid" certificates, and the tests that use them are skipped if
 the given certificate has already expired.
 
-If you're working on changes to rhui3-automation that aren't in the master branch and you'd like to
+If you're working on changes to rhui3-automation that aren't in the default branch and you'd like to
 apply them before installing rhui3-automation and running tests, you can supply a patch file
 with the changes.
 

@@ -40,7 +40,7 @@ Managed roles
 - HAProxy (load balancer)
 - Nfs server
 - Cli and Atomic Cli (optional)
-- [Tests](https://github.com/RedHatQE/rhui3-automation/blob/master/tests/README.md) (optional)
+- [Tests](../tests/README.md) (optional)
 
 Supported configurations
 ------------------------

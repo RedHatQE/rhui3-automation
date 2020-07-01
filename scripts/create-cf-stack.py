@@ -631,7 +631,6 @@ for i in con_ec2.get_all_instances():
 #yamlfile.close()
 #hostsfile.close()
 logging.debug(instances_detail)
-master_keys = []
 result = []
 for instance in instances_detail:
     if instance["public_ip"]:
