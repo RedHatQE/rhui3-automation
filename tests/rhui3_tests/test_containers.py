@@ -194,8 +194,11 @@ class TestClient(object):
 
         _, stdout, _ = CLI.exec_command("docker images")
         images = stdout.read().decode().splitlines()
-        images_cli = [image.split()[0].split("/")[1] \
-                     for image in images if image.startswith(ConMgr.get_cds_lb_hostname())]
+        try:
+            images_cli = [image.split()[0].split("/")[1] \
+                         for image in images if image.startswith(ConMgr.get_cds_lb_hostname())]
+        except IndexError:
+            raise RuntimeError("Unexpected output:\n%s" % "\n".join(images))
         nose.tools.eq_(sorted(images_cli),
                        sorted([self.container_id, quay_repo_name, docker_repo_name]))
 
