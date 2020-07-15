@@ -3,63 +3,63 @@
         "AMI": ""
     },
     "ap-east-1": {
-        "AMI": "ami-936e2fe2"
+        "AMI": "ami-57632326"
     },
     "ap-northeast-1": {
-        "AMI": "ami-09687d5af28fa5ad3"
+        "AMI": "ami-09dc6971a70e69cc9"
     },
     "ap-northeast-2": {
-        "AMI": "ami-0d0fb1a4fb8845652"
+        "AMI": "ami-0cf5a0f8aec78ffa1"
     },
     "ap-northeast-3": {
         "AMI": ""
     },
     "ap-south-1": {
-        "AMI": "ami-0a257d4d3c38c1883"
+        "AMI": "ami-0d1b5b68e959b8f0a"
     },
     "ap-southeast-1": {
-        "AMI": "ami-0f8751d73da075377"
+        "AMI": "ami-05bd2b2fc52063c8b"
     },
     "ap-southeast-2": {
-        "AMI": "ami-036beb07937cd2dc4"
+        "AMI": "ami-0c422de6a3bf15046"
     },
     "ca-central-1": {
-        "AMI": "ami-00c551bf41e8810f7"
+        "AMI": "ami-0ccf38ada5db41ca5"
     },
     "eu-central-1": {
-        "AMI": "ami-0f8ad1b8c4740881e"
+        "AMI": "ami-06b9f44feb04e40be"
     },
     "eu-north-1": {
-        "AMI": "ami-0afb592a6e862bd2f"
+        "AMI": "ami-0562827b90c36d8fe"
     },
     "eu-south-1": {
         "AMI": ""
     },
     "eu-west-1": {
-        "AMI": "ami-09ec7a5422fa75d3c"
+        "AMI": "ami-05265234d59df3c1c"
     },
     "eu-west-2": {
-        "AMI": "ami-069eb2006e59a1073"
+        "AMI": "ami-0c4f1d2df056b4df0"
     },
     "eu-west-3": {
-        "AMI": "ami-0872d0bc4391b04b5"
+        "AMI": "ami-068d45b0a3f8f6a83"
     },
     "me-south-1": {
-        "AMI": "ami-02ea3f255d64943b5"
+        "AMI": "ami-07ea04a6ad4d7eab7"
     },
     "sa-east-1": {
-        "AMI": "ami-09139d9cb0a004a8b"
+        "AMI": "ami-057a78c13069c8d96"
     },
     "us-east-1": {
-        "AMI": "ami-0b020a6fe15b58aba"
+        "AMI": "ami-0163f73696bcdf8e6"
     },
     "us-east-2": {
-        "AMI": "ami-035de6d45aa66aecf"
+        "AMI": "ami-017f7e87a806d0695"
     },
     "us-west-1": {
-        "AMI": "ami-074e3164d6b728490"
+        "AMI": "ami-0883ddeea8f36463a"
     },
     "us-west-2": {
-        "AMI": "ami-0e1100c3cf8e3dc9d"
+        "AMI": "ami-086ceeb0413431c07"
     }
 }
