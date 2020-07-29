@@ -1,4 +1,4 @@
-'''Atomic client tests (RHEL 7+ only)'''
+'''Atomic client tests (RHEL 7 only)'''
 
 from __future__ import print_function
 

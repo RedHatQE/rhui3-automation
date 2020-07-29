@@ -88,7 +88,7 @@ class RHUIManagerClient(object):
     @staticmethod
     def create_atomic_conf_pkg(connection, dirname, tarname, certpath, certkey, port=""):
         '''
-        create an atomic client configuration package (RHEL 7+ only)
+        create an atomic client configuration package (RHEL 7 only)
         '''
         RHUIManager.screen(connection, "client")
         Expect.enter(connection, "o")
