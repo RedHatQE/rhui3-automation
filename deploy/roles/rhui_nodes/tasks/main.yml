@@ -1,21 +1,10 @@
 ---
 # file: roles/rhui_nodes/tasks/main.yml
-# tasks common to both the RHUA and CDS nodes
+# tasks common to the RHUA, CDS, and HAPROXY nodes
 # sync installation media and set up repos
 # variables:
 # - rhui_iso: path to the RHUI ISO to install from; if you don't supply this, be sure to supply the credentials file instead
 # - rhui_iso_gpgsigs: enable/disable RHUI ISO repo gpg signature checking (default: False; see the setup_package_repos script on the ISO
-
-- name: copy common custom rpm
-  copy: src={{common_custom_rpm}} dest=/tmp
-  when: common_custom_rpm is defined
-  register: copy_remote_rpm_result
-  tags: rhui_nodes
-
-- name: install common custom rpm
-  package: name='/tmp/{{common_custom_rpm|basename}}' state=present
-  when: common_custom_rpm is defined and copy_remote_rpm_result is success
-  tags: rhui_nodes
 
 - name: upload the rhui iso
   copy: src="{{ rhui_iso }}" dest=/tmp/rhui.iso
@@ -64,10 +53,17 @@
 
 - name: enable the RHSM repos required to install RHUI 3
   rhsm_repository:
-    name: rhel-7-server-rhui-rpms,rhel-7-server-rhui-3-rpms,rh-gluster-3-for-rhel-7-server-rhui-rpms
+    name: rhel-7-server-rhui-rpms,rhel-7-server-rhui-3-rpms
     purge: yes
   register: setup_package_repos_result
   when: rhui_iso is undefined and credentials is defined
+  tags: rhui_nodes
+
+- name: enable Gluster repos on Gluster nodes
+  rhsm_repository:
+    name: rh-gluster-3-for-rhel-7-server-rhui-rpms
+  register: setup_package_repos_result
+  when: rhui_iso is undefined and credentials is defined and inventory_hostname in groups['GLUSTER']
   tags: rhui_nodes
 
 - name: back up rh-amazon-rhui-client so it can be uninstalled now but installed again if needed
@@ -81,7 +77,9 @@
 
 - name: uninstall rh-amazon-rhui-client
   yum:
-    name: rh-amazon-rhui-client
+    name:
+      - rh-amazon-rhui-client
+      - rh-amazon-rhui-client-rhs30
     state: absent
   when: rhui_iso is undefined and credentials is defined
   tags: rhui_nodes
