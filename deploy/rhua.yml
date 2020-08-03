@@ -6,5 +6,4 @@
     - include: roles/common/handlers/main.yml
 
   roles:
-    - rhui_nodes 
     - rhua

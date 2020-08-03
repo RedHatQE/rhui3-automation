@@ -1,9 +1,13 @@
 ---
 # file: site.yml
 # top-level deployment playbook
+- hosts: RHUA CDS HAPROXY
+  roles:
+    - rhui_nodes
+
 - hosts: all
   roles:
-  - common
+    - common
 
 - import_playbook: dns.yml
 - import_playbook: filesystem.yml

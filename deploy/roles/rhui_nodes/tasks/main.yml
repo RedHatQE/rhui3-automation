@@ -77,9 +77,7 @@
 
 - name: uninstall rh-amazon-rhui-client
   yum:
-    name:
-      - rh-amazon-rhui-client
-      - rh-amazon-rhui-client-rhs30
+    name: rh-amazon-rhui-client
     state: absent
   when: rhui_iso is undefined and credentials is defined
   tags: rhui_nodes
