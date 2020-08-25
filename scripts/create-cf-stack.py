@@ -50,7 +50,7 @@ class SyncSSHClient(SSHClient):
         chan.close()
         return status
 
-instance_types = {"arm64": "a1.large", "x86_64": "m3.large"}
+instance_types = {"arm64": "a1.large", "x86_64": "m5.large"}
 
 argparser = argparse.ArgumentParser(description='Create CloudFormation stack')
 argparser.add_argument('--rhua', help=argparse.SUPPRESS)
@@ -84,11 +84,12 @@ argparser.add_argument('--parameters', metavar='<expr>', nargs="*",
 argparser.add_argument('--timeout', type=int,
                        default=10, help='stack creation timeout')
 
-argparser.add_argument('--vpcid', help='VPCid')
-argparser.add_argument('--subnetid', help='Subnet id (for VPC)')
+argparser.add_argument('--vpcid', help='VPCid (overrides the configuration for the region)')
+argparser.add_argument('--subnetid', help='Subnet id (for VPC) (overrides the configuration for the region)')
+argparser.add_argument('--novpc', help='do not use VPC, use EC2 Classic', action='store_const', const=True, default=False)
 
 argparser.add_argument('--r3', action='store_const', const=True, default=False,
-                        help='use r3.xlarge instances to squeeze out more network and cpu performance (requires vpcid and subnetid)')
+                        help='use r3.xlarge instances to squeeze out more network and cpu performance (requires VPC)')
 argparser.add_argument('--ami-5-override', help='RHEL 5 AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ami-6-override', help='RHEL 6 AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ami-7-override', help='RHEL 7 AMI ID to override the mapping', metavar='ID')
@@ -118,9 +119,13 @@ else:
 if (args.vpcid and not args.subnetid) or (args.subnetid and not args.vpcid):
     logging.error("vpcid and subnetid parameters should be set together!")
     sys.exit(1)
-if (args.r3 and not args.vpcid):
-    logging.error("r3 requires setting vpcid and subnetid")
-    sys.exit(1)
+if args.r3:
+    if args.novpc:
+        logging.error("r3 requires VPC")
+        sys.exit(1)
+    instance_types["x86_64"] = "r3.xlarge"
+if args.novpc:
+    instance_types["x86_64"] = "m3.large"
 
 try:
     with open(args.input_conf, 'r') as confd:
@@ -130,6 +135,8 @@ try:
     ec2_key = valid_config["ec2"]["ec2-key"]
     ec2_secret_key = valid_config["ec2"]["ec2-secret-key"]
     ec2_name = re.search("[a-zA-Z]+", ssh_key_name).group(0)
+    if not args.novpc:
+        (vpcid, subnetid) = (args.vpcid, args.subnetid) if args.vpcid else valid_config["vpc"][REGION]
 
 except Exception as e:
     logging.error("got '%s' error processing: %s", e, args.input_conf)
@@ -301,7 +308,7 @@ json_dict['Resources'] = \
 if (fs_type == "rhua"):
     json_dict['Resources']["rhua"] = \
      {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
-                               u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                               u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                  u'BlockDeviceMappings' : [
@@ -323,7 +330,7 @@ if (fs_type == "rhua"):
 else:
     json_dict['Resources']["rhua"] = \
      {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
-                               u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                               u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                  u'BlockDeviceMappings' : [
@@ -344,7 +351,7 @@ if (fs_type == "gluster"):
     for i in range(1, args.cds + 1):
         json_dict['Resources']["cds%i" % i] = \
             {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
-                                   u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                                   u'InstanceType': instance_types["x86_64"],
                                    u'BlockDeviceMappings' : [
                                               {
                                                 "DeviceName" : "/dev/sdf",
@@ -363,7 +370,7 @@ else:
     for i in range(1, args.cds + 1):
         json_dict['Resources']["cds%i" % i] = \
             {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
-                                   u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                                   u'InstanceType': instance_types["x86_64"],
                                    u'KeyName': {u'Ref': u'KeyName'},
                                    u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                    u'Tags': [{u'Key': u'Name',
@@ -411,7 +418,7 @@ for i in (5, 6, 7, 8):
 for i in range(1, args.atomic_cli + 1):
     json_dict['Resources']["atomiccli%i" % i] = \
         {u'Properties': {u'ImageId': {u'Fn::FindInMap': ["ATOMIC", {u'Ref': u'AWS::Region'}, u'AMI']},
-                               u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                               u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
@@ -424,7 +431,7 @@ for i in range(1, args.atomic_cli + 1):
 if (fs_type == "nfs"):
     json_dict['Resources']["nfs"] = \
      {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
-                               u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                               u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                  u'BlockDeviceMappings' : [
@@ -443,7 +450,7 @@ if (fs_type == "nfs"):
 if args.dns:
     json_dict['Resources']["dns"] = \
      {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
-                               u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                               u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
@@ -457,7 +464,7 @@ if args.test:
     os = "RHEL8" if args.test8 else rhui_os
     json_dict['Resources']["test"] = \
      {u'Properties': {u'ImageId': {u'Fn::FindInMap': [os, {u'Ref': u'AWS::Region'}, u'AMI']},
-                               u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                               u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
@@ -470,7 +477,7 @@ if args.test:
 for i in range(1, args.haproxy + 1):
     json_dict['Resources']["haproxy%i" % i] = \
         {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
-                               u'InstanceType': args.r3 and u'r3.xlarge' or u'm3.large',
+                               u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
                                u'Tags': [{u'Key': u'Name',
@@ -479,15 +486,15 @@ for i in range(1, args.haproxy + 1):
                                          ]},
                    u'Type': u'AWS::EC2::Instance'}
 
-if args.vpcid and args.subnetid:
+if not args.novpc:
     # Setting VpcId and SubnetId
     json_dict['Outputs'] = {}
     for key in list(json_dict['Resources']):
         # We'll be changing dictionary so retyping to a list is required to ensure compatibility with Python 3.7+.
         if json_dict['Resources'][key]['Type'] == 'AWS::EC2::SecurityGroup':
-            json_dict['Resources'][key]['Properties']['VpcId'] = args.vpcid
+            json_dict['Resources'][key]['Properties']['VpcId'] = vpcid
         elif json_dict['Resources'][key]['Type'] == 'AWS::EC2::Instance':
-            json_dict['Resources'][key]['Properties']['SubnetId'] = args.subnetid
+            json_dict['Resources'][key]['Properties']['SubnetId'] = subnetid
             json_dict['Resources'][key]['Properties']['SecurityGroupIds'] = json_dict['Resources'][key]['Properties'].pop('SecurityGroups')
             json_dict['Resources']["%sEIP" % key] = \
             {

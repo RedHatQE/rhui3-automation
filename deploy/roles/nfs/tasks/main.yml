@@ -16,16 +16,20 @@
   file: path=/export state=directory
   tags: nfs
 
+- name: determine storage volume device name
+  shell: lsblk | awk '/100G/ {print $1}'
+  register: lsblk
+
 - name: format storage volume device
   filesystem:
     fstype: xfs
-    dev: /dev/xvdb
+    dev: "/dev/{{ lsblk.stdout }}"
   tags: nfs
 
 - name: mount storage volume filesystem
   mount:
     path: /export
-    src: /dev/xvdb
+    src: "/dev/{{ lsblk.stdout }}"
     fstype: xfs
     state: mounted
   tags: nfs
