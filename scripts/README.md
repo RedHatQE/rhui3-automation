@@ -58,6 +58,7 @@ Default configuration:
   * **--test8** - if specified, TEST machine running RHEL 8, `default = 0`
   * **--region [name]** - `default = eu-west-1`
   * **--ansible-ssh-extra-args [args]** - optional SSH arguments for Ansible
+  * **--novpc** - use EC2 Classic, not VPC; possibly useful if you're short on Elastic IPs
 
 Run the script with `-h` or `--help` to get a list of all parameters.
 
@@ -75,7 +76,7 @@ Note that RHEL-8 AMIs are missing the unversioned `python` command. This does no
 the deployment because the _platform Python_ is automatically set in the case of RHEL 8 hosts.
 
 If you specify a non-x86\_64 client architecture, a suitable instance type will be selected
-automatically. You may need to supply a VPC and a subnet ID with some instance types,
+automatically. You cannot use EC2 Classic with some instance types,
 e.g. with a1.large, which will be selected for arm64.
 
 Mutually exclusive options: 
@@ -123,11 +124,12 @@ In addition, a 50 GB volume is attached for MongoDB on the RHUA.
 * `scripts/create-cf-stack.py --input-conf rhui_ec2.yaml --name rhel8clients --cli8 -1 --test --vpcid vpc-012345678 --subnetid subnet-89abcdef`
   * NFS configuration
   * custom input configuration file in the current working directory
-  * 1xRHUA=NFS=DNS, 1xCDS, 1xHAProxy, 2xCLI8 (x86_64 and ARM64), 1xTEST, custom VPC and subnet (needed by the `a1` instance type used with ARM64)
+  * 1xRHUA=NFS=DNS, 1xCDS, 1xHAProxy, 2xCLI8 (x86_64 and ARM64), 1xTEST, overridden VPC and subnet configuration
 
 #### Input configuration file
 
 Change `ec2-key` and `ec2-secret-key` values to your keys. Change `user` to your username and update path to your pem keys. If region is missing, add it according to the pattern.
+Change the VPC and subnet IDs and add them for any other regions you might use.
 
 ```
 ec2: {ec2-key: AAAAAAAAAAAAAAAAAAAA, ec2-secret-key: B0B0B0B0B0B0B0B0B0B0a1a1a1a1a1a1a1a1a1a1}
@@ -141,6 +143,8 @@ ssh:
   us-east-1: [user-us-east-1, /home/user/.pem/user-us-east-1.pem]
   us-west-1: [user-us-west-1, /home/user/.pem/user-us-west-1.pem]
   us-west-2: [user-us-west-2, /home/user/.pem/user-us-west-2.pem]
+vpc:
+  eu-west-1: [vpc-333, subnet-aaa]
 
 ```
 

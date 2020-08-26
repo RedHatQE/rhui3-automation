@@ -2,16 +2,20 @@
 # file: roles/rhua/tasks/mongodb.yml
 # format and mount a separate volume for MongoDB
 
+- name: determine MongoDB volume device name
+  shell: lsblk | awk '/50G/ {print $1}'
+  register: lsblk
+
 - name: format MongoDB volume device
   filesystem:
     fstype: xfs
-    dev: /dev/xvdm
+    dev: "/dev/{{ lsblk.stdout }}"
   tags: rhua
 
 - name: mount MongoDB volume filesystem
   mount:
     path: /var/lib/mongodb
-    src: /dev/xvdm
+    src: "/dev/{{ lsblk.stdout }}"
     fstype: xfs
     state: mounted
   tags: rhua
