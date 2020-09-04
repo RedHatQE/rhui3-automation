@@ -2,7 +2,7 @@
 
 ## Create Stack script
 
-Script creates ec2 instance machines (m3.large) according to specification.
+This script creates EC2 instance machines (m5.large) according to default or specified options.
 
 Instances are named `$user_$fstype_$name_$role` (*user_nfs_77betatests_rhua*)
 
@@ -59,11 +59,7 @@ Default configuration:
 
   * **--name [name]** - common name for the instances in the stack (as in $user_$fstype_$name_$role); also affects the `hosts` file name (unless overridden). `default = rhui`
   * **--gluster** - use GlusterFS instead of NFS
-  * **--dns** - if specified, a separate machine for dns, `default = the same as RHUA`
   * **--cds [number]** - number of CDS machines, `default = 1` (if Gluster filesystem, `default = 3`)
-  * **--haproxy [number]** - number of HAProxies, `default = 1`
-  * **--input-conf [name]** - the name of input conf file, `default = "/etc/rhui_ec2.yaml"`
-  * **--output-conf [name]** - the name of output conf file, `default = "hosts_$fstype_$name.cfg"`
   * **--cli5/6/7/8 [number]** - number of CLI machines, `default = 0`, use `-1` to get machines for all architectures (one machine per architecture)
   * **--cli7/8-arch [arch]** - CLI machines' architectures (comma-separated list), `default = x86_64 for all of them`, `cli`_N_ set to `-1` will populate the list with all architectures automatically, so this parameter is unnecessary then
   * **--atomic-cli [number]** - number of ATOMIC CLI machines, `default = 0`
@@ -141,8 +137,7 @@ In addition, a 50 GB volume is attached for MongoDB on the RHUA.
 
 #### Input configuration file
 
-Change `ec2-key` and `ec2-secret-key` values to your keys. Change `user` to your username and update path to your pem keys. If region is missing, add it according to the pattern.
-Change the VPC and subnet IDs and add them for any other regions you might use.
+Create `/etc/rhui_ec2.yaml` from the following template. Consider making the file accessible to you only if you're on a multi-user system.
 
 ```
 ec2: {ec2-key: AAAAAAAAAAAAAAAAAAAA, ec2-secret-key: B0B0B0B0B0B0B0B0B0B0a1a1a1a1a1a1a1a1a1a1}
@@ -153,6 +148,9 @@ vpc:
 
 ```
 
+Change `ec2-key` and `ec2-secret-key` values to your keys.
+Change the VPC and subnet IDs and add them for any other regions you might use.
+
 Note: in this example, a special key pair name and private key file path are specified
 for the `ap-northeast-1` region. In that case, the script will use this information
 in the generated inventory file so that Ansible can use it when connecting to the machines.
@@ -161,6 +159,8 @@ For other (undefined) regions, the inventory file won't contain such information
 will honor the saved or default SSH configuration as decribed in the Requirements section.
 At the same time, the stack creation script will use your local user name as the AWS key pair
 name unless you override it using the `--key-pair-name` option.
+It is therefore wise to keep the same key pair in all regions, and name it according to your
+local user name. Then you won't need the `ssh` section in the input configuration file at all.
 
 #### Output configuration file
 
