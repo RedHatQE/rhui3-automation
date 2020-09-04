@@ -63,7 +63,7 @@
   rhsm_repository:
     name: rh-gluster-3-for-rhel-7-server-rhui-rpms
   register: setup_package_repos_result
-  when: rhui_iso is undefined and credentials is defined and inventory_hostname in groups['GLUSTER']
+  when: rhui_iso is undefined and credentials is defined and 'GLUSTER' in groups and inventory_hostname in groups['GLUSTER']
   tags: rhui_nodes
 
 - name: back up rh-amazon-rhui-client so it can be uninstalled now but installed again if needed
