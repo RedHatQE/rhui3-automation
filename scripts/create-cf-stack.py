@@ -3,6 +3,7 @@
 """ Create CloudFormation stack """
 from __future__ import print_function
 
+import os
 from paramiko import SSHClient
 from boto import cloudformation
 from boto import regioninfo
@@ -96,6 +97,7 @@ argparser.add_argument('--ami-7-override', help='RHEL 7 AMI ID to override the m
 argparser.add_argument('--ami-8-override', help='RHEL 8 AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ami-atomic-override', help='RHEL Atomic host AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ansible-ssh-extra-args', help='Extra arguments for SSH connections established by Ansible', metavar='ARGS')
+argparser.add_argument('--key-pair-name', help='the name of the key pair in the given AWS region, if your local user name differs and SSH configuraion is undefined in the yaml config file')
 
 args = argparser.parse_args()
 
@@ -131,7 +133,11 @@ try:
     with open(args.input_conf, 'r') as confd:
         valid_config = yaml.safe_load(confd)
 
-    (ssh_key_name, ssh_key) = valid_config["ssh"][REGION]
+    if "ssh" in valid_config.keys() and REGION in valid_config["ssh"].keys():
+        (ssh_key_name, ssh_key) = valid_config["ssh"][REGION]
+    else:
+        ssh_key = False
+        ssh_key_name = args.key_pair_name or os.getlogin()
     ec2_key = valid_config["ec2"]["ec2-key"]
     ec2_secret_key = valid_config["ec2"]["ec2-secret-key"]
     ec2_name = re.search("[a-zA-Z]+", ssh_key_name).group(0)
@@ -672,9 +678,8 @@ try:
         for instance in instances_detail:
             if instance["role"] == "RHUA":
                 f.write(str(instance['public_hostname']))
-                f.write(' ')
-                f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                f.write(ssh_key)
+                if ssh_key:
+                    f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                 if args.ansible_ssh_extra_args:
                     f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                 f.write('\n')
@@ -684,9 +689,8 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "RHUA":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ')
-                    f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                    f.write(ssh_key)
+                    if ssh_key:
+                        f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                     if args.ansible_ssh_extra_args:
                         f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
@@ -696,9 +700,8 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "NFS":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ')
-                    f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                    f.write(ssh_key)
+                    if ssh_key:
+                        f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                     if args.ansible_ssh_extra_args:
                         f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
@@ -708,9 +711,8 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "CDS":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ')
-                    f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                    f.write(ssh_key)
+                    if ssh_key:
+                        f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                     if args.ansible_ssh_extra_args:
                         f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
@@ -719,9 +721,8 @@ try:
         for instance in instances_detail:
             if instance["role"] == "CDS":
                 f.write(str(instance['public_hostname']))
-                f.write(' ')
-                f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                f.write(ssh_key)
+                if ssh_key:
+                    f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                 if args.ansible_ssh_extra_args:
                     f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                 f.write('\n')
@@ -731,9 +732,8 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "DNS":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ')
-                    f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                    f.write(ssh_key)
+                    if ssh_key:
+                        f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                     if args.ansible_ssh_extra_args:
                         f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
@@ -741,9 +741,8 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "RHUA":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ')
-                    f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                    f.write(ssh_key)
+                    if ssh_key:
+                        f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                     if args.ansible_ssh_extra_args:
                         f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
@@ -757,14 +756,11 @@ try:
                     if instance["OS"] == "RHEL5":
                         f.write('#')
                     f.write(str(instance['public_hostname']))
-                    f.write(' ')
                     # only RHEL >= 6 has ec2-user, RHEL 5 has just root
                     if instance["OS"] == "RHEL5":
-                        f.write('ansible_ssh_user=root ')
-                    else:
-                        f.write('ansible_ssh_user=ec2-user ansible_become=True ')
-                    f.write('ansible_ssh_private_key_file=')
-                    f.write(ssh_key)
+                        f.write(' ansible_ssh_user=root ')
+                    if ssh_key:
+                        f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                     # https://docs.ansible.com/ansible/latest/porting_guides/porting_guide_2.8.html#python-interpreter-discovery
                     # shouldn't be needed anymore
                     # however, still needed for tasks delegated to RHEL 8 hosts; needs investigation
@@ -779,9 +775,9 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "ATOMIC_CLI":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ')
-                    f.write('atomic=True ansible_ssh_user=cloud-user ansible_become=True ansible_ssh_private_key_file=')
-                    f.write(ssh_key)
+                    f.write(' atomic=True ansible_ssh_user=cloud-user')
+                    if ssh_key:
+                        f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                     if args.ansible_ssh_extra_args:
                         f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
@@ -791,9 +787,8 @@ try:
             for instance in instances_detail:
                 if instance["role"] == "TEST":
                     f.write(str(instance['public_hostname']))
-                    f.write(' ')
-                    f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                    f.write(ssh_key)
+                    if ssh_key:
+                        f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                     if args.ansible_ssh_extra_args:
                         f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                     f.write('\n')
@@ -802,9 +797,8 @@ try:
         for instance in instances_detail:
             if instance["role"] == "HAProxy":
                 f.write(str(instance['public_hostname']))
-                f.write(' ')
-                f.write('ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=')
-                f.write(ssh_key)
+                if ssh_key:
+                    f.write(' ansible_ssh_private_key_file=%s' % ssh_key)
                 if args.ansible_ssh_extra_args:
                     f.write(' ansible_ssh_extra_args="%s"' % args.ansible_ssh_extra_args)
                 f.write('\n')

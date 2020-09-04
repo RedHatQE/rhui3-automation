@@ -31,6 +31,19 @@ Inbound rules:
 * yaml config file with ec2 credentials - default path is `/etc/rhui_ec2.yaml` [(example)](#input-configuration-file)
 * up-to-date lists of AMIs in `*mapping.json` files - the files should be up to date in Git, but you can regenerate them locally with the `scripts/get_amis_list.py` script
 * the following modules for your Python version: boto, paramiko; install them using your distribution's package manager, or using pip
+* SSH configuration (in `~/.ssh/config`) with the user name and private key for EC2 machines, for example:
+
+```
+Host *.amazonaws.com
+    User ec2-user
+    IdentityFile ~/.ssh/rhatter
+    ServerAliveInterval 60
+```
+
+Note: if you use your common keypair in EC2, you needn't have the `IdentityFile` line.
+The key from the `~/.ssh/id_rsa` file will be used automatically.
+
+See also the note below the yaml config file example regarding the user name and key.
 
 ### Usage
 
@@ -134,54 +147,27 @@ Change the VPC and subnet IDs and add them for any other regions you might use.
 ```
 ec2: {ec2-key: AAAAAAAAAAAAAAAAAAAA, ec2-secret-key: B0B0B0B0B0B0B0B0B0B0a1a1a1a1a1a1a1a1a1a1}
 ssh:
-  ap-northeast-1: [user-ap-northeast-1, /home/user/.pem/user-ap-northeast-1.pem]
-  ap-southeast-1: [user-ap-southeast-1, /home/user/.pem/user-ap-southeast-1.pem]
-  ap-southeast-2: [user-ap-southeast-2, /home/user/.pem/user-ap-southeast-2.pem]
-  eu-central-1: [user-eu-central-1, /home/user/.pem/user-eu-central-1.pem]
-  eu-west-1: [user-eu-west-1, /home/user/.pem/user-eu-west-1.pem]
-  sa-east-1: [user-sa-east-1, /home/user/.pem/user-sa-east-1.pem]
-  us-east-1: [user-us-east-1, /home/user/.pem/user-us-east-1.pem]
-  us-west-1: [user-us-west-1, /home/user/.pem/user-us-west-1.pem]
-  us-west-2: [user-us-west-2, /home/user/.pem/user-us-west-2.pem]
+  ap-northeast-1: [rhatter-ec2-overrides, /home/rhatter/.ssh/rhatter-ec2-overrides.pem]
 vpc:
   eu-west-1: [vpc-333, subnet-aaa]
 
 ```
 
+Note: in this example, a special key pair name and private key file path are specified
+for the `ap-northeast-1` region. In that case, the script will use this information
+in the generated inventory file so that Ansible can use it when connecting to the machines.
+**This key pair name and the corresponding public key must exist in the given AWS region.**
+For other (undefined) regions, the inventory file won't contain such information, and Ansible
+will honor the saved or default SSH configuration as decribed in the Requirements section.
+At the same time, the stack creation script will use your local user name as the AWS key pair
+name unless you override it using the `--key-pair-name` option.
+
 #### Output configuration file
 
-The output configuration file is needed for the rhui3 ansible installation.
+The output configuration file is needed for the RHUI 3 installation orchestrated by Ansible.
 
-Example of an output file with Gluster configuration (1xRHUA=DNS, 3xCDS, 2xCLI, 1xtest_machine, 1xHAProxy):
-
-```
-[RHUA]
-ec2-54-170-205-98.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-
-[GLUSTER]
-ec2-54-78-213-201.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-ec2-54-78-165-67.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-ec2-54-155-142-185.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-
-[CDS]
-ec2-54-78-213-201.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-ec2-54-78-165-67.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-ec2-54-155-142-185.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-
-[DNS]
-ec2-54-170-205-98.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-
-[CLI]
-ec2-54-155-178-68.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-ec2-54-228-24-150.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-
-[TEST]
-ec2-54-73-34-96.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-
-[HAPROXY]
-ec2-54-73-134-159.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/user/.ssh/user-eu-west-1.pem
-
-```
+Examples of the output file are in the [deployment README](../deploy/README.md) file,
+or see the [hosts.cfg](../hosts.cfg) file in the parent directory.
 
 ### How to delete stack
 

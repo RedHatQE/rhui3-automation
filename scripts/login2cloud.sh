@@ -12,8 +12,11 @@ fi
 if [ "$1" ]; then
   if [ -f $1 ]; then
     file=$1
-    hosts=$(awk '/ansible_ssh_user=ec2-user/ { print $1 }' $file | sort -u)
+    hosts=$(grep -v cloud-user $file | awk '/amazonaws/ { print $1 }' | sort -u)
     key=$(grep -m 1 -o 'ansible_ssh_private_key_file=[^ ]*' $file | cut -d = -f 2)
+    if [[ ! $key ]]; then
+        key=$(ssh -G $(echo "$hosts" | head -1) | awk '/^identityfile/ { print $2 }' | head -1)
+    fi
     ssh_extra_args=$(grep -m 1 -o 'ansible_ssh_extra_args="[^"]*"' $file | cut -d = -f 2 | sed 's/"//g')
   else
     echo "$1 is not a (hosts) file."

@@ -59,54 +59,54 @@ Edit your copy of the `hosts.cfg` to meet your preferences:
 ```ini
 # Rhua+Dns+Nfs, 2*Cds, 2*HAProxy
 [DNS]
-ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com
 
 [NFS]
-ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com
 
 [RHUA]
-ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com
 
 [CDS]
-ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
-ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.3.eu-west-1.compute.amazonaws.com
+ec2-10.0.0.4.eu-west-1.compute.amazonaws.com
 
 [HAPROXY]
-ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.5.eu-west-1.compute.amazonaws.com
 
 [CLI]
-ec2-10.0.0.6.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.6.eu-west-1.compute.amazonaws.com
 
 #[ATOMIC_CLI]
-#ec2-10.0.0.7.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+#beware: RHEL Atomic hosts have cloud-user, not ec2-user
+#ec2-10.0.0.7.eu-west-1.compute.amazonaws.com ansible_ssh_user=cloud-user
 
 #[TEST]
-#ec2-10.0.0.8.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+#ec2-10.0.0.8.eu-west-1.compute.amazonaws.com
 ```
 
 * example 2:
 ```ini
 # Rhua, Dns, 3*(Cds+Gluster), HAProxy
 [RHUA]
-ec2-10.0.0.1.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.1.eu-west-1.compute.amazonaws.com
 
 [DNS]
-ec2-10.0.0.2.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.2.eu-west-1.compute.amazonaws.com
 
 [GLUSTER]
-ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
-ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
-ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.3.eu-west-1.compute.amazonaws.com
+ec2-10.0.0.4.eu-west-1.compute.amazonaws.com
+ec2-10.0.0.5.eu-west-1.compute.amazonaws.com
 
 [CDS]
-ec2-10.0.0.3.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
-ec2-10.0.0.4.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
-ec2-10.0.0.5.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.3.eu-west-1.compute.amazonaws.com
+ec2-10.0.0.4.eu-west-1.compute.amazonaws.com
+ec2-10.0.0.5.eu-west-1.compute.amazonaws.com
 
 [HAPROXY]
-ec2-10.0.0.6.eu-west-1.compute.amazonaws.com ansible_ssh_user=ec2-user ansible_become=True ansible_ssh_private_key_file=/home/USER/.ssh/USER-eu-west-1.pem
+ec2-10.0.0.6.eu-west-1.compute.amazonaws.com
 ```
-Replace _USER_ with the actual local user name and make sure the .pem file has this name.
 
 Check the [hosts.cfg](../hosts.cfg) file for more combinations.
 
