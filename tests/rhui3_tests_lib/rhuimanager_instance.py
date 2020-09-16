@@ -79,7 +79,8 @@ class RHUIManagerInstance(object):
         # if the execution reaches here, uesername question was already asked
         Expect.enter(connection, user_name)
         Expect.expect(connection,
-                      "Absolute path to an SSH private key to log into %s as ec2-user:" % hostname)
+                      "Absolute path to an SSH private key to log into %s as %s:" % \
+                      (hostname, user_name))
         Expect.enter(connection, ssh_key_path)
         state = Expect.expect_list(connection, [
             (re.compile(".*Cannot find file, please enter a valid path.*", re.DOTALL), 1),

@@ -22,7 +22,7 @@
 
 - name: set authorized keys on cdses and haproxy to allow root connection with the key
   authorized_key: key="{{ hostvars[groups['RHUA'][0]]['id_rsa_rhua_pub'] }}"
-                  user={{ ansible_user_id }}
+                  user={{ ansible_env.SUDO_USER }}
                   state=present
   delegate_to: "{{ item }}"
   with_items: "{{ groups['CDS']|default([]) + groups['HAPROXY']|default([]) }}"
