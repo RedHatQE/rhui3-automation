@@ -5,6 +5,7 @@
 - name: determine MongoDB volume device name
   shell: lsblk | awk '/50G/ {print $1}'
   register: lsblk
+  tags: rhua
 
 - name: format MongoDB volume device
   filesystem:

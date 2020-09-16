@@ -19,6 +19,7 @@
 - name: determine storage volume device name
   shell: lsblk | awk '/100G/ {print $1}'
   register: lsblk
+  tags: nfs
 
 - name: format storage volume device
   filesystem:

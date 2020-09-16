@@ -34,6 +34,7 @@
 - name: determine storage volume device name
   shell: lsblk | awk '/100G/ {print $1}' | head -1
   register: lsblk
+  tags: gluster
 
 - name: create volume group
   lvg: "vg=vg_gluster pvs=/dev/{{ lsblk.stdout }}"
