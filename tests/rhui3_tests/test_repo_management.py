@@ -264,7 +264,15 @@ class TestRepo(object):
         nose.tools.ok_(not RHUIManagerRepo.list(RHUA))
 
     @staticmethod
-    def test_17_missing_cert_handling():
+    def test_17_entitlement_cache():
+        '''check if entitlements are cached and evaluated in the blink of an eye'''
+        # for RHBZ#1873956
+        # the cache was created by the actions of the previous tests
+        Expect.ping_pong(RHUA, "ls /var/cache/rhui", "mappings")
+        Expect.expect_retval(RHUA, "timeout 2 rhui-manager repo unused")
+
+    @staticmethod
+    def test_18_missing_cert_handling():
         '''check if rhui-manager can handle the loss of the RH cert'''
         # for RHBZ#1325390
         RHUIManagerEntitlements.upload_rh_certificate(RHUA)
@@ -275,13 +283,9 @@ class TestRepo(object):
         # a bit strange response to see in this context, but eh, no == all if you're a geek
         Expect.expect(RHUA, "All entitled products are currently deployed in the RHUI")
         Expect.enter(RHUA, "q")
-        # an error message should be logged, though
-        Expect.ping_pong(RHUA,
-                         "tail /root/.rhui/rhui.log",
-                         "The entitlement.*has no associated certificate")
 
     @staticmethod
-    def test_18_repo_select_0():
+    def test_19_repo_select_0():
         '''check if no repo is chosen if 0 is entered when adding a repo'''
         # for RHBZ#1305612
         # upload the small cert and try entering 0 when the list of repos is displayed

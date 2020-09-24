@@ -38,10 +38,11 @@ WANTED_FILES_CDS = ["/etc/httpd/conf.d/03-crane.conf",
                     "/var/log/httpd/%s_access_ssl.log" % CDS_LB,
                     "/var/log/httpd/%s_error_ssl.log" % CDS_LB]
 
-CMD_RHUA = "rhui-manager status"
-CMD_CDS = "ls -lR /var/lib/rhui/remote_share"
-WANTED_FILES_RHUA.append(Helpers.encode_sos_command(CMD_RHUA))
-WANTED_FILES_CDS.append(Helpers.encode_sos_command(CMD_CDS))
+CMDS_RHUA = ["rhui-manager status",
+             "rhui-manager cert info"]
+CMDS_CDS = ["ls -lR /var/lib/rhui/remote_share"]
+WANTED_FILES_RHUA.extend([Helpers.encode_sos_command(cmd) for cmd in CMDS_RHUA])
+WANTED_FILES_CDS.extend([Helpers.encode_sos_command(cmd) for cmd in CMDS_CDS])
 
 def setup():
     '''
