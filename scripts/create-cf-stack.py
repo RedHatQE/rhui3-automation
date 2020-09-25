@@ -51,7 +51,7 @@ class SyncSSHClient(SSHClient):
         chan.close()
         return status
 
-instance_types = {"arm64": "a1.large", "x86_64": "m5.large"}
+instance_types = {"arm64": "t4g.micro", "x86_64": "m5.large"}
 
 argparser = argparse.ArgumentParser(description='Create CloudFormation stack')
 argparser.add_argument('--rhua', help=argparse.SUPPRESS)
@@ -406,6 +406,10 @@ for i in (5, 6, 7, 8):
             if cli_arch == "x86_64":
                 image_id = {u'Fn::FindInMap': [os, {u'Ref': u'AWS::Region'}, u'AMI']}
             else:
+                if args.novpc:
+                    logging.error("EC2 Classic can only be used with x86_64 instances.")
+                    logging.error("Stack creation would fail. Quitting.")
+                    sys.exit(1)
                 with open("RHEL%smapping_%s.json" % (i, cli_arch)) as mjson:
                    image_ids =  json.load(mjson)
                    image_id = image_ids[args.region]["AMI"]

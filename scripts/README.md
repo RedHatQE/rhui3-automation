@@ -86,7 +86,8 @@ the deployment because the _platform Python_ is automatically set in the case of
 
 If you specify a non-x86\_64 client architecture, a suitable instance type will be selected
 automatically. You cannot use EC2 Classic with some instance types,
-e.g. with a1.large, which will be selected for arm64.
+e.g. with t4g.micro, which will be selected for arm64. If you use `--novpc` and request an arm64
+client, the script will inform you about this incompatibility and quit.
 
 Mutually exclusive options: 
 
