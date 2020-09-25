@@ -1,6 +1,6 @@
 Requirements
 ---------------
-* [Ansible](http://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#latest-release-via-dnf-or-yum) version 2.8 and later.
+* [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-rhel-centos-or-fedora) version 2.8 and later.
 * Have enough machines running RHEL 7 ready - check the rest of Read Me for details on various RHUI setups.
 * Have the latest RHUI 3 ISO or Red Hat CCSP credentials.
 
