@@ -57,14 +57,14 @@ def _check_rpms():
     nose.tools.ok_(rhui_tools_rpms, msg="rh-rhui-tools*: no such link")
     # check if the latest version in the repo is the latest documented one
     rhui_tools_rpms.sort()
-    versions_in_repo = [rpm.rsplit('-', 2)[1] for rpm in rhui_tools_rpms]
-    documented_versions = re.findall(VERSION_STRING, requests.get(DOC).text)
-    nose.tools.eq_(versions_in_repo[-1], documented_versions[-1].split()[-1])
+    latest_rhui_rpm_in_repo = rhui_tools_rpms[-1]
+    latest_documented_title = re.findall(VERSION_STRING, requests.get(DOC).text)[-1]
+    nose.tools.eq_(latest_rhui_rpm_in_repo.rsplit('-', 2)[1], latest_documented_title.split()[-1])
     # can the latest version actually be fetched?
     Expect.expect_retval(RHUA,
                          cmd.replace("-q -O -", "-O /dev/null") +
                          "Packages/r/" +
-                         sorted(rhui_tools_rpms)[-1])
+                         latest_rhui_rpm_in_repo)
 
 def _check_listing(major, min_eus, max_eus):
     '''
