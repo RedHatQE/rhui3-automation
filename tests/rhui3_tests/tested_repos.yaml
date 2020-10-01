@@ -72,9 +72,9 @@ container_alt:
         name: "library/alpine"
 EUS_repos:
     6:
-        id: "rhel-sap-hana-for-rhel-6-server-eus-rhui-rpms-6.7-x86_64"
+        id: "rhel-sap-hana-for-rhel-6-server-eus-rhui-rpms-6.7"
         label: "rhel-sap-hana-for-rhel-6-server-eus-rhui-rpms"
-        name: "RHEL for SAP HANA (for RHEL 6 Server) Extended Update Support (RPMs) from RHUI (6.7-x86_64)"
+        name: "RHEL for SAP HANA (for RHEL 6 Server) Extended Update Support (RPMs) from RHUI (6.7)"
         path: "content/eus/rhel/rhui/server/6/6.7/x86_64/sap-hana/os"
         test_package: "compat-sap-c++"
     7:
@@ -83,6 +83,12 @@ EUS_repos:
         name: "RHEL for SAP HANA (for RHEL 7 Server) Extended Update Support (RPMs) from RHUI (7.4-x86_64)"
         path: "content/eus/rhel/rhui/server/7/7.4/x86_64/sap-hana/os"
         test_package: "compat-sap-c++-7"
+    8:
+        id: "rhel-8-for-x86_64-sap-solutions-e4s-rhui-rpms-8.2"
+        label: "rhel-8-for-x86_64-sap-solutions-e4s-rhui-rpms"
+        name: "Red Hat Enterprise Linux 8 for x86_64 - SAP Solutions - Update Services for SAP Solutions from RHUI (RPMs) (8.2)"
+        path: "content/e4s/rhel8/rhui/8.2/x86_64/sap-solutions/os"
+        test_package: "compat-sap-c++-9"
 updateinfo:
     0:
         all:

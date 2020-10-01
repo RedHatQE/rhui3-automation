@@ -10,6 +10,7 @@ from __future__ import print_function
 
 from os import getenv
 from os.path import basename
+import re
 
 import logging
 import nose
@@ -51,7 +52,7 @@ class TestEUSCLI(object):
                 self.test_package = doc["EUS_repos"][self.cli_version]["test_package"]
             except KeyError as version:
                 raise nose.SkipTest("No test repo defined for RHEL %s" % version)
-            if not self.repo_id.endswith(arch):
+            if arch not in self.repo_path:
                 raise nose.SkipTest("No test repo defined for %s" % arch)
 
     @staticmethod
@@ -134,9 +135,9 @@ class TestEUSCLI(object):
         '''
         set the tested EUS release in Yum configuration
         '''
-        # the repo id is ...rpms-X.Y-ARCH,
-        # so the release between the next-to-last and the last dash
-        eus_release = self.repo_id.split("-")[-2]
+        # the repo id is ...rpms-X.Y-ARCH or ...rpms-X.Y
+        # so use regex matching to find the release
+        eus_release = re.search(r"[0-9]+\.[0-9]+", self.repo_path).group()
         Expect.expect_retval(CLI, "rhui-set-release --set %s" % eus_release)
 
     def test_11_check_package_url(self):
