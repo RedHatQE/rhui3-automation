@@ -8,12 +8,17 @@ import re
 import logging
 import nose
 from stitches.expect import Expect
+import requests
 
 from rhui3_tests_lib.conmgr import ConMgr
 
 logging.basicConfig(level=logging.DEBUG)
 
 RHUA = ConMgr.connect()
+
+DOC = "https://access.redhat.com/documentation/en-us/red_hat_update_infrastructure/3.1/html/" + \
+      "release_notes/rn_updates"
+VERSION_STRING = "Updates for Red Hat Update Infrastructure [0-9.]+"
 
 def _check_rpms():
     '''
@@ -24,17 +29,17 @@ def _check_rpms():
           "--certificate /tmp/extra_rhui_files/rhcert.pem " + \
           "--ca-certificate /etc/rhsm/ca/redhat-uep.pem " + \
           "https://cdn.redhat.com/" + \
-          "content/dist/rhel/rhui/server/7/7Server/x86_64/rhui/3/os/repodata/"
+          "content/dist/rhel/rhui/server/7/7Server/x86_64/rhui/3/os/"
 
     rpm_link_pattern = r'href="[^"]+\.rpm'
     min_count = 150
     # first fetch repodata
-    _, stdout, _ = RHUA.exec_command(cmd + "repomd.xml")
+    _, stdout, _ = RHUA.exec_command(cmd + "repodata/repomd.xml")
     repomd_xml = stdout.read().decode()
     primary_xml_gz_path = re.findall("[0-9a-f]+-primary.xml.gz", repomd_xml)[0]
     # now fetch package info, uncompressed & filtered on the RHUA, paths on separate lines
     # (not fetching the compressed or uncompressed data as it's not decode()able)
-    _, stdout, _ = RHUA.exec_command(cmd + primary_xml_gz_path +
+    _, stdout, _ = RHUA.exec_command(cmd + "repodata/" + primary_xml_gz_path +
                                      " | zegrep -o '%s'" % rpm_link_pattern +
                                      " | sed 's/href=\"//'")
     rpm_paths = stdout.read().decode().splitlines()
@@ -50,6 +55,16 @@ def _check_rpms():
     nose.tools.ok_(rpms_count >= min_count, msg=error_msg)
     rhui_tools_rpms = [rpm for rpm in rpms if rpm.startswith("rh-rhui-tools")]
     nose.tools.ok_(rhui_tools_rpms, msg="rh-rhui-tools*: no such link")
+    # check if the latest version in the repo is the latest documented one
+    rhui_tools_rpms.sort()
+    versions_in_repo = [rpm.rsplit('-', 2)[1] for rpm in rhui_tools_rpms]
+    documented_versions = re.findall(VERSION_STRING, requests.get(DOC).text)
+    nose.tools.eq_(versions_in_repo[-1], documented_versions[-1].split()[-1])
+    # can the latest version actually be fetched?
+    Expect.expect_retval(RHUA,
+                         cmd.replace("-q -O -", "-O /dev/null") +
+                         "Packages/r/" +
+                         sorted(rhui_tools_rpms)[-1])
 
 def _check_listing(major, min_eus, max_eus):
     '''

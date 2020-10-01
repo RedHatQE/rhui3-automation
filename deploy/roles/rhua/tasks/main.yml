@@ -23,6 +23,12 @@
   when: install_rhui_installer is success and 'GLUSTER' in groups and groups['GLUSTER']|length > 0
   tags: rhua
 
+- name: check if the installed RHUI version is the latest one
+  command: rpmquery --qf '%{VERSION}' rh-rhui-tools
+  register: rpmq
+  failed_when: rpmq.stdout != latest_rhui_version
+  tags: rhua,versioncheck
+
 - name: get the initial rhui-manager password
   command: awk '/rhui_manager_password:/ { print $2 }' /etc/rhui-installer/answers.yaml
   register: password
