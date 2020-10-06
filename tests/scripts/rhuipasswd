@@ -11,6 +11,7 @@ from rhui3_tests_lib.conmgr import ConMgr, DOMAIN, USER_KEY, USER_NAME, SUDO_USE
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
 R3A_CLOUDFORMATION = socket.gethostname().endswith(DOMAIN)
+# the following help is based on what RHUIManager.initial_run() does if no password is supplied
 OLD_PASSWORD_HELP = "'admin' or the initial one"
 
 PRS = argparse.ArgumentParser(description="Change the RHUI password on one or more RHUA nodes.",
@@ -41,8 +42,6 @@ if not ARGS.new:
     print("No new password specified.")
     PRS.print_help()
     sys.exit(1)
-if ARGS.old == OLD_PASSWORD_HELP:
-    ARGS.old = "admin"
 
 SKIPPED = []
 
@@ -52,10 +51,13 @@ for hostname in ARGS.hosts.split(","):
     if ARGS.ssh_user != "root":
         Expect.enter(RHUA, "sudo su -")
     try:
-        RHUIManager.initial_run(RHUA, password=ARGS.old)
+        if ARGS.old == OLD_PASSWORD_HELP:
+            RHUIManager.initial_run(RHUA)
+        else:
+            RHUIManager.initial_run(RHUA, password=ARGS.old)
     except RuntimeError:
-        print("Can't log in to rhui-manager with password %s and can't read the default password. "
-              "Skipping this host." % ARGS.old)
+        print("Can't log in to rhui-manager with the attempted old passwords.")
+        print("Skipping this host.")
         SKIPPED.append(hostname)
         continue
     except ExpectFailed as err:
