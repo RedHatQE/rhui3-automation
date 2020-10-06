@@ -1,0 +1,65 @@
+#!/usr/bin/python
+"""Change RHUI password"""
+
+import argparse
+import os
+import socket
+import sys
+
+from stitches.expect import Expect
+from rhui3_tests_lib.conmgr import ConMgr, DOMAIN, USER_KEY, USER_NAME, SUDO_USER_NAME
+from rhui3_tests_lib.rhuimanager import RHUIManager
+
+R3A_CLOUDFORMATION = socket.gethostname().endswith(DOMAIN)
+
+PRS = argparse.ArgumentParser(description="Change the RHUI password or one or more RHUA nodes.",
+                              formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+# the default values of the following two options depend on whether this script is running
+# on a RHUI deployed by rhui3-automation or not
+PRS.add_argument("--ssh-user",
+                 help="SSH user name",
+                 default=USER_NAME if R3A_CLOUDFORMATION else SUDO_USER_NAME)
+PRS.add_argument("--ssh-key",
+                 help="SSH private key",
+                 default=USER_KEY if R3A_CLOUDFORMATION else os.path.expanduser("~/.ssh/id_rsa"))
+PRS.add_argument("--old",
+                 help="old RHUI password",
+                 default="admin")
+PRS.add_argument("--new",
+                 help="new RHUI password")
+PRS.add_argument("--hosts",
+                 help="comma-separated list of RHUA hostnames",
+                 default=ConMgr.get_rhua_hostname() if R3A_CLOUDFORMATION else None)
+ARGS = PRS.parse_args()
+
+if not ARGS.hosts:
+    print("No hosts specified.")
+    PRS.print_help()
+    sys.exit(1)
+if not ARGS.new:
+    print("No new password specified.")
+    PRS.print_help()
+    sys.exit(1)
+
+RHUAS = ARGS.hosts.split(",")
+SKIPPED = []
+
+for rhua in RHUAS:
+    print("Changing the password on %s." % rhua)
+    RHUA = ConMgr.connect(rhua, ARGS.ssh_user, ARGS.ssh_key)
+    if ARGS.ssh_user != "root":
+        Expect.enter(RHUA, "sudo su -")
+    try:
+        RHUIManager.initial_run(RHUA, password=ARGS.old)
+    except RuntimeError:
+        print("Can't log in to rhui-manager with password %s and can't read the default password. "
+              "Skipping this host." % ARGS.old)
+        SKIPPED.append(rhua)
+        continue
+    RHUIManager.screen(RHUA, "users")
+    RHUIManager.change_user_password(RHUA, password=ARGS.new)
+    print("Done.")
+
+if SKIPPED:
+    print("Error: %s skipped host(s): %s" % (len(SKIPPED), ",".join(SKIPPED)))
+    sys.exit(1)
