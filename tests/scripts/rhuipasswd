@@ -6,13 +6,14 @@ import os
 import socket
 import sys
 
-from stitches.expect import Expect
+from stitches.expect import Expect, ExpectFailed
 from rhui3_tests_lib.conmgr import ConMgr, DOMAIN, USER_KEY, USER_NAME, SUDO_USER_NAME
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
 R3A_CLOUDFORMATION = socket.gethostname().endswith(DOMAIN)
+OLD_PASSWORD_HELP = "'admin' or the initial one"
 
-PRS = argparse.ArgumentParser(description="Change the RHUI password or one or more RHUA nodes.",
+PRS = argparse.ArgumentParser(description="Change the RHUI password on one or more RHUA nodes.",
                               formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 # the default values of the following two options depend on whether this script is running
 # on a RHUI deployed by rhui3-automation or not
@@ -24,7 +25,7 @@ PRS.add_argument("--ssh-key",
                  default=USER_KEY if R3A_CLOUDFORMATION else os.path.expanduser("~/.ssh/id_rsa"))
 PRS.add_argument("--old",
                  help="old RHUI password",
-                 default="admin")
+                 default=OLD_PASSWORD_HELP)
 PRS.add_argument("--new",
                  help="new RHUI password")
 PRS.add_argument("--hosts",
@@ -40,13 +41,14 @@ if not ARGS.new:
     print("No new password specified.")
     PRS.print_help()
     sys.exit(1)
+if ARGS.old == OLD_PASSWORD_HELP:
+    ARGS.old = "admin"
 
-RHUAS = ARGS.hosts.split(",")
 SKIPPED = []
 
-for rhua in RHUAS:
-    print("Changing the password on %s." % rhua)
-    RHUA = ConMgr.connect(rhua, ARGS.ssh_user, ARGS.ssh_key)
+for hostname in ARGS.hosts.split(","):
+    print("Changing the password on %s." % hostname)
+    RHUA = ConMgr.connect(hostname, ARGS.ssh_user, ARGS.ssh_key)
     if ARGS.ssh_user != "root":
         Expect.enter(RHUA, "sudo su -")
     try:
@@ -54,7 +56,13 @@ for rhua in RHUAS:
     except RuntimeError:
         print("Can't log in to rhui-manager with password %s and can't read the default password. "
               "Skipping this host." % ARGS.old)
-        SKIPPED.append(rhua)
+        SKIPPED.append(hostname)
+        continue
+    except ExpectFailed as err:
+        print("Failed to launch rhui-manager:")
+        print(err)
+        print("Skipping this host.")
+        SKIPPED.append(hostname)
         continue
     RHUIManager.screen(RHUA, "users")
     RHUIManager.change_user_password(RHUA, password=ARGS.new)
