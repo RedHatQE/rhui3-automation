@@ -3,7 +3,7 @@
 import logging
 import re
 
-from stitches.expect import CTRL_C, Expect, ExpectFailed
+from stitches.expect import Expect, ExpectFailed
 
 from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.util import Util
@@ -189,7 +189,8 @@ class RHUIManager(object):
             attempted_passwords = [passwd for passwd in [Util.get_saved_password(connection),
                                                          Util.get_initial_password(connection)]
                                    if passwd]
-        for attempted_password in attempted_passwords:
+        attempts = len(attempted_passwords)
+        for attempt, attempted_password in enumerate(attempted_passwords):
             Expect.enter(connection, username)
             Expect.expect(connection, "RHUI Password:")
             Expect.enter(connection, attempted_password)
@@ -205,10 +206,10 @@ class RHUIManager(object):
                 Expect.enter(connection, "q")
                 return
             # this password didn't work; try the next one (if any)
-            Expect.enter(connection, "rhui-manager")
+            if attempt < attempts - 1:
+                Expect.enter(connection, "rhui-manager")
 
-        # If we're here, no password worked (or none was tried). Quit and prepare an error message.
-        Expect.enter(connection, CTRL_C)
+        # If we're here, no password worked (or none was tried). Prepare an error message.
         if password:
             why = "The supplied password didn't work."
         elif attempted_passwords:
