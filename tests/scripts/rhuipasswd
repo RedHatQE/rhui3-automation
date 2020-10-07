@@ -6,13 +6,13 @@ import os
 import socket
 import sys
 
-from stitches.expect import Expect, ExpectFailed
+from stitches.expect import Expect
 from rhui3_tests_lib.conmgr import ConMgr, DOMAIN, USER_KEY, USER_NAME, SUDO_USER_NAME
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
 R3A_CLOUDFORMATION = socket.gethostname().endswith(DOMAIN)
 # the following help is based on what RHUIManager.initial_run() does if no password is supplied
-OLD_PASSWORD_HELP = "'admin' or the initial one"
+OLD_PASSWORD_HELP = "saved or initial (both likely only readable by root)"
 
 PRS = argparse.ArgumentParser(description="Change the RHUI password on one or more RHUA nodes.",
                               formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -55,18 +55,11 @@ for hostname in ARGS.hosts.split(","):
             RHUIManager.initial_run(RHUA)
         else:
             RHUIManager.initial_run(RHUA, password=ARGS.old)
-    except RuntimeError:
-        print("Can't log in to rhui-manager with the attempted old passwords.")
-        print("Skipping this host.")
-        SKIPPED.append(hostname)
-        continue
-    except ExpectFailed as err:
-        print("Failed to launch rhui-manager:")
+    except RuntimeError as err:
         print(err)
         print("Skipping this host.")
         SKIPPED.append(hostname)
         continue
-    RHUIManager.screen(RHUA, "users")
     RHUIManager.change_user_password(RHUA, password=ARGS.new)
     print("Done.")
 

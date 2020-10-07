@@ -9,6 +9,11 @@ import time
 import urllib3
 import yaml
 
+try:
+    from configparser import ConfigParser # Python 3+
+except ImportError:
+    from ConfigParser import ConfigParser # Python 2
+
 from stitches.expect import Expect, ExpectFailed
 
 from rhui3_tests_lib.conmgr import ConMgr, DOMAIN
@@ -155,17 +160,15 @@ class Util(object):
             return None
 
     @staticmethod
-    def get_rpm_details(rpmpath):
+    def get_saved_password(connection):
         '''
-        Get (name-version-release, name) pair for local rpm file
+        Read rhui-manager password from the rhui-subscription-sync configuration file
         '''
-        if rpmpath:
-            rpmnvr = os.popen("basename " + rpmpath).read()[:-1]
-            rpmname = os.popen("rpm -qp --queryformat '%{NAME}\n' " +
-                               rpmpath +
-                               " 2>/dev/null").read()[:-1]
-            return (rpmnvr, rpmname)
-        return (None, None)
+        sub_sync_file = "/etc/rhui/rhui-subscription-sync.conf"
+        creds_cfg = ConfigParser()
+        _, stdout, _ = connection.exec_command("cat %s" % sub_sync_file)
+        creds_cfg.readfp(stdout)
+        return creds_cfg.get("auth", "password") if creds_cfg.has_section("auth") else None
 
     @staticmethod
     def get_rhel_version(connection):

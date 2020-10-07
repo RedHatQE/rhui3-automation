@@ -3,7 +3,7 @@
 import logging
 import re
 
-from stitches.expect import Expect, ExpectFailed
+from stitches.expect import CTRL_C, Expect, ExpectFailed
 
 from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.util import Util
@@ -170,7 +170,7 @@ class RHUIManager(object):
         Expect.expect(connection, r"rhui \(" + screen_name + r"\) =>")
 
     @staticmethod
-    def initial_run(connection, username="admin", password="admin"):
+    def initial_run(connection, username="admin", password=""):
         '''
         Run rhui-manager and make sure we're logged in, then quit it.
         '''
@@ -178,10 +178,21 @@ class RHUIManager(object):
         state = Expect.expect_list(connection,
                                    [(re.compile(".*RHUI Username:.*", re.DOTALL), 1),
                                     (re.compile(r".*rhui \(home\) =>.*", re.DOTALL), 2)])
-        if state == 1:
+        if state == 2:
+        # Already logged in? No need to enter any password, just quit.
+            Expect.enter(connection, "q")
+            return
+        # Use the supplied password, OR try to get it from the usual places.
+        if password:
+            attempted_passwords = [password]
+        else:
+            attempted_passwords = [passwd for passwd in [Util.get_saved_password(connection),
+                                                         Util.get_initial_password(connection)]
+                                   if passwd]
+        for attempted_password in attempted_passwords:
             Expect.enter(connection, username)
             Expect.expect(connection, "RHUI Password:")
-            Expect.enter(connection, password)
+            Expect.enter(connection, attempted_password)
             password_state = Expect.expect_list(connection,
                                                 [(re.compile(".*Invalid login.*",
                                                              re.DOTALL),
@@ -189,24 +200,34 @@ class RHUIManager(object):
                                                  (re.compile(r".*rhui \(home\) =>.*",
                                                              re.DOTALL),
                                                   2)])
-            if password_state == 1:
-                initial_password = Util.get_initial_password(connection)
-                if not initial_password:
-                    raise RuntimeError("Could not get the initial rhui-manager password.")
-                Expect.enter(connection, "rhui-manager")
-                Expect.expect(connection, ".*RHUI Username:")
-                Expect.enter(connection, username)
-                Expect.expect(connection, "RHUI Password:")
-                Expect.enter(connection, initial_password)
-                Expect.expect(connection, r"rhui \(home\) =>")
-        Expect.enter(connection, "q")
+            if password_state == 2:
+            # this password worked; quit
+                Expect.enter(connection, "q")
+                return
+            # this password didn't work; try the next one (if any)
+            Expect.enter(connection, "rhui-manager")
+
+        # If we're here, no password worked (or none was tried). Quit and prepare an error message.
+        Expect.enter(connection, CTRL_C)
+        if password:
+            why = "The supplied password didn't work."
+        elif attempted_passwords:
+            why = "The passwords in the config&answers files didn't work."
+        else:
+            why = "Neither the config nor the answers file could be read."
+        raise RuntimeError("Can't log in to rhui-manager. " + why)
 
     @staticmethod
-    def change_user_password(connection, password='admin'):
+    def change_user_password(connection, password=""):
         '''
         Change the password of rhui-manager user
         '''
+        if not password:
+            password = Util.get_initial_password(connection)
+        if not password:
+            raise RuntimeError("No password specified and the default one couldn't be read.")
         rhua = ConMgr.get_rhua_hostname()
+        RHUIManager.screen(connection, "users")
         Expect.enter(connection, "p")
         Expect.expect(connection, "Username:")
         Expect.enter(connection, 'admin')

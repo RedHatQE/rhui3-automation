@@ -22,7 +22,7 @@ def setup():
 
 def test_01_initial_run():
     '''
-        log in the RHUI (try the "usual" or the default admin password)
+        log in the RHUI (if not logged in, try the saved or the default admin password)
     '''
     RHUIManager.initial_run(RHUA)
 
@@ -30,7 +30,6 @@ def test_02_change_password():
     '''
         change the password (will log the user out automatically)
     '''
-    RHUIManager.screen(RHUA, "users")
     RHUIManager.change_user_password(RHUA, password="new_rhui_pass")
 
 def test_03_login_with_new_pass():
@@ -41,9 +40,8 @@ def test_03_login_with_new_pass():
 
 def test_04_reset_password():
     '''
-        change the password back to the "usual" one
+        change the password back to the default one
     '''
-    RHUIManager.screen(RHUA, "users")
     RHUIManager.change_user_password(RHUA)
 
 def test_05_login_with_wrong_pass():
