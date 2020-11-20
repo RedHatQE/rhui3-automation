@@ -64,6 +64,7 @@ argparser.add_argument('--cli7', help='number of RHEL7 clients', type=int, defau
 argparser.add_argument('--cli7-arch', help='RHEL 7 clients\' architectures (comma-separated list)', default='x86_64', metavar='ARCH')
 argparser.add_argument('--cli8', help='number of RHEL8 clients', type=int, default=0)
 argparser.add_argument('--cli8-arch', help='RHEL 8 clients\' architectures (comma-separated list)', default='x86_64', metavar='ARCH')
+argparser.add_argument('--cli-all', help='launch one client per RHEL version (x86_64)', action='store_const', const=True, default=False)
 argparser.add_argument('--cds', help='number of CDSes instances', type=int, default=1)
 argparser.add_argument('--dns', help='DNS', action='store_const', const=True, default=False)
 argparser.add_argument('--nfs', help='NFS', action='store_const', const=True, default=False)
@@ -117,6 +118,13 @@ if args.debug:
     logging.getLogger("paramiko").setLevel(logging.DEBUG)
 else:
     logging.getLogger("paramiko").setLevel(logging.WARNING)
+
+if args.cli_all:
+    args.cli5 = args.cli6 = args.cli7 = args.cli8 = 1
+
+if (args.cli5 or args.cli6) and not args.novpc:
+    logging.info("Enforcing 'no VPC' & M3 because RHEL 6- is being launched.")
+    args.novpc = True
 
 if (args.vpcid and not args.subnetid) or (args.subnetid and not args.vpcid):
     logging.error("vpcid and subnetid parameters should be set together!")

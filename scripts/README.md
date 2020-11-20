@@ -61,6 +61,7 @@ Default configuration:
   * **--gluster** - use GlusterFS instead of NFS
   * **--cds [number]** - number of CDS machines, `default = 1` (if Gluster filesystem, `default = 3`)
   * **--cli5/6/7/8 [number]** - number of CLI machines, `default = 0`, use `-1` to get machines for all architectures (one machine per architecture)
+  * **--cli-all** - get client machines for all RHEL versions
   * **--cli7/8-arch [arch]** - CLI machines' architectures (comma-separated list), `default = x86_64 for all of them`, `cli`_N_ set to `-1` will populate the list with all architectures automatically, so this parameter is unnecessary then
   * **--atomic-cli [number]** - number of ATOMIC CLI machines, `default = 0`
   * **--test** - if specified, TEST machine running RHEL 7, `default = 0`
