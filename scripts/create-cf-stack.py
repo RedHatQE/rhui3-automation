@@ -64,7 +64,8 @@ argparser.add_argument('--cli7', help='number of RHEL7 clients', type=int, defau
 argparser.add_argument('--cli7-arch', help='RHEL 7 clients\' architectures (comma-separated list)', default='x86_64', metavar='ARCH')
 argparser.add_argument('--cli8', help='number of RHEL8 clients', type=int, default=0)
 argparser.add_argument('--cli8-arch', help='RHEL 8 clients\' architectures (comma-separated list)', default='x86_64', metavar='ARCH')
-argparser.add_argument('--cli-all', help='launch one client per RHEL version (x86_64)', action='store_const', const=True, default=False)
+argparser.add_argument('--cli-all', help='launch one client per RHEL version and available architecture, without RHEL 5 by default; numbers can still be overridden)', action='store_const', const=True, default=False)
+argparser.add_argument('--cli-only', help='launch only client machines', action='store_const', const=True, default=False)
 argparser.add_argument('--cds', help='number of CDSes instances', type=int, default=1)
 argparser.add_argument('--dns', help='DNS', action='store_const', const=True, default=False)
 argparser.add_argument('--nfs', help='NFS', action='store_const', const=True, default=False)
@@ -120,11 +121,13 @@ else:
     logging.getLogger("paramiko").setLevel(logging.WARNING)
 
 if args.cli_all:
-    args.cli5 = args.cli6 = args.cli7 = args.cli8 = 1
+    args.cli6 = args.cli6 or 1
+    args.cli7 = args.cli7 or -1
+    args.cli8 = args.cli8 or -1
 
-if (args.cli5 or args.cli6) and not args.novpc:
-    logging.info("Enforcing 'no VPC' & M3 because RHEL 6- is being launched.")
-    args.novpc = True
+if args.cli_only:
+    args.cds = args.haproxy = 0
+    fs_type = ''
 
 if (args.vpcid and not args.subnetid) or (args.subnetid and not args.vpcid):
     logging.error("vpcid and subnetid parameters should be set together!")
@@ -341,7 +344,7 @@ if (fs_type == "rhua"):
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
 
-else:
+elif fs_type:
     json_dict['Resources']["rhua"] = \
      {u'Properties': {u'ImageId': {u'Fn::FindInMap': [rhui_os, {u'Ref': u'AWS::Region'}, u'AMI']},
                                u'InstanceType': instance_types["x86_64"],
@@ -407,7 +410,8 @@ for i in (5, 6, 7, 8):
             except (AttributeError, IndexError):
                 cli_arch = "x86_64"
             try:
-                instance_type = instance_types[cli_arch]
+                # RHEL 5 and 6 can't run on m5
+                instance_type = instance_types[cli_arch] if i >= 7 else 'm3.large'
             except KeyError:
                 logging.error("Unknown architecture: %s" % cli_arch)
                 sys.exit(1)
@@ -682,7 +686,7 @@ for instance in instances_detail:
 if args.output_conf:
     outfile = args.output_conf
 else:
-    outfile = "hosts_%s_%s.cfg" % (fs_type_f, args.name)
+    outfile = "hosts_%s_%s.cfg" % (fs_type_f or 'norhui', args.name)
 
 try:
     with open(outfile, 'w') as f:
