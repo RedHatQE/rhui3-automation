@@ -216,7 +216,7 @@ if args.nfs:
     json_dict['Description'] += " NFS"
 
 
-fs_type_f = fs_type
+fs_type_f = fs_type or 'norhui'
 
 if fs_type_f == "rhua":
     fs_type_f = "nfs"
@@ -686,7 +686,7 @@ for instance in instances_detail:
 if args.output_conf:
     outfile = args.output_conf
 else:
-    outfile = "hosts_%s_%s.cfg" % (fs_type_f or 'norhui', args.name)
+    outfile = "hosts_%s_%s.cfg" % (fs_type_f, args.name)
 
 try:
     with open(outfile, 'w') as f:
