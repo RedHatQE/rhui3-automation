@@ -216,7 +216,7 @@ if args.nfs:
     json_dict['Description'] += " NFS"
 
 
-fs_type_f = fs_type or 'norhui'
+fs_type_f = fs_type
 
 if fs_type_f == "rhua":
     fs_type_f = "nfs"
@@ -266,6 +266,14 @@ try:
 except Exception as e:
     sys.stderr.write("Got '%s' error \n" % e)
     sys.exit(1)
+
+def concat_name(node='', cfgfile=False):
+    return '_'.join(filter(None,
+                           ['hosts' if cfgfile else ec2_name,
+                            fs_type_f,
+                            args.name,
+                            node])
+                    ) + ('.cfg' if cfgfile else '')
 
 json_dict['Parameters'] = \
 {u'KeyName': {u'Description': u'Name of an existing EC2 KeyPair to enable SSH access to the instances',
@@ -338,8 +346,7 @@ if (fs_type == "rhua"):
                                               "Ebs" : {"VolumeSize" : "50"}
                                             },
                                  ],
-                               u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.name, u'rhua']]}},
+                               u'Tags': [{u'Key': u'Name', u'Value': concat_name(u'rhua')},
                                          {u'Key': u'Role', u'Value': u'RHUA'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -356,8 +363,7 @@ elif fs_type:
                                               "Ebs" : {"VolumeSize" : "50"}
                                             },
                                  ],
-                               u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.name, u'rhua']]}},
+                               u'Tags': [{u'Key': u'Name', u'Value': concat_name(u'rhua')},
                                          {u'Key': u'Role', u'Value': u'RHUA'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -377,8 +383,7 @@ if (fs_type == "gluster"):
                                      ],
                                    u'KeyName': {u'Ref': u'KeyName'},
                                    u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
-                                   u'Tags': [{u'Key': u'Name',
-                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.name, u'cds%i' % i]]}},
+                                   u'Tags': [{u'Key': u'Name', u'Value': concat_name(u'cds%i' % i)},
                                              {u'Key': u'Role', u'Value': u'CDS'},
                                              ]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -390,8 +395,7 @@ else:
                                    u'InstanceType': instance_types["x86_64"],
                                    u'KeyName': {u'Ref': u'KeyName'},
                                    u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
-                                   u'Tags': [{u'Key': u'Name',
-                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.name, u'cds%i' % i]]}},
+                                   u'Tags': [{u'Key': u'Name', u'Value': concat_name(u'cds%i' % i)},
                                              {u'Key': u'Role', u'Value': u'CDS'},
                                              ]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -430,8 +434,7 @@ for i in (5, 6, 7, 8):
                                    u'InstanceType': instance_type,
                                    u'KeyName': {u'Ref': u'KeyName'},
                                    u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
-                                   u'Tags': [{u'Key': u'Name',
-                                              u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.name, u'cli%i_%i' % (i, j)]]}},
+                                   u'Tags': [{u'Key': u'Name', u'Value': concat_name(u'cli%i_%i' % (i, j))},
                                              {u'Key': u'Role', u'Value': u'CLI'},
                                              {u'Key': u'OS', u'Value': u'%s' % os[:5]}]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -443,8 +446,7 @@ for i in range(1, args.atomic_cli + 1):
                                u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
-                               u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.name, u'atomic_cli%i' % i]]}},
+                               u'Tags': [{u'Key': u'Name', u'Value': concat_name(u'atomic_cli%i' % i)},
                                          {u'Key': u'Role', u'Value': u'ATOMIC_CLI'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -462,8 +464,7 @@ if (fs_type == "nfs"):
                                               "Ebs" : {"VolumeSize" : "100"}
                                             },
                                  ],
-                               u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.name, u'nfs']]}},
+                               u'Tags': [{u'Key': u'Name', u'Value': concat_name(u'nfs')},
                                          {u'Key': u'Role', u'Value': u'NFS'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -475,8 +476,7 @@ if args.dns:
                                u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
-                               u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.name, u'dns']]}},
+                               u'Tags': [{u'Key': u'Name', u'Value': concat_name(u'dns')},
                                          {u'Key': u'Role', u'Value': u'DNS'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -489,8 +489,7 @@ if args.test:
                                u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
-                               u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.name, u'test']]}},
+                               u'Tags': [{u'Key': u'Name', u'Value': concat_name(u'test')},
                                          {u'Key': u'Role', u'Value': u'TEST'},
                                          ]},
                u'Type': u'AWS::EC2::Instance'}
@@ -502,8 +501,7 @@ for i in range(1, args.haproxy + 1):
                                u'InstanceType': instance_types["x86_64"],
                                u'KeyName': {u'Ref': u'KeyName'},
                                u'SecurityGroups': [{u'Ref': u'RHUIsecuritygroup'}],
-                               u'Tags': [{u'Key': u'Name',
-                                          u'Value': {u'Fn::Join': [u'_', [ec2_name, fs_type_f, args.name, u'haproxy%i' % i]]}},
+                               u'Tags': [{u'Key': u'Name', u'Value': concat_name(u'haproxy%i' % i)},
                                          {u'Key': u'Role', u'Value': u'HAProxy'},
                                          ]},
                    u'Type': u'AWS::EC2::Instance'}
@@ -686,7 +684,7 @@ for instance in instances_detail:
 if args.output_conf:
     outfile = args.output_conf
 else:
-    outfile = "hosts_%s_%s.cfg" % (fs_type_f, args.name)
+    outfile = concat_name(cfgfile=True)
 
 try:
     with open(outfile, 'w') as f:
