@@ -108,6 +108,7 @@ class Helpers(object):
             return rhuicfg.get("docker", "docker_url")
         urls = {"rh": "https://registry.redhat.io",
                 "quay": "https://quay.io",
+                "gitlab": "https://registry.gitlab.com",
                 "docker": "https://registry-1.docker.io"}
         if site in urls:
             return urls[site]

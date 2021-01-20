@@ -60,7 +60,7 @@ class TestClient(object):
             raise nose.SkipTest("No test container defined for %s" % arch)
 
         self.container_quay = doc["container_alt"]["quay"]
-        self.container_docker = doc["container_alt"]["docker"]
+        self.container_gitlab = doc["container_alt"]["gitlab"]
 
     @staticmethod
     def setup_class():
@@ -110,11 +110,11 @@ class TestClient(object):
         RHUIManagerRepo.add_container(RHUA,
                                       self.container_quay["name"],
                                       credentials=[quay_url] + credentials)
-        # third, add a container from the Docker hub
-        docker_url = Helpers.get_registry_url("docker")
+        # third, add a container from GitLab
+        gitlab_url = Helpers.get_registry_url("gitlab")
         RHUIManagerRepo.add_container(RHUA,
-                                      self.container_docker["name"],
-                                      credentials=[docker_url])
+                                      self.container_gitlab["name"],
+                                      credentials=[gitlab_url])
 
     def test_05_display_info(self):
         '''
@@ -134,16 +134,16 @@ class TestClient(object):
            sync the containers
         '''
         quay_repo_name = Util.safe_pulp_repo_name(self.container_quay["name"])
-        docker_repo_name = Util.safe_pulp_repo_name(self.container_docker["name"])
+        gitlab_repo_name = Util.safe_pulp_repo_name(self.container_gitlab["name"])
 
         RHUIManagerSync.sync_repo(RHUA,
                                   [self.container_displayname,
                                    quay_repo_name,
-                                   docker_repo_name])
+                                   gitlab_repo_name])
         RHUIManagerSync.wait_till_repo_synced(RHUA,
                                               [self.container_displayname,
                                                quay_repo_name,
-                                               docker_repo_name])
+                                               gitlab_repo_name])
 
     @staticmethod
     def test_07_create_cli_rpm():
@@ -172,7 +172,7 @@ class TestClient(object):
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
         for container in [self.container_id,
                           Util.safe_pulp_repo_name(self.container_quay["name"]),
-                          Util.safe_pulp_repo_name(self.container_docker["name"])]:
+                          Util.safe_pulp_repo_name(self.container_gitlab["name"])]:
             cmd = "docker pull %s" % container
             # in some cases the container is synced but pulling fails mysteriously
             # if that happens, try again in a minute
@@ -190,7 +190,7 @@ class TestClient(object):
             raise nose.exc.SkipTest("Not supported on RHEL %s" % self.cli_os_version)
 
         quay_repo_name = Util.safe_pulp_repo_name(self.container_quay["name"])
-        docker_repo_name = Util.safe_pulp_repo_name(self.container_docker["name"])
+        gitlab_repo_name = Util.safe_pulp_repo_name(self.container_gitlab["name"])
 
         _, stdout, _ = CLI.exec_command("docker images")
         images = stdout.read().decode().splitlines()
@@ -200,7 +200,7 @@ class TestClient(object):
         except IndexError:
             raise RuntimeError("Unexpected output:\n%s" % "\n".join(images))
         nose.tools.eq_(sorted(images_cli),
-                       sorted([self.container_id, quay_repo_name, docker_repo_name]))
+                       sorted([self.container_id, quay_repo_name, gitlab_repo_name]))
 
     def test_11_run_command(self):
         '''
@@ -219,7 +219,7 @@ class TestClient(object):
                                  self.container_id)
             for container in [self.container_id,
                               Util.safe_pulp_repo_name(self.container_quay["name"]),
-                              Util.safe_pulp_repo_name(self.container_docker["name"])]:
+                              Util.safe_pulp_repo_name(self.container_gitlab["name"])]:
                 Expect.expect_retval(CLI, "docker rmi %s" % container)
             Util.remove_rpm(CLI, [CONF_RPM_NAME])
             Util.restart_if_present(CLI, "docker")

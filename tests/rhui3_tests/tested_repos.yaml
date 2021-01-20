@@ -68,6 +68,8 @@ container_rhel7:
 container_alt:
     quay:
         name: "pusher/oauth2_proxy"
+    gitlab:
+        name: "gitlab-org/gitlab-runner/alpine-no-root"
     docker:
         name: "library/alpine"
 EUS_repos:

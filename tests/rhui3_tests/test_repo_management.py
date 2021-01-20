@@ -237,9 +237,9 @@ class TestRepo(object):
         RHUIManagerRepo.add_container(RHUA, self.containers["alt"]["quay"]["name"])
         # and finaly a Docker container; we'll need the Docker Hub URL as there's no
         # auth config for it
-        url = Helpers.get_registry_url("docker")
-        Helpers.set_registry_credentials(RHUA, "docker", [url], backup=False)
-        RHUIManagerRepo.add_container(RHUA, self.containers["alt"]["docker"]["name"])
+        url = Helpers.get_registry_url("gitlab")
+        Helpers.set_registry_credentials(RHUA, "gitlab", [url], backup=False)
+        RHUIManagerRepo.add_container(RHUA, self.containers["alt"]["gitlab"]["name"])
         # check all of that
         repo_list = RHUIManagerRepo.list(RHUA)
         nose.tools.ok_(len(repo_list) == 3,
