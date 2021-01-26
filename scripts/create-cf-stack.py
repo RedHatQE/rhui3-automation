@@ -91,8 +91,10 @@ argparser.add_argument('--vpcid', help='VPCid (overrides the configuration for t
 argparser.add_argument('--subnetid', help='Subnet id (for VPC) (overrides the configuration for the region)')
 argparser.add_argument('--novpc', help='do not use VPC, use EC2 Classic', action='store_const', const=True, default=False)
 
+argparser.add_argument('--a1', action='store_const', const=True, default=False,
+                        help='use a1.xlarge instances to get more horsepower and RAM on ARM64 (requires VPC)')
 argparser.add_argument('--r3', action='store_const', const=True, default=False,
-                        help='use r3.xlarge instances to squeeze out more network and cpu performance (requires VPC)')
+                        help='use r3.xlarge instances to get more horsepower and RAM on x86_64 (requires VPC)')
 argparser.add_argument('--ami-5-override', help='RHEL 5 AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ami-6-override', help='RHEL 6 AMI ID to override the mapping', metavar='ID')
 argparser.add_argument('--ami-7-override', help='RHEL 7 AMI ID to override the mapping', metavar='ID')
@@ -132,6 +134,11 @@ if args.cli_only:
 if (args.vpcid and not args.subnetid) or (args.subnetid and not args.vpcid):
     logging.error("vpcid and subnetid parameters should be set together!")
     sys.exit(1)
+if args.a1:
+    if args.novpc:
+        logging.error("a1 requires VPC")
+        sys.exit(1)
+    instance_types["arm64"] = "a1.xlarge"
 if args.r3:
     if args.novpc:
         logging.error("r3 requires VPC")

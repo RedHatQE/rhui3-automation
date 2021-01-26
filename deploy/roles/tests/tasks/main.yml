@@ -39,7 +39,7 @@
   tags: tests
 
 - name: install pip
-  shell: if grep -q 'release 8' /etc/redhat-release; then easy_install-3.6 --prefix /usr pip; else easy_install pip; fi
+  shell: if grep -q 'release 8' /etc/redhat-release; then easy_install-3.6 --prefix /usr pip; else easy_install 'pip<21.0'; fi
   tags: tests
 
 - name: install tests
