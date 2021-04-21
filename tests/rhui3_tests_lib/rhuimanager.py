@@ -243,10 +243,10 @@ class RHUIManager(object):
     @staticmethod
     def remove_rh_certs(connection):
         '''
-        Remove all RH certificates from RHUI
+        Remove all RH certificates and cached repo mappings from RHUI
         '''
-        Expect.enter(connection, "find /etc/pki/rhui/redhat/ -name '*.pem' -delete")
-        Expect.expect(connection, "root@")
+        Expect.expect_retval(connection, "find /etc/pki/rhui/redhat/ -name '*.pem' -delete")
+        Expect.expect_retval(connection, "find /var/cache/rhui/ -name '*.mappings' -delete")
 
     @staticmethod
     def cacert_expiration(connection):
