@@ -56,3 +56,13 @@ class RHSMRHUI(object):
     def unregister_system(connection):
         """unregister from RHSM"""
         Expect.expect_retval(connection, "subscription-manager unregister", timeout=20)
+
+    @staticmethod
+    def sca_setup(connection):
+        """set the RHUA up for Simple Content Access (SCA) testing"""
+        Expect.expect_retval(connection, "cp /tmp/extra_rhui_files/SCA/* /etc/pki/entitlement/")
+
+    @staticmethod
+    def sca_cleanup(connection):
+        """clean up the (SCA) cert and key"""
+        Expect.expect_retval(connection, "rm -f /etc/pki/entitlement/*")

@@ -14,11 +14,11 @@ yum_repos:
             path: "content/dist/rhel/rhui/server/7/7Server/x86_64/sap/os"
             test_package: "vm-dump-metrics"
         aarch64:
-            name: "Red Hat Satellite Tools 6.3 - Puppet 4 (for RHEL 7 for ARM) (RPMs) from RHUI"
+            name: "Red Hat Developer Tools (for RHEL 7 Server for ARM 64) RPMs from RHUI"
             version: "7Server-aarch64"
             kind: "Yum"
-            path: "content/dist/rhel-alt/rhui/server/7/7Server/armv8-a/aarch64/sat-tools/6.3-puppet4/os"
-            test_package: "puppet-agent"
+            path: "content/dist/rhel-alt/rhui/server/7/7Server/armv8-a/aarch64/devtools/1/os"
+            test_package: "rust-toolset-7-rust-doc"
     8:
         x86_64:
             name: "Red Hat Enterprise Linux 8 for x86_64 - High Availability (RPMs) from RHUI"
@@ -53,6 +53,9 @@ CLI_product:
 subscriptions:
     RHUI: "Red Hat Update Infrastructure and RHEL Add-Ons for Providers"
     Atomic: "Red Hat Enterprise Linux Atomic Host for Certified Cloud and Service Providers (via Red Hat Update Infrastructure)"
+SCA:
+    name: "Content Access"
+    id: "SCA"
 container_primary:
     name: "rhcertification/redhat-certification"
     displayname: "RH Certification Container"

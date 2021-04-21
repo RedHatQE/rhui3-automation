@@ -62,6 +62,7 @@ class TestCLI(object):
         self.product = doc["CLI_product"]
         self.remote_content = doc["remote_content"]
         self.subscriptions = doc["subscriptions"]
+        self.sca_id = doc["SCA"]["id"]
 
     @staticmethod
     def setup_class():
@@ -506,11 +507,45 @@ class TestCLI(object):
         time.sleep(4)
         repolist_actual = RHUIManagerCLI.repo_list(RHUA, True).splitlines()
         nose.tools.eq_([self.product["id"]], repolist_actual)
-
-    def test_99_cleanup(self):
-        '''cleanup: remove repos and temporary files'''
+        # clean up
         RHUIManagerCLI.repo_delete(RHUA, self.product["id"])
         RHUIManager.remove_rh_certs(RHUA)
+
+    @staticmethod
+    def test_46_sca_setup():
+        '''set up SCA'''
+        RHSMRHUI.sca_setup(RHUA)
+
+    def test_47_list_sca(self):
+        '''check if SCA is an available subscription'''
+        avail_subs = RHUIManagerCLI.subscriptions_list(RHUA, "available", True)
+        nose.tools.eq_(avail_subs, [self.sca_id])
+
+    def test_48_reg_sca_sub_in_rhui(self):
+        '''register the SCA subscription in RHUI'''
+        RHUIManagerCLI.subscriptions_register(RHUA, self.sca_id)
+
+    def test_49_check_registered_subs(self):
+        '''check if the SCA subscription is now tracked as registered'''
+        reg_subs = RHUIManagerCLI.subscriptions_list(RHUA, "registered", True)
+        nose.tools.eq_(reg_subs, [self.sca_id])
+
+    def test_50_unregister_sca(self):
+        '''unregister the SCA subscription'''
+        RHUIManagerCLI.subscriptions_unregister(RHUA, self.sca_id)
+        # also delete the cert file
+        RHUIManager.remove_rh_certs(RHUA)
+
+    @staticmethod
+    def test_51_check_registered_subs():
+        '''check if the SCA subscription is no longer tracked as registered'''
+        reg_subs = RHUIManagerCLI.subscriptions_list(RHUA, "registered", True)
+        nose.tools.ok_(not reg_subs, msg="something remained: %s" % reg_subs)
+
+    @staticmethod
+    def test_99_cleanup():
+        '''cleanup: remove temporary files'''
+        RHSMRHUI.sca_cleanup(RHUA)
         Expect.ping_pong(RHUA, "rm -rf /tmp/%s* ; " % CLI_CFG[0] +
                          "ls /tmp/%s* 2>&1" % CLI_CFG[0],
                          "No such file or directory")

@@ -44,16 +44,9 @@ class RHUIManagerEntitlements(object):
 
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "l")
-        match = Expect.match(connection,
-                             re.compile("(.*)" + PROMPT, re.DOTALL))
-
-        matched_string = match[0].replace('l\r\n\r\nRed Hat Entitlements\r\n\r\n  ' +
-                                          '\x1b[92mValid\x1b[0m\r\n    ', '', 1)
-
-        entitlements_list = []
-        pattern = re.compile('(.*?\r\n.*?pem)', re.DOTALL)
-        for entitlement in pattern.findall(matched_string):
-            entitlements_list.append(entitlement.strip())
+        match = Expect.match(connection, re.compile("(.*)" + PROMPT, re.DOTALL))[0]
+        entitlements_list = [line.strip() for line in match.splitlines()
+                             if line.startswith("    ") and not line.endswith(".pem")]
         Expect.enter(connection, 'q')
         return entitlements_list
 
@@ -66,17 +59,11 @@ class RHUIManagerEntitlements(object):
 
         RHUIManager.screen(connection, "entitlements")
         Expect.enter(connection, "c")
-        match = Expect.match(connection,
-                             re.compile("c\r\n\r\nCustom Repository Entitlements\r\n\r\n(.*)" +
-                                        PROMPT, re.DOTALL))[0]
-
-        repo_list = []
-
-        for line in match.splitlines():
-            if "Name:" in line:
-                repo_list.append(line.replace("Name:", "").strip())
+        match = Expect.match(connection, re.compile("(.*)" + PROMPT, re.DOTALL))[0]
+        repo_list = [line.replace("Name:", "").strip() for line in match.splitlines()
+                     if "Name:" in line]
         Expect.enter(connection, 'q')
-        return sorted(repo_list)
+        return repo_list
 
     @staticmethod
     def upload_rh_certificate(connection, certificate_file="/tmp/extra_rhui_files/rhcert.pem"):

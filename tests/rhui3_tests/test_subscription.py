@@ -24,6 +24,7 @@ class TestSubscription(object):
         with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             self.subscriptions = doc["subscriptions"]
+            self.sca_name = doc["SCA"]["name"]
 
     @staticmethod
     def setup_class():
@@ -82,6 +83,42 @@ class TestSubscription(object):
     def test_10_unregister_system():
         """unregister from RHSM"""
         RHSMRHUI.unregister_system(RHUA)
+
+    @staticmethod
+    def test_11_sca_setup():
+        """set up SCA"""
+        RHSMRHUI.sca_setup(RHUA)
+
+    def test_12_list_sca(self):
+        """check if SCA is an available subscription"""
+        avail_subs = RHUIManagerSubMan.subscriptions_list(RHUA, "available")
+        nose.tools.eq_(avail_subs, [self.sca_name])
+
+    def test_13_reg_sca_sub_in_rhui(self):
+        """register the SCA subscription in RHUI"""
+        RHUIManagerSubMan.subscriptions_register(RHUA, [self.sca_name])
+
+    def test_14_check_registered_subs(self):
+        """check if the SCA subscription is now tracked as registered"""
+        reg_subs = RHUIManagerSubMan.subscriptions_list(RHUA, "registered")
+        nose.tools.eq_(reg_subs, [self.sca_name])
+
+    def test_15_unregister_sca(self):
+        """unregister the SCA subscription"""
+        RHUIManagerSubMan.subscriptions_unregister(RHUA, [self.sca_name])
+        # also delete the cert file
+        RHUIManager.remove_rh_certs(RHUA)
+
+    @staticmethod
+    def test_16_check_registered_subs():
+        """check if the SCA subscription is no longer tracked as registered"""
+        reg_subs = RHUIManagerSubMan.subscriptions_list(RHUA, "registered")
+        nose.tools.ok_(not reg_subs, msg="something remained: %s" % reg_subs)
+
+    @staticmethod
+    def test_17_sca_cleanup():
+        """clean up the SCA cert and key"""
+        RHSMRHUI.sca_cleanup(RHUA)
 
     @staticmethod
     def teardown_class():
