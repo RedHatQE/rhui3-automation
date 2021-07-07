@@ -71,8 +71,7 @@ argparser.add_argument('--dns', help='DNS', action='store_const', const=True, de
 argparser.add_argument('--nfs', help='NFS', action='store_const', const=True, default=False)
 argparser.add_argument('--haproxy', help='number of HAProxies', type=int, default=1)
 argparser.add_argument('--gluster', help='Gluster', action='store_const', const=True, default=False)
-argparser.add_argument('--test', help='test machine with RHEL 7', action='store_const', const=True, default=False)
-argparser.add_argument('--test8', help='test machine with RHEL 8 (overrides --test)', action='store_const', const=True, default=False)
+argparser.add_argument('--test', help='test machine with RHEL 8', action='store_const', const=True, default=False)
 argparser.add_argument('--atomic-cli', help='number of Atomic CLI machines', type=int, default=0)
 argparser.add_argument('--input-conf', default="/etc/rhui_ec2.yaml", help='use supplied yaml config file')
 argparser.add_argument('--output-conf', help='output file')
@@ -188,9 +187,6 @@ if args.cli7 == -1:
 if args.cli8 == -1:
     args.cli8 = len(instance_types)
     args.cli8_arch = ",".join(instance_types.keys())
-
-if args.test8:
-    args.test = True
 
 if args.rhua:
     logging.info("The --rhua parameter is deprecated. " +
@@ -490,7 +486,7 @@ if args.dns:
 
 # test
 if args.test:
-    os = "RHEL8" if args.test8 else rhui_os
+    os = "RHEL8"
     json_dict['Resources']["test"] = \
      {u'Properties': {u'ImageId': {u'Fn::FindInMap': [os, {u'Ref': u'AWS::Region'}, u'AMI']},
                                u'InstanceType': instance_types["x86_64"],

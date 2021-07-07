@@ -64,8 +64,7 @@ Default configuration:
   * **--cli-all** - get client machines for all RHEL versions
   * **--cli7/8-arch [arch]** - CLI machines' architectures (comma-separated list), `default = x86_64 for all of them`, `cli`_N_ set to `-1` will populate the list with all architectures automatically, so this parameter is unnecessary then
   * **--atomic-cli [number]** - number of ATOMIC CLI machines, `default = 0`
-  * **--test** - if specified, TEST machine running RHEL 7, `default = 0`
-  * **--test8** - if specified, TEST machine running RHEL 8, `default = 0`
+  * **--test** - if specified, TEST machine running RHEL 8, `default = 0`
   * **--region [name]** - `default = eu-west-1`
   * **--ansible-ssh-extra-args [args]** - optional SSH arguments for Ansible
   * **--novpc** - use EC2 Classic, not VPC; possibly useful if you're short on Elastic IPs
