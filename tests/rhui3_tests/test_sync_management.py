@@ -11,10 +11,8 @@ import yaml
 from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_repo import RHUIManagerRepo
-from rhui3_tests_lib.rhuimanager_subman import RHUIManagerSubMan
 from rhui3_tests_lib.rhuimanager_sync import RHUIManagerSync
 from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements
-from rhui3_tests_lib.subscription import RHSMRHUI
 from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
@@ -36,7 +34,6 @@ class TestSync(object):
                 self.yum_repo_name = doc["yum_repos"][version][arch]["name"]
                 self.yum_repo_version = doc["yum_repos"][version][arch]["version"]
                 self.yum_repo_kind = doc["yum_repos"][version][arch]["kind"]
-                self.sca_name = doc["SCA"]["name"]
             except KeyError as version:
                 raise nose.SkipTest("No test repo defined for RHEL %s on %s" % (version, arch))
 
@@ -50,8 +47,7 @@ class TestSync(object):
     def test_01_setup(self):
         '''add a repo to sync '''
         RHUIManager.initial_run(RHUA)
-        RHSMRHUI.sca_setup(RHUA)
-        RHUIManagerSubMan.subscriptions_register(RHUA, [self.sca_name])
+        RHUIManagerEntitlements.upload_rh_certificate(RHUA)
         entlist = RHUIManagerEntitlements.list_rh_entitlements(RHUA)
         nose.tools.assert_not_equal(len(entlist), 0)
         nose.tools.ok_(self.yum_repo_name in entlist)
@@ -78,9 +74,7 @@ class TestSync(object):
         '''remove the RH repo and cert'''
         RHUIManagerRepo.delete_repo(RHUA,
                                     [Util.format_repo(self.yum_repo_name, self.yum_repo_version)])
-        RHUIManagerSubMan.subscriptions_unregister(RHUA, [self.sca_name])
         RHUIManager.remove_rh_certs(RHUA)
-        RHSMRHUI.sca_cleanup(RHUA)
 
     @staticmethod
     def teardown_class():

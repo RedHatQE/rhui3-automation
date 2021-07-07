@@ -22,7 +22,6 @@ from rhui3_tests_lib.rhuimanager import RHUIManager
 from rhui3_tests_lib.rhuimanager_cmdline import RHUIManagerCLI, \
                                                 CustomRepoAlreadyExists, \
                                                 CustomRepoGpgKeyNotFound
-from rhui3_tests_lib.subscription import RHSMRHUI
 from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
@@ -42,8 +41,6 @@ CERTS = {"Atomic": "rhcert_atomic.pem",
          "partial": "rhcert_partially_invalid.pem",
          "empty": "rhcert_empty.pem"}
 TMPDIR = mkdtemp()
-AVAILABLE_POOL_FILE = join(TMPDIR, "available")
-REGISTERED_POOL_FILE = join(TMPDIR, "registered")
 YUM_REPO_FILE = join(TMPDIR, "rh-cloud.repo")
 
 class TestCLI(object):
@@ -61,8 +58,6 @@ class TestCLI(object):
         self.yum_repo_paths = [doc["CLI_repo1"]["path"], doc["CLI_repo2"]["path"]]
         self.product = doc["CLI_product"]
         self.remote_content = doc["remote_content"]
-        self.subscriptions = doc["subscriptions"]
-        self.sca_id = doc["SCA"]["id"]
 
     @staticmethod
     def setup_class():
@@ -346,85 +341,6 @@ class TestCLI(object):
             nose.tools.ok_("does not contain any entitlements" in str(err),
                            msg="unexpected error: %s" % err)
 
-    def test_29_register_system(self):
-        '''register the system in RHSM, attach the RHUI subscription'''
-        RHSMRHUI.register_system(RHUA)
-        RHSMRHUI.attach_subscription(RHUA, self.subscriptions["RHUI"])
-
-    @staticmethod
-    def test_30_fetch_available_pool():
-        '''fetch the available pool ID'''
-        available_pools = RHUIManagerCLI.subscriptions_list(RHUA, "available", True)
-        nose.tools.ok_(available_pools, msg="no available pool")
-        available_pool = available_pools[0]
-        nose.tools.ok_(re.match(r"^[0-9a-f]+$", available_pool),
-                       msg="invalid pool ID: '%s'" % available_pool)
-        with open(AVAILABLE_POOL_FILE, "w") as apf:
-            apf.write(available_pool)
-
-    @staticmethod
-    def test_31_register_subscription():
-        '''register the subscription using the fetched pool ID'''
-        try:
-            with open(AVAILABLE_POOL_FILE) as apf:
-                available_pool = apf.read()
-        except IOError:
-            raise RuntimeError("pool ID was not fetched")
-        nose.tools.ok_(re.match(r"^[0-9a-f]+$", available_pool),
-                       msg="invalid pool ID: '%s'" % available_pool)
-        RHUIManagerCLI.subscriptions_register(RHUA, available_pool)
-
-    @staticmethod
-    def test_32_fetch_registered_pool():
-        '''fetch the registered pool ID'''
-        registered_pools = RHUIManagerCLI.subscriptions_list(RHUA, "registered", True)
-        nose.tools.ok_(registered_pools, msg="no registered pool")
-        registered_pool = registered_pools[0]
-        nose.tools.ok_(re.match(r"^[0-9a-f]+$", registered_pool),
-                       msg="invalid pool ID: '%s'" % registered_pool)
-        with open(REGISTERED_POOL_FILE, "w") as rpf:
-            rpf.write(registered_pool)
-
-    @staticmethod
-    def test_33_compare_pools():
-        '''check if the previously available and now registered pool IDs are the same'''
-        try:
-            with open(AVAILABLE_POOL_FILE) as apf:
-                available_pool = apf.read()
-        except IOError:
-            raise RuntimeError("no known available pool ID")
-        try:
-            with open(REGISTERED_POOL_FILE) as rpf:
-                registered_pool = rpf.read()
-        except IOError:
-            raise RuntimeError("no known registered pool ID")
-        nose.tools.eq_(available_pool, registered_pool)
-
-    def test_34_check_reg_pool_for_rhui(self):
-        '''check if the registered subscription's description is RHUI for CCSP'''
-        reg_sub = RHUIManagerCLI.subscriptions_list(RHUA)
-        nose.tools.ok_(reg_sub, msg="no subscription is registered")
-        nose.tools.eq_(self.subscriptions["RHUI"],
-                       list(reg_sub.keys())[0],
-                       msg="Expected subscription not registered in RHUI! Got: %s" % reg_sub)
-
-    @staticmethod
-    def test_35_unregister_subscription():
-        '''remove the subscription from RHUI'''
-        try:
-            with open(REGISTERED_POOL_FILE) as rpf:
-                registered_pool = rpf.read()
-        except IOError:
-            raise RuntimeError("no known registered pool ID")
-        nose.tools.ok_(re.match(r"^[0-9a-f]+$", registered_pool),
-                       msg="invalid pool ID: '%s'" % registered_pool)
-        RHUIManagerCLI.subscriptions_unregister(RHUA, registered_pool)
-
-    @staticmethod
-    def test_36_unregister_system():
-        '''unregister the system from RHSM'''
-        RHSMRHUI.unregister_system(RHUA)
-
     def test_37_resync_repo(self):
         '''sync the repo again'''
         RHUIManagerCLI.repo_sync(RHUA, self.yum_repo_ids[1], self.yum_repo_names[1])
@@ -512,40 +428,8 @@ class TestCLI(object):
         RHUIManager.remove_rh_certs(RHUA)
 
     @staticmethod
-    def test_46_sca_setup():
-        '''set up SCA'''
-        RHSMRHUI.sca_setup(RHUA)
-
-    def test_47_list_sca(self):
-        '''check if SCA is an available subscription'''
-        avail_subs = RHUIManagerCLI.subscriptions_list(RHUA, "available", True)
-        nose.tools.eq_(avail_subs, [self.sca_id])
-
-    def test_48_reg_sca_sub_in_rhui(self):
-        '''register the SCA subscription in RHUI'''
-        RHUIManagerCLI.subscriptions_register(RHUA, self.sca_id)
-
-    def test_49_check_registered_subs(self):
-        '''check if the SCA subscription is now tracked as registered'''
-        reg_subs = RHUIManagerCLI.subscriptions_list(RHUA, "registered", True)
-        nose.tools.eq_(reg_subs, [self.sca_id])
-
-    def test_50_unregister_sca(self):
-        '''unregister the SCA subscription'''
-        RHUIManagerCLI.subscriptions_unregister(RHUA, self.sca_id)
-        # also delete the cert file
-        RHUIManager.remove_rh_certs(RHUA)
-
-    @staticmethod
-    def test_51_check_registered_subs():
-        '''check if the SCA subscription is no longer tracked as registered'''
-        reg_subs = RHUIManagerCLI.subscriptions_list(RHUA, "registered", True)
-        nose.tools.ok_(not reg_subs, msg="something remained: %s" % reg_subs)
-
-    @staticmethod
     def test_99_cleanup():
         '''cleanup: remove temporary files'''
-        RHSMRHUI.sca_cleanup(RHUA)
         Expect.ping_pong(RHUA, "rm -rf /tmp/%s* ; " % CLI_CFG[0] +
                          "ls /tmp/%s* 2>&1" % CLI_CFG[0],
                          "No such file or directory")

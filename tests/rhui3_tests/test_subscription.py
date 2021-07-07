@@ -6,12 +6,14 @@ import logging
 from os.path import basename
 
 import nose
+from stitches.expect import Expect
 import yaml
 
 from rhui3_tests_lib.conmgr import ConMgr
 from rhui3_tests_lib.rhuimanager import RHUIManager
-from rhui3_tests_lib.rhuimanager_subman import RHUIManagerSubMan
+from rhui3_tests_lib.rhuimanager_entitlement import RHUIManagerEntitlements
 from rhui3_tests_lib.subscription import RHSMRHUI
+from rhui3_tests_lib.util import Util
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -24,7 +26,6 @@ class TestSubscription(object):
         with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
             doc = yaml.load(configfile)
             self.subscriptions = doc["subscriptions"]
-            self.sca_name = doc["SCA"]["name"]
 
     @staticmethod
     def setup_class():
@@ -49,76 +50,41 @@ class TestSubscription(object):
         """attach the Atomic subscription"""
         RHSMRHUI.attach_subscription(RHUA, self.subscriptions["Atomic"])
 
-    def test_04_check_available_subs(self):
-        """check if the subscriptions available to RHUI are the known ones"""
-        avail_subs = RHUIManagerSubMan.subscriptions_list(RHUA, "available")
-        nose.tools.eq_(sorted(avail_subs), sorted(self.subscriptions.values()))
+    @staticmethod
+    def test_04_check_entitlements():
+        """check entitlements"""
+        # the subscription will become known to RHUI by running the sync script,
+        # but that needs credentials; if they're not set, set them first by
+        # changing the password (requires a new login afterwards)
+        if not Util.get_saved_password(RHUA):
+            initial_password = Util.get_initial_password(RHUA)
+            RHUIManager.change_user_password(RHUA, initial_password)
+            RHUIManager.initial_run(RHUA)
+        Expect.expect_retval(RHUA, "rhui-subscription-sync")
+        nose.tools.ok_(RHUIManagerEntitlements.list_rh_entitlements(RHUA))
 
-    def test_05_reg_rhui_sub_in_rhui(self):
-        """register the RHUI subscription in RHUI"""
-        RHUIManagerSubMan.subscriptions_register(RHUA, [self.subscriptions["RHUI"]])
-
-    def test_06_reg_atomic_sub_in_rhui(self):
-        """register the Atomic subscription in RHUI"""
-        RHUIManagerSubMan.subscriptions_register(RHUA, [self.subscriptions["Atomic"]])
-
-    def test_07_check_registered_subs(self):
-        """check if the subscriptions are now tracked as registered"""
-        reg_subs = RHUIManagerSubMan.subscriptions_list(RHUA, "registered")
-        nose.tools.eq_(sorted(reg_subs), sorted(self.subscriptions.values()))
-
-    def test_08_unregister_sub_in_rhui(self):
-        """unregister the subscriptions in RHUI"""
-        RHUIManagerSubMan.subscriptions_unregister(RHUA, self.subscriptions.values())
-        # also delete the cert files
+    @staticmethod
+    def test_05_unregister_system():
+        """unregister from RHSM"""
+        RHSMRHUI.unregister_system(RHUA)
         RHUIManager.remove_rh_certs(RHUA)
 
     @staticmethod
-    def test_09_check_registered_subs():
-        """check if the subscriptions are no longer tracked as registered"""
-        reg_sub = RHUIManagerSubMan.subscriptions_list(RHUA, "registered")
-        nose.tools.ok_(not reg_sub, msg="something remained: %s" % reg_sub)
-
-    @staticmethod
-    def test_10_unregister_system():
-        """unregister from RHSM"""
-        RHSMRHUI.unregister_system(RHUA)
-
-    @staticmethod
-    def test_11_sca_setup():
+    def test_06_sca_setup():
         """set up SCA"""
         RHSMRHUI.sca_setup(RHUA)
 
-    def test_12_list_sca(self):
-        """check if SCA is an available subscription"""
-        avail_subs = RHUIManagerSubMan.subscriptions_list(RHUA, "available")
-        nose.tools.eq_(avail_subs, [self.sca_name])
-
-    def test_13_reg_sca_sub_in_rhui(self):
-        """register the SCA subscription in RHUI"""
-        RHUIManagerSubMan.subscriptions_register(RHUA, [self.sca_name])
-
-    def test_14_check_registered_subs(self):
-        """check if the SCA subscription is now tracked as registered"""
-        reg_subs = RHUIManagerSubMan.subscriptions_list(RHUA, "registered")
-        nose.tools.eq_(reg_subs, [self.sca_name])
-
-    def test_15_unregister_sca(self):
-        """unregister the SCA subscription"""
-        RHUIManagerSubMan.subscriptions_unregister(RHUA, [self.sca_name])
-        # also delete the cert file
-        RHUIManager.remove_rh_certs(RHUA)
+    @staticmethod
+    def test_07_check_entitlements():
+        """check entitlements"""
+        Expect.expect_retval(RHUA, "rhui-subscription-sync")
+        nose.tools.ok_(RHUIManagerEntitlements.list_rh_entitlements(RHUA))
 
     @staticmethod
-    def test_16_check_registered_subs():
-        """check if the SCA subscription is no longer tracked as registered"""
-        reg_subs = RHUIManagerSubMan.subscriptions_list(RHUA, "registered")
-        nose.tools.ok_(not reg_subs, msg="something remained: %s" % reg_subs)
-
-    @staticmethod
-    def test_17_sca_cleanup():
+    def test_08_sca_cleanup():
         """clean up the SCA cert and key"""
         RHSMRHUI.sca_cleanup(RHUA)
+        RHUIManager.remove_rh_certs(RHUA)
 
     @staticmethod
     def teardown_class():
