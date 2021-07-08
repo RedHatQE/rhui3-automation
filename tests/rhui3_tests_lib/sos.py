@@ -17,8 +17,6 @@ class Sos(object):
     @staticmethod
     def run(connection):
         """run the sosreport command"""
-        # first make sure the sos package is installed
-        Expect.expect_retval(connection, "yum -y install sos", timeout=30)
         # now run sosreport with only the RHUI plug-in enabled, return the tarball location
         _, stdout, _ = connection.exec_command("sosreport -o rhui --batch | " +
                                                "grep -A1 '^Your sosreport' | " +

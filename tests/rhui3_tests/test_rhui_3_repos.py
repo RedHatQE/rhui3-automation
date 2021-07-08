@@ -92,26 +92,20 @@ def setup():
     '''
     print("*** Running %s: *** " % basename(__file__))
 
-def test_01_install_wget():
-    '''
-        make sure wget is installed on the RHUA
-    '''
-    Expect.expect_retval(RHUA, "yum -y install wget", timeout=30)
-
-def test_02_rhui_3_for_rhel_7_check():
+def test_01_rhui_3_for_rhel_7_check():
     '''
         check if the RHUI 3 packages for RHEL 7 are available
     '''
     _check_rpms()
 
-def test_03_eus_6_repos_check():
+def test_02_eus_6_repos_check():
     '''
         check if all supported RHEL 6 EUS versions are available
     '''
     # RHEL 6.1-6.7
     _check_listing(6, 1, 7)
 
-def test_04_eus_7_repos_check():
+def test_03_eus_7_repos_check():
     '''
         check if all supported RHEL 7 EUS versions are available
     '''

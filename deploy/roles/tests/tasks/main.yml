@@ -90,6 +90,16 @@
   when: (extra_files is defined) and (unzip_files is success)
   tags: tests
 
+- name: install packages needed by tests on RHUI nodes
+  package:
+    name:
+      - wget
+      - sos
+    state: present
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['RHUA']|default([]) + groups['CDS']|default([]) }}"
+  tags: tests
+
 - name: upload Red Hat credentials
   copy: src="{{ credentials }}" dest=/tmp/extra_rhui_files/credentials.conf
   delegate_to: "{{ item }}"
