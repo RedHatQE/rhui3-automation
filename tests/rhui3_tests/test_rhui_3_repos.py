@@ -18,7 +18,7 @@ RHUA = ConMgr.connect()
 
 DOC = "https://access.redhat.com/documentation/en-us/red_hat_update_infrastructure/3.1/html/" + \
       "release_notes/rn_updates"
-VERSION_STRING = "Updates for Red Hat Update Infrastructure [0-9.]+"
+VERSION_STRING = r"Updates for Red\sHat Update\sInfrastructure [0-9.]+"
 
 def _check_rpms():
     '''
@@ -81,7 +81,6 @@ def _check_listing(major, min_eus, max_eus):
           "https://cdn.redhat.com/" + \
           "content/eus/rhel/rhui/server/%s/listing" % major
     listings_expected = [str(major + i * .1) for i in range(min_eus, max_eus + 1)]
-    listings_expected.append("%sServer" % major)
     _, stdout, _ = RHUA.exec_command(cmd)
     listings_actual = stdout.read().decode().splitlines()
     nose.tools.eq_(listings_expected, listings_actual)
