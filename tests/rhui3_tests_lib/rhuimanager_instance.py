@@ -23,7 +23,7 @@ class InvalidSshKeyPath(Exception):
     To be raised if rhui-manager wasn't able to locate the provided SSH key path
     """
 
-class RHUIManagerInstance(object):
+class RHUIManagerInstance():
     '''
     Represents -= Content Delivery Server (CDS) Management =- RHUI screen
     '''

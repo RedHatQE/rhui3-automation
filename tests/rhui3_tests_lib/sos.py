@@ -5,7 +5,7 @@ import re
 import nose
 from stitches.expect import Expect
 
-class Sos(object):
+class Sos():
     """Sos handling for RHUI"""
     @staticmethod
     def check_rhui_sos_script(connection):

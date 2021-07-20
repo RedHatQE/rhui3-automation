@@ -7,7 +7,7 @@ from rhui3_tests_lib.rhuimanager import RHUIManager
 
 PROMPT = r"rhui \(subscriptions\) => "
 
-class RHUIManagerSubMan(object):
+class RHUIManagerSubMan():
     """Represents -= Subscriptions Manager =- RHUI screen"""
     @staticmethod
     def subscriptions_list(connection, what):
@@ -36,7 +36,7 @@ class RHUIManagerSubMan(object):
             RHUIManager.select(connection, names)
         except ExpectFailed:
             Expect.enter(connection, "q")
-            raise RuntimeError("subscription(s) not available: %s" % names)
+            raise RuntimeError("subscription(s) not available: %s" % names) from None
         RHUIManager.proceed_with_check(connection,
                                        "The following subscriptions will be registered:",
                                        names)
@@ -51,7 +51,7 @@ class RHUIManagerSubMan(object):
             RHUIManager.select(connection, names)
         except ExpectFailed:
             Expect.enter(connection, "q")
-            raise RuntimeError("subscription(s) not registered: %s" % names)
+            raise RuntimeError("subscription(s) not registered: %s" % names) from None
         RHUIManager.proceed_with_check(connection,
                                        "The following subscriptions will be unregistered:",
                                        names)

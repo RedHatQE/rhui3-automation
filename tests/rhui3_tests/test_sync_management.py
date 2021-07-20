@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 RHUA = ConMgr.connect()
 
-class TestSync(object):
+class TestSync():
     '''
        class for repository synchronization tests
     '''

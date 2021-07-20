@@ -1,5 +1,6 @@
 """ Utility functions """
 
+from configparser import ConfigParser
 import os
 import random
 import re
@@ -9,16 +10,12 @@ import time
 import urllib3
 import yaml
 
-try:
-    from configparser import ConfigParser # Python 3+
-except ImportError:
-    from ConfigParser import ConfigParser # Python 2
-
+import certifi
 from stitches.expect import Expect, ExpectFailed
 
 from rhui3_tests_lib.conmgr import ConMgr, DOMAIN
 
-class Util(object):
+class Util():
     '''
     Utility functions for instances
     '''
@@ -167,7 +164,7 @@ class Util(object):
         sub_sync_file = "/etc/rhui/rhui-subscription-sync.conf"
         creds_cfg = ConfigParser()
         _, stdout, _ = connection.exec_command("cat %s" % sub_sync_file)
-        creds_cfg.readfp(stdout)
+        creds_cfg.read_file(stdout)
         return creds_cfg.get("auth", "password") if creds_cfg.has_section("auth") else None
 
     @staticmethod
@@ -219,7 +216,7 @@ class Util(object):
         '''
         return a list of RPM files linked from an HTML page (e.g. a directory listing)
         '''
-        poolmgr = urllib3.PoolManager()
+        poolmgr = urllib3.PoolManager(cert_reqs="CERT_REQUIRED", ca_certs=certifi.where())
         try:
             request = poolmgr.request("GET", url)
         except (urllib3.exceptions.SSLError, urllib3.exceptions.MaxRetryError):

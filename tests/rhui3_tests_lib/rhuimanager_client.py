@@ -5,7 +5,7 @@ from stitches.expect import Expect
 from rhui3_tests_lib.rhuimanager import RHUIManager
 
 
-class RHUIManagerClient(object):
+class RHUIManagerClient():
     '''
     Represents -= Client Entitlement Management =- RHUI screen
     '''

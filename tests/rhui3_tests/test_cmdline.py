@@ -43,7 +43,7 @@ CERTS = {"Atomic": "rhcert_atomic.pem",
 TMPDIR = mkdtemp()
 YUM_REPO_FILE = join(TMPDIR, "rh-cloud.repo")
 
-class TestCLI(object):
+class TestCLI():
     '''
         class for CLI tests
     '''

@@ -38,7 +38,7 @@ CLI = ConMgr.connect(getenv("RHUICLI", ConMgr.get_cli_hostnames()[0]))
 CONF_RPM_NAME = "containers-rhui"
 CONF_RPM_PATH = "/tmp/%s-1/build/RPMS/noarch/%s-1-1ui.noarch.rpm" % (CONF_RPM_NAME, CONF_RPM_NAME)
 
-class TestClient(object):
+class TestClient():
     '''
        class for container tests
     '''
@@ -57,7 +57,7 @@ class TestClient(object):
             self.container_id = doc["container_rhel7"][arch]["id"]
             self.container_displayname = doc["container_rhel7"][arch]["displayname"]
         except KeyError:
-            raise nose.SkipTest("No test container defined for %s" % arch)
+            raise nose.SkipTest("No test container defined for %s" % arch) from None
 
         self.container_quay = doc["container_alt"]["quay"]
         self.container_gitlab = doc["container_alt"]["gitlab"]
@@ -198,7 +198,7 @@ class TestClient(object):
             images_cli = [image.split()[0].split("/")[1] \
                          for image in images if image.startswith(ConMgr.get_cds_lb_hostname())]
         except IndexError:
-            raise RuntimeError("Unexpected output:\n%s" % "\n".join(images))
+            raise RuntimeError("Unexpected output:\n%s" % "\n".join(images)) from None
         nose.tools.eq_(sorted(images_cli),
                        sorted([self.container_id, quay_repo_name, gitlab_repo_name]))
 

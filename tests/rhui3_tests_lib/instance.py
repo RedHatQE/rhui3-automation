@@ -7,9 +7,9 @@ from rhui3_tests_lib.conmgr import SUDO_USER_NAME, SUDO_USER_KEY
 class Instance(screenitem.ScreenItem):
     """A CDS and HAProxy attributes container"""
     parser = lineparser.Parser(mapping=[
-            ('host_name', re.compile("^  Hostname:\s*(.*)$")),
-            ('user_name', re.compile("^  SSH Username:\s*(.*)$")),
-            ('ssh_key_path', re.compile("^  SSH Private Key:\s*(.*)$")),
+            ('host_name', re.compile(r"^  Hostname:\s*(.*)$")),
+            ('user_name', re.compile(r"^  SSH Username:\s*(.*)$")),
+            ('ssh_key_path', re.compile(r"^  SSH Private Key:\s*(.*)$")),
     ])
 
     def __init__(self,

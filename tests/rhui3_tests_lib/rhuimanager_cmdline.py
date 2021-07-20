@@ -28,7 +28,7 @@ def _ent_list(stdout):
     try:
         status = Util.uncolorify(lines[2])
     except IndexError:
-        raise RuntimeError("Unexpected output: %s" % response)
+        raise RuntimeError("Unexpected output: %s" % response) from None
     if status == "Valid":
         # only pay attention to lines containing products
         # (which are non-empty lines below the header, without expriration and file name info)
@@ -50,7 +50,7 @@ class CustomRepoGpgKeyNotFound(Exception):
     Raised if the GPG key path to use with a custom repo is invalid
     '''
 
-class RHUIManagerCLI(object):
+class RHUIManagerCLI():
     '''
     The RHUI manager command-line interface (shell commands to control the RHUA).
     '''

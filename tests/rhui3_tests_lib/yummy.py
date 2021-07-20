@@ -5,7 +5,7 @@ import xmltodict
 
 from rhui3_tests_lib.rhuimanager_cmdline import RHUIManagerCLI
 
-class Yummy(object):
+class Yummy():
     """various functions to test yum commands and repodata"""
     @staticmethod
     def repodata_location(connection, repo, datatype):

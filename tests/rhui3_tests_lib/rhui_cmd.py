@@ -10,7 +10,7 @@ def _validate_node_type(text):
     if text not in ok_types:
         raise ValueError("Unsupported node type: '%s'. Use one of: %s." % (text, ok_types))
 
-class RHUICLI(object):
+class RHUICLI():
     '''
     The 'rhui' command-line interface (shell commands to control CDS and HAProxy nodes).
     '''

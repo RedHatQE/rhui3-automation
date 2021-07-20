@@ -32,7 +32,7 @@ CUSTOM_REPOS = ["custom-i386-x86_64", "custom-x86_64-x86_64", "custom-i386-i386"
 CUSTOM_PATHS = [repo.replace("-", "/") for repo in CUSTOM_REPOS]
 CUSTOM_RPMS_DIR = "/tmp/extra_rhui_files"
 
-class TestRepo(object):
+class TestRepo():
     '''
        class for repository manipulation tests
     '''

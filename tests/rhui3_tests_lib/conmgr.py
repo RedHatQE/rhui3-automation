@@ -32,7 +32,7 @@ def _list_hostnames(nodes, fake=False):
     logging.warning("No hosts found. Using a fake hostname. Proceed with caution.")
     return ["%s01.%s" % (nodes, DOMAIN)]
 
-class ConMgr(object):
+class ConMgr():
     """simplify connections to RHUI nodes & clients by providing handy constants and methods"""
     @staticmethod
     def get_rhua_hostname():

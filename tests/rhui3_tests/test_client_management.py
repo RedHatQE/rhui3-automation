@@ -50,7 +50,7 @@ LEGACY_CA_FILE = "legacy_ca.crt"
 
 TMPDIR = mkdtemp()
 
-class TestClient(object):
+class TestClient():
     '''
        class for client tests
     '''
@@ -59,7 +59,7 @@ class TestClient(object):
         try:
             self.custom_rpm = Util.get_rpms_in_dir(RHUA, CUSTOM_RPMS_DIR)[0]
         except IndexError:
-            raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR)
+            raise RuntimeError("No custom RPMs to test in %s" % CUSTOM_RPMS_DIR) from None
         self.version = Util.get_rhel_version(CLI)["major"]
         arch = Util.get_arch(CLI)
         with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:
@@ -71,7 +71,8 @@ class TestClient(object):
                 self.yum_repo_path = doc["yum_repos"][self.version][arch]["path"]
                 self.test_package = doc["yum_repos"][self.version][arch]["test_package"]
             except KeyError:
-                raise nose.SkipTest("No test repo defined for RHEL %s on %s" % (self.version, arch))
+                raise nose.SkipTest("No test repo defined for RHEL %s on %s" % \
+                                    (self.version, arch)) from None
 
     @staticmethod
     def setup_class():

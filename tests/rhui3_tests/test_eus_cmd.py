@@ -34,7 +34,7 @@ CLI = ConMgr.connect(getenv("RHUICLI", ConMgr.get_cli_hostnames()[0]))
 
 CONF_RPM_NAME = "eus-rhui"
 
-class TestEUSCLI(object):
+class TestEUSCLI():
     '''
     class to test EUS repos via the CLI
     '''

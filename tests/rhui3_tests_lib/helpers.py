@@ -2,14 +2,11 @@
 
 from os.path import basename, join
 
-try:
-    from configparser import ConfigParser # Python 3+
-except ImportError:
-    from ConfigParser import ConfigParser # Python 2
+from configparser import ConfigParser
 
 from stitches.expect import Expect
 
-class Helpers(object):
+class Helpers():
     """actions that may be repeated in specific test cases and do not belong in general utils"""
     @staticmethod
     def break_hostname(connection, hostname):
@@ -85,7 +82,7 @@ class Helpers(object):
         path = "/tmp/extra_rhui_files/credentials.conf"
         creds_cfg = ConfigParser()
         _, stdout, _ = connection.exec_command("cat %s" % path)
-        creds_cfg.readfp(stdout)
+        creds_cfg.read_file(stdout)
         if not creds_cfg.has_section(site):
             raise RuntimeError("section %s does not exist in %s" % (site, path))
         if not creds_cfg.has_option(site, "username"):
@@ -102,7 +99,7 @@ class Helpers(object):
             cfg_file = "/etc/rhui/rhui-tools.conf"
             rhuicfg = ConfigParser()
             _, stdout, _ = connection.exec_command("cat %s" % cfg_file)
-            rhuicfg.readfp(stdout)
+            rhuicfg.read_file(stdout)
             if not rhuicfg.has_option("docker", "docker_url"):
                 return None
             return rhuicfg.get("docker", "docker_url")
@@ -123,7 +120,7 @@ class Helpers(object):
         cfg_file = "/etc/rhui/rhui-tools.conf"
         rhuicfg = ConfigParser()
         _, stdout, _ = connection.exec_command("cat %s" % cfg_file)
-        rhuicfg.readfp(stdout)
+        rhuicfg.read_file(stdout)
         # add the relevant config section if it's not there yet
         if not rhuicfg.has_section("docker"):
             rhuicfg.add_section("docker")
@@ -144,7 +141,7 @@ class Helpers(object):
                 rhuicfg.set("docker", "docker_auth", "False")
                 credentials = False
             else:
-                raise ValueError("the passed data is invalid")
+                raise ValueError("the passed data is invalid") from None
         # if credentials are known, add them into the configuration
         if credentials:
             rhuicfg.set("docker", "docker_username", credentials[0])

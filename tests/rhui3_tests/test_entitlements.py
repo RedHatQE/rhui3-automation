@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 RHUA = ConMgr.connect()
 
-class TestEntitlement(object):
+class TestEntitlement():
     '''
        class for entitlement tests
     '''

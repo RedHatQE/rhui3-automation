@@ -30,7 +30,7 @@ def _get_repo_status(connection, reponame):
     Expect.enter(connection, "q")
     return ret_list
 
-class RHUIManagerSync(object):
+class RHUIManagerSync():
     '''
     Represents -= Synchronization Status =- RHUI screen
     '''

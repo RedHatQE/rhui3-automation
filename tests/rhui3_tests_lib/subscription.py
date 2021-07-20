@@ -6,7 +6,7 @@ from stitches.expect import Expect
 
 from rhui3_tests_lib.helpers import Helpers
 
-class RHSMRHUI(object):
+class RHSMRHUI():
     """Subscription management for RHUI"""
     @staticmethod
     def register_system(connection, username="", password="", fail_if_registered=False):

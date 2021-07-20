@@ -18,7 +18,7 @@ class AlreadyExistsError(Exception):
     To be raised if a custom repo already exists with this name.
     '''
 
-class RHUIManagerRepo(object):
+class RHUIManagerRepo():
     '''
     Represents -= Repository Management =- RHUI screen
     '''

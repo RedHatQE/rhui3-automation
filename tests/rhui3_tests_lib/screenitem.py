@@ -10,7 +10,7 @@ class NoSuchItem(ValueError):
     to be raised in case the item can't be located
     """
 
-class ScreenItem(object):
+class ScreenItem():
     """
     something that has a line parser
     and is able to locate itself within the lines
@@ -70,4 +70,3 @@ class ScreenItem(object):
         for linenr, pairs in cls.parser.parse(lines):
             # map the pairs onto cls
             yield linenr, cls.from_parsed_item_pairs(pairs)
-

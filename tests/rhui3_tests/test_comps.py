@@ -38,7 +38,7 @@ BIG_REPO = "rhel-7-server-rhui-rpms"
 EMP_REPO = "rhel-7-server-rhui-rh-common-rpms"
 ZIP_REPO = "rhel-7-server-rhui-optional-rpms"
 
-class TestCompsXML(object):
+class TestCompsXML():
     """class to test comps XML handling"""
     def __init__(self):
         with open("/etc/rhui3_tests/tested_repos.yaml") as configfile:

@@ -41,6 +41,10 @@
   shell: cd /root/rhui3-automation/tests && pip3 install --prefix /usr .
   tags: tests
 
+- name: install certifi
+  command: pip3 install --prefix /usr certifi
+  tags: tests
+
 - name: generate ssh keys
   command: ssh-keygen -m pem -N "" -f /root/.ssh/id_rsa_test creates=/root/.ssh/id_rsa_test
   notify: restorecon root ssh

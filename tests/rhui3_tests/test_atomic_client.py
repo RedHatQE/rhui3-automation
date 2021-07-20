@@ -31,7 +31,7 @@ except socket.error:
     AH_EXISTS = False
 RHUA = ConMgr.connect()
 
-class TestClient(object):
+class TestClient():
     '''
        class for Atomic client tests
     '''

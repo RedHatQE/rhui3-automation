@@ -18,7 +18,7 @@ class NotSelectLine(ValueError):
     to be raised when the line isn't actually a selection line
     """
 
-class RHUIManager(object):
+class RHUIManager():
     '''
     Basic functions to manage rhui-manager.
     '''

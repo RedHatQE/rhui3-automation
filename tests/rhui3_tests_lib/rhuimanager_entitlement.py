@@ -22,7 +22,7 @@ class IncompatibleCertificate(Exception):
     Raised when a certificate is incompatible with RHUI
     """
 
-class RHUIManagerEntitlements(object):
+class RHUIManagerEntitlements():
     '''
     Represents -= Entitlements Manager =- RHUI screen
     '''

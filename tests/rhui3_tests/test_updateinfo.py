@@ -33,7 +33,7 @@ RHUA = ConMgr.connect()
 # This allows for multiple client machines in one stack.
 CLI = ConMgr.connect(getenv("RHUICLI", ConMgr.get_cli_hostnames()[0]))
 
-class TestClient(object):
+class TestClient():
     '''
        class for client tests
     '''
@@ -47,7 +47,7 @@ class TestClient(object):
                 self.test = doc["updateinfo"][self.version][self.arch]
             except KeyError:
                 raise nose.SkipTest("No test repo defined for RHEL %s on %s" % \
-                                    (self.version, self.arch))
+                                    (self.version, self.arch)) from None
             # the special "RHEL 0" repo contains updateinfo.xml instead of *.gz
             self.test["uncompressed_updateinfo"] = doc["updateinfo"][0]["all"]["repo_id"]
 

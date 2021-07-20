@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 RHUA = ConMgr.connect()
 
-class TestSubscription(object):
+class TestSubscription():
     """class for tests for subscription registration in RHUI"""
 
     def __init__(self):
