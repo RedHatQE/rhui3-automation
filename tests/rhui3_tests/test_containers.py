@@ -216,7 +216,8 @@ class TestClient():
         '''
         if self.cli_supported:
             Expect.expect_retval(CLI, "docker rm -f $(docker ps -a -f ancestor=%s -q)" % \
-                                 self.container_id)
+                                 (ConMgr.get_cds_lb_hostname() + ":5000/" +
+                                  self.container_id + ":latest"))
             for container in [self.container_id,
                               Util.safe_pulp_repo_name(self.container_quay["name"]),
                               Util.safe_pulp_repo_name(self.container_gitlab["name"])]:
